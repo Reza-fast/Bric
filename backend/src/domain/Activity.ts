@@ -6,7 +6,7 @@ export interface Activity {
   type: ActivityType;
   title: string;
   body: string | null;
-  /** Optional image URLs for photo-style feed items. */
+  /** Optional image URLs for photo-style feed items.!! */
   mediaUrls: string[];
   actorUserId: string | null;
   createdAt: Date;
