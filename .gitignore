@@ -3,6 +3,7 @@ node_modules/
 dist/
 .next/
 **/.next/
+# env files 
 .env
 .env.local
 .env.*.local
