@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
@@ -95,6 +96,9 @@ function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
         gap: "1.25rem",
         minHeight: 300,
         boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        height: "100%",
+        cursor: "pointer",
+        transition: "box-shadow 0.15s ease, border-color 0.15s ease",
       }}
     >
       <div style={{ display: "flex", gap: "1.1rem", alignItems: "flex-start" }}>
@@ -218,6 +222,25 @@ export default function ProjectsPage() {
   const [data, setData] = useState<ProjectPortfolioCard[] | null | undefined>(undefined);
   const [tab, setTab] = useState<FilterTab>("all");
   const [page, setPage] = useState(0);
+  const [createdFlash, setCreatedFlash] = useState<string | null>(null);
+  const [updatedFlash, setUpdatedFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const created = sessionStorage.getItem("bric_project_created");
+      if (created) {
+        setCreatedFlash(created);
+        sessionStorage.removeItem("bric_project_created");
+      }
+      const updated = sessionStorage.getItem("bric_project_updated");
+      if (updated) {
+        setUpdatedFlash(updated);
+        sessionStorage.removeItem("bric_project_updated");
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -260,6 +283,38 @@ export default function ProjectsPage() {
 
   return (
     <DashboardShell user={user}>
+      {createdFlash ? (
+        <div
+          style={{
+            marginBottom: "1rem",
+            padding: "0.75rem 1rem",
+            borderRadius: 10,
+            background: "#ecfdf5",
+            border: "1px solid #a7f3d0",
+            color: "#065f46",
+            fontSize: "0.9rem",
+          }}
+          role="status"
+        >
+          Project <strong>{createdFlash}</strong> was created and added to your portfolio.
+        </div>
+      ) : null}
+      {updatedFlash ? (
+        <div
+          style={{
+            marginBottom: "1rem",
+            padding: "0.75rem 1rem",
+            borderRadius: 10,
+            background: "#eff6ff",
+            border: "1px solid #bfdbfe",
+            color: "#1e40af",
+            fontSize: "0.9rem",
+          }}
+          role="status"
+        >
+          Project <strong>{updatedFlash}</strong> was updated.
+        </div>
+      ) : null}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem" }}>
         <div>
           <div style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--muted)" }}>
@@ -272,9 +327,10 @@ export default function ProjectsPage() {
             Browse construction assets, completion, and budget signals for projects you are assigned to.
           </p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/projects/new"
           style={{
+            display: "inline-block",
             padding: "0.65rem 1.1rem",
             borderRadius: 10,
             border: "none",
@@ -284,10 +340,11 @@ export default function ProjectsPage() {
             fontSize: "0.9rem",
             cursor: "pointer",
             whiteSpace: "nowrap",
+            textDecoration: "none",
           }}
         >
           + New project
-        </button>
+        </Link>
       </div>
 
       <div
@@ -345,9 +402,21 @@ export default function ProjectsPage() {
                 minHeight: "calc(2 * 300px + 1.5rem)",
               }}
             >
-              {pageSlice.map((card) => (
-                <ProjectCard key={card.id} card={card} />
-              ))}
+            {pageSlice.map((card) => (
+              <Link
+                key={card.id}
+                href={`/projects/${card.id}/edit`}
+                aria-label={`Edit project ${card.name}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "block",
+                  borderRadius: 18,
+                }}
+              >
+                <ProjectCard card={card} />
+              </Link>
+            ))}
             </div>
           </div>
           <div

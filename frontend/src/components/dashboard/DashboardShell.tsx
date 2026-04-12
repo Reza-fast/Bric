@@ -153,10 +153,12 @@ export function DashboardShell({
             );
           })}
         </nav>
-        <button
-          type="button"
+        <Link
+          href="/projects/new"
           style={{
             marginTop: "1rem",
+            display: "block",
+            textAlign: "center",
             padding: "0.65rem 1rem",
             borderRadius: 10,
             border: "none",
@@ -164,10 +166,11 @@ export function DashboardShell({
             color: "#fff",
             fontWeight: 600,
             cursor: "pointer",
+            textDecoration: "none",
           }}
         >
           New project
-        </button>
+        </Link>
         <div
           style={{
             marginTop: "auto",
