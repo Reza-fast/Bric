@@ -1,5 +1,11 @@
 import type { Pool } from "pg";
-import type { Project, ProjectCreateInput, ProjectHoursSummary, ProjectUpdateInput } from "../domain/index.js";
+import type {
+  Project,
+  ProjectCreateInput,
+  ProjectHoursSummary,
+  ProjectPortfolioCard,
+  ProjectUpdateInput,
+} from "../domain/index.js";
 import { ProjectStatus } from "../domain/index.js";
 
 interface ProjectRow {
@@ -9,11 +15,17 @@ interface ProjectRow {
   status: string;
   budgeted_hours: string;
   description: string | null;
+  location?: string | null;
+  completion_percent?: string | null;
+  portfolio_lead_name?: string | null;
   created_at: Date;
   updated_at: Date;
 }
 
 function mapProject(row: ProjectRow): Project {
+  const completionRaw = row.completion_percent;
+  const completionPercent =
+    completionRaw != null && completionRaw !== "" ? Number(completionRaw) : 0;
   return {
     id: row.id,
     name: row.name,
@@ -21,8 +33,25 @@ function mapProject(row: ProjectRow): Project {
     status: row.status as ProjectStatus,
     budgetedHours: Number(row.budgeted_hours),
     description: row.description,
+    location: row.location ?? null,
+    completionPercent,
+    portfolioLeadName: row.portfolio_lead_name ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function mapPortfolioRow(row: ProjectRow & { actual_hours: string }): ProjectPortfolioCard {
+  const base = mapProject(row);
+  const budgeted = base.budgetedHours;
+  const actual = Number(row.actual_hours);
+  const hoursPercentUsed =
+    budgeted > 0 ? Math.round((actual / budgeted) * 1000) / 10 : 0;
+  return {
+    ...base,
+    actualHours: actual,
+    hoursPercentUsed,
+    isOverBudget: actual > budgeted,
   };
 }
 
@@ -53,8 +82,11 @@ export class ProjectsRepository {
 
   async create(input: ProjectCreateInput): Promise<Project> {
     const { rows } = await this.pool.query<ProjectRow>(
-      `INSERT INTO projects (name, slug, status, budgeted_hours, description)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO projects (
+        name, slug, status, budgeted_hours, description,
+        location, completion_percent, portfolio_lead_name
+      )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
       [
         input.name,
@@ -62,6 +94,9 @@ export class ProjectsRepository {
         input.status,
         input.budgetedHours,
         input.description ?? null,
+        input.location ?? null,
+        input.completionPercent ?? 0,
+        input.portfolioLeadName ?? null,
       ],
     );
     return mapProject(rows[0]!);
@@ -75,13 +110,28 @@ export class ProjectsRepository {
       status: input.status ?? existing.status,
       budgetedHours: input.budgetedHours ?? existing.budgetedHours,
       description: input.description !== undefined ? input.description : existing.description,
+      location: input.location !== undefined ? input.location : existing.location,
+      completionPercent:
+        input.completionPercent !== undefined ? input.completionPercent : existing.completionPercent,
+      portfolioLeadName:
+        input.portfolioLeadName !== undefined ? input.portfolioLeadName : existing.portfolioLeadName,
     };
     const { rows } = await this.pool.query<ProjectRow>(
       `UPDATE projects SET
-        name = $2, status = $3, budgeted_hours = $4, description = $5, updated_at = now()
+        name = $2, status = $3, budgeted_hours = $4, description = $5,
+        location = $6, completion_percent = $7, portfolio_lead_name = $8, updated_at = now()
        WHERE id = $1
        RETURNING *`,
-      [id, next.name, next.status, next.budgetedHours, next.description],
+      [
+        id,
+        next.name,
+        next.status,
+        next.budgetedHours,
+        next.description,
+        next.location,
+        next.completionPercent,
+        next.portfolioLeadName,
+      ],
     );
     return rows[0] ? mapProject(rows[0]) : null;
   }
@@ -121,6 +171,38 @@ export class ProjectsRepository {
         isOverBudget: actual > budgeted,
       };
     });
+  }
+
+  async listPortfolioByMemberUserId(
+    userId: string,
+    status?: ProjectStatus,
+  ): Promise<ProjectPortfolioCard[]> {
+    const hoursSub = `(
+      SELECT project_id, SUM(duration_hours)::text AS actual_hours
+      FROM time_logs
+      GROUP BY project_id
+    )`;
+    if (status) {
+      const { rows } = await this.pool.query<ProjectRow & { actual_hours: string }>(
+        `SELECT p.*, COALESCE(h.actual_hours, '0') AS actual_hours
+         FROM projects p
+         INNER JOIN project_members m ON m.project_id = p.id AND m.user_id = $1
+         LEFT JOIN ${hoursSub} h ON h.project_id = p.id
+         WHERE p.status = $2
+         ORDER BY p.name`,
+        [userId, status],
+      );
+      return rows.map(mapPortfolioRow);
+    }
+    const { rows } = await this.pool.query<ProjectRow & { actual_hours: string }>(
+      `SELECT p.*, COALESCE(h.actual_hours, '0') AS actual_hours
+       FROM projects p
+       INNER JOIN project_members m ON m.project_id = p.id AND m.user_id = $1
+       LEFT JOIN ${hoursSub} h ON h.project_id = p.id
+       ORDER BY p.name`,
+      [userId],
+    );
+    return rows.map(mapPortfolioRow);
   }
 
   async listByMemberUserId(userId: string, status?: ProjectStatus): Promise<Project[]> {

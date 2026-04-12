@@ -2,12 +2,18 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { AuthUser } from "@/lib/api/auth";
 import { logoutRequest } from "@/lib/api/auth";
 
-const nav = ["Dashboard", "Projects", "Planning", "Reporting", "Documents"];
+const nav = [
+  { label: "Dashboard", href: "/dashboard" },
+  { label: "Projects", href: "/projects" },
+  { label: "Planning", href: "#" },
+  { label: "Reporting", href: "#" },
+  { label: "Documents", href: "#" },
+] as const;
 
 function roleLabel(role: string): string {
   return role.replace(/_/g, " ");
@@ -95,6 +101,7 @@ export function DashboardShell({
   user: AuthUser | null;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   async function onLogout() {
     await logoutRequest();
@@ -119,20 +126,32 @@ export function DashboardShell({
           BRIC
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.25rem", marginTop: "1rem" }}>
-          {nav.map((item) => (
-            <span
-              key={item}
-              style={{
-                padding: "0.5rem 0.75rem",
-                borderRadius: 8,
-                color: item === "Dashboard" ? "var(--accent)" : "var(--text)",
-                fontWeight: item === "Dashboard" ? 600 : 400,
-                fontSize: "0.9rem",
-              }}
-            >
-              {item}
-            </span>
-          ))}
+          {nav.map((item) => {
+            const active = item.href !== "#" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+            const content = (
+              <span
+                style={{
+                  padding: "0.5rem 0.75rem",
+                  borderRadius: 8,
+                  color: active ? "var(--accent)" : "var(--text)",
+                  fontWeight: active ? 600 : 400,
+                  fontSize: "0.9rem",
+                  display: "block",
+                }}
+              >
+                {item.label}
+              </span>
+            );
+            return item.href === "#" ? (
+              <span key={item.label} style={{ cursor: "default", opacity: 0.75 }}>
+                {content}
+              </span>
+            ) : (
+              <Link key={item.href} href={item.href} style={{ textDecoration: "none", color: "inherit" }}>
+                {content}
+              </Link>
+            );
+          })}
         </nav>
         <button
           type="button"

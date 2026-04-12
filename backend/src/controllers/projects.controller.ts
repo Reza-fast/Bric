@@ -27,7 +27,7 @@ export class ProjectsController {
       status && Object.values(ProjectStatus).includes(status as ProjectStatus)
         ? (status as ProjectStatus)
         : undefined;
-    const list = await this.projects.listForUser(userId, valid);
+    const list = await this.projects.listPortfolioForUser(userId, valid);
     res.json(list);
   };
 

@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { PORTFOLIO_SEED_SLUGS } from "../constants/portfolioSeedSlugs.js";
 
 export class ProjectMembersRepository {
   constructor(private readonly pool: Pool) {}
@@ -25,5 +26,17 @@ export class ProjectMembersRepository {
       [userId],
     );
     return rows.map((r) => r.project_id);
+  }
+
+  /** Idempotent: link user to seeded portfolio projects (for demo registry). */
+  async addUserToPortfolioSeedProjects(userId: string): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO project_members (project_id, user_id)
+       SELECT p.id, $1
+       FROM projects p
+       WHERE p.slug = ANY($2::text[])
+       ON CONFLICT DO NOTHING`,
+      [userId, [...PORTFOLIO_SEED_SLUGS]],
+    );
   }
 }

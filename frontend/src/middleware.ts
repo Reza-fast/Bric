@@ -10,6 +10,8 @@ export function middleware(request: NextRequest) {
   if (
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/") ||
+    pathname === "/projects" ||
+    pathname.startsWith("/projects/") ||
     pathname === "/profile" ||
     pathname.startsWith("/profile/")
   ) {
@@ -34,5 +36,14 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard", "/dashboard/:path*", "/profile", "/profile/:path*", "/login", "/register"],
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/projects",
+    "/projects/:path*",
+    "/profile",
+    "/profile/:path*",
+    "/login",
+    "/register",
+  ],
 };

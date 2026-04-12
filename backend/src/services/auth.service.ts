@@ -3,6 +3,7 @@ import { hashPassword, verifyPassword } from "../auth/password.js";
 import { config } from "../config.js";
 import type { User } from "../domain/index.js";
 import { UserRole } from "../domain/index.js";
+import { ProjectMembersRepository } from "../repositories/projectMembers.repository.js";
 import { UsersRepository } from "../repositories/users.repository.js";
 
 export class AuthError extends Error {
@@ -21,7 +22,10 @@ export interface AuthTokens {
 }
 
 export class AuthService {
-  constructor(private readonly users: UsersRepository) {}
+  constructor(
+    private readonly users: UsersRepository,
+    private readonly members: ProjectMembersRepository,
+  ) {}
 
   async register(input: {
     email: string;
@@ -44,6 +48,7 @@ export class AuthService {
       passwordHash,
       avatarUrl: null,
     });
+    await this.members.addUserToPortfolioSeedProjects(user.id);
     const accessToken = await signAccessToken({
       sub: user.id,
       email: user.email,
@@ -66,6 +71,7 @@ export class AuthService {
       email: row.user.email,
       role: row.user.role,
     });
+    await this.members.addUserToPortfolioSeedProjects(row.user.id);
     return { accessToken, user: row.user };
   }
 

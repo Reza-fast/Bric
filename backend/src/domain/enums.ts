@@ -10,6 +10,8 @@ export enum ProjectStatus {
   Active = "active",
   Inactive = "inactive",
   Completed = "completed",
+  Planning = "planning",
+  Critical = "critical",
 }
 
 export enum ActivityType {

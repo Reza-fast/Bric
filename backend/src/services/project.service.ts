@@ -1,4 +1,9 @@
-import type { Project, ProjectCreateInput, ProjectUpdateInput } from "../domain/index.js";
+import type {
+  Project,
+  ProjectCreateInput,
+  ProjectPortfolioCard,
+  ProjectUpdateInput,
+} from "../domain/index.js";
 import type { ProjectStatus } from "../domain/index.js";
 import { ProjectMembersRepository } from "../repositories/projectMembers.repository.js";
 import { ProjectsRepository } from "../repositories/projects.repository.js";
@@ -11,6 +16,10 @@ export class ProjectService {
 
   listForUser(userId: string, status?: ProjectStatus): Promise<Project[]> {
     return this.projects.listByMemberUserId(userId, status);
+  }
+
+  listPortfolioForUser(userId: string, status?: ProjectStatus): Promise<ProjectPortfolioCard[]> {
+    return this.projects.listPortfolioByMemberUserId(userId, status);
   }
 
   getByIdForUser(projectId: string, userId: string): Promise<Project | null> {

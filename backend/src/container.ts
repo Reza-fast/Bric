@@ -35,7 +35,7 @@ export function createAppContainer() {
   const plannedTaskService = new PlannedTaskService(plannedTasksRepo);
   const userService = new UserService(usersRepo);
   const profileService = new ProfileService(usersRepo);
-  const authService = new AuthService(usersRepo);
+  const authService = new AuthService(usersRepo, membersRepo);
   const dashboardService = new DashboardService(
     projectsRepo,
     timeLogsRepo,
