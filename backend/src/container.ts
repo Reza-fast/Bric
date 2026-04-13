@@ -1,5 +1,6 @@
 import { AuthController } from "./controllers/auth.controller.js";
 import { DashboardController } from "./controllers/dashboard.controller.js";
+import { PlannedTasksController } from "./controllers/plannedTasks.controller.js";
 import { ProjectsController } from "./controllers/projects.controller.js";
 import { TimeLogsController } from "./controllers/timeLogs.controller.js";
 import { getPool } from "./infrastructure/database.js";
@@ -32,7 +33,7 @@ export function createAppContainer() {
   const projectService = new ProjectService(projectsRepo, membersRepo);
   const timeLogService = new TimeLogService(timeLogsRepo, projectsRepo, membersRepo);
   const activityService = new ActivityService(activitiesRepo);
-  const plannedTaskService = new PlannedTaskService(plannedTasksRepo);
+  const plannedTaskService = new PlannedTaskService(plannedTasksRepo, projectsRepo);
   const userService = new UserService(usersRepo);
   const profileService = new ProfileService(usersRepo);
   const authService = new AuthService(usersRepo, membersRepo);
@@ -60,6 +61,7 @@ export function createAppContainer() {
     controllers: {
       dashboard: new DashboardController(dashboardService),
       projects: new ProjectsController(projectService),
+      plannedTasks: new PlannedTasksController(plannedTaskService),
       timeLogs: new TimeLogsController(timeLogService),
       auth: new AuthController(authService, profileService),
     },

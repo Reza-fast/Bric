@@ -27,3 +27,19 @@ export enum ReportStatus {
   InReview = "in_review",
   Approved = "approved",
 }
+
+/** Row on the technical planning timeline. */
+export enum PlannedTaskStatus {
+  Planned = "planned",
+  InProgress = "in_progress",
+  PendingApproval = "pending_approval",
+  Scheduled = "scheduled",
+  Completed = "completed",
+}
+
+export enum TaskPriority {
+  Low = "low",
+  Normal = "normal",
+  High = "high",
+  Critical = "critical",
+}

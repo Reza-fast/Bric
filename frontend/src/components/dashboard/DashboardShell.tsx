@@ -10,7 +10,7 @@ import { logoutRequest } from "@/lib/api/auth";
 const nav = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Projects", href: "/projects" },
-  { label: "Planning", href: "#" },
+  { label: "Planning", href: "/planning" },
   { label: "Reporting", href: "#" },
   { label: "Documents", href: "#" },
 ] as const;

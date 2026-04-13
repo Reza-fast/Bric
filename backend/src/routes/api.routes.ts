@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import type { AuthController } from "../controllers/auth.controller.js";
 import type { DashboardController } from "../controllers/dashboard.controller.js";
 import type { ProjectsController } from "../controllers/projects.controller.js";
+import type { PlannedTasksController } from "../controllers/plannedTasks.controller.js";
 import type { TimeLogsController } from "../controllers/timeLogs.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
@@ -18,6 +19,7 @@ export function createApiRouter(deps: {
   auth: AuthController;
   dashboard: DashboardController;
   projects: ProjectsController;
+  plannedTasks: PlannedTasksController;
   timeLogs: TimeLogsController;
 }): Router {
   const r = Router();
@@ -35,6 +37,11 @@ export function createApiRouter(deps: {
   r.get("/projects/:id", deps.projects.getById);
   r.post("/projects", deps.projects.create);
   r.patch("/projects/:id", deps.projects.update);
+
+  r.get("/projects/:projectId/planned-tasks", deps.plannedTasks.list);
+  r.post("/projects/:projectId/planned-tasks", deps.plannedTasks.create);
+  r.patch("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.update);
+  r.delete("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.remove);
 
   r.post("/time-logs", deps.timeLogs.create);
 

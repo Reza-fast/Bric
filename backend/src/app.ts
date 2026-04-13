@@ -30,6 +30,7 @@ export function createApp() {
       auth: controllers.auth,
       dashboard: controllers.dashboard,
       projects: controllers.projects,
+      plannedTasks: controllers.plannedTasks,
       timeLogs: controllers.timeLogs,
     }),
   );

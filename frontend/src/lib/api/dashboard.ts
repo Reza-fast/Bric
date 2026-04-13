@@ -32,6 +32,10 @@ export interface PlannedTask {
   startsAt: string;
   endsAt: string;
   location: string | null;
+  phaseLabel?: string | null;
+  taskStatus?: string;
+  priority?: string;
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }
