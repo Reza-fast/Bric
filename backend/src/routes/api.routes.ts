@@ -4,6 +4,7 @@ import type { AuthController } from "../controllers/auth.controller.js";
 import type { DashboardController } from "../controllers/dashboard.controller.js";
 import type { ProjectsController } from "../controllers/projects.controller.js";
 import type { PlannedTasksController } from "../controllers/plannedTasks.controller.js";
+import { ReportsController } from "../controllers/reports.controller.js";
 import type { TimeLogsController } from "../controllers/timeLogs.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
@@ -21,6 +22,7 @@ export function createApiRouter(deps: {
   projects: ProjectsController;
   plannedTasks: PlannedTasksController;
   timeLogs: TimeLogsController;
+  reports: ReportsController;
 }): Router {
   const r = Router();
 
@@ -44,6 +46,22 @@ export function createApiRouter(deps: {
   r.delete("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.remove);
 
   r.post("/time-logs", deps.timeLogs.create);
+
+  r.get("/projects/:projectId/reports", deps.reports.list);
+  r.post("/projects/:projectId/reports", deps.reports.createDigital);
+  r.post(
+    "/projects/:projectId/reports/upload",
+    ReportsController.uploadAttachmentMiddleware,
+    deps.reports.uploadFile,
+  );
+  r.patch("/projects/:projectId/reports/:reportId", deps.reports.patch);
+  r.patch(
+    "/projects/:projectId/reports/:reportId/attachment",
+    ReportsController.uploadAttachmentMiddleware,
+    deps.reports.replaceAttachment,
+  );
+  r.get("/projects/:projectId/reports/:reportId/file", deps.reports.downloadFile);
+  r.get("/projects/:projectId/reports/:reportId/pdf", deps.reports.downloadFile);
 
   return r;
 }

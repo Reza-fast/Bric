@@ -32,6 +32,7 @@ export function createApp() {
       projects: controllers.projects,
       plannedTasks: controllers.plannedTasks,
       timeLogs: controllers.timeLogs,
+      reports: controllers.reports,
     }),
   );
 

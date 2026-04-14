@@ -1,4 +1,5 @@
 import "dotenv/config";
+import path from "node:path";
 
 function required(name: string, fallback?: string): string {
   const v = process.env[name] ?? fallback;
@@ -33,4 +34,6 @@ export const config = {
   cookieName: process.env.AUTH_COOKIE_NAME ?? "bric_token",
   corsOrigins: parseOrigins(process.env.FRONTEND_ORIGIN),
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS) || 12,
+  /** Root directory for uploaded report PDFs (created on demand). */
+  uploadDir: path.resolve(process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads")),
 };

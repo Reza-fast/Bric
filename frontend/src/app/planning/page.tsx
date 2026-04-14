@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
@@ -99,7 +99,7 @@ function findCurrentWeekIndex(cols: { start: Date }[], ref: Date): number | null
 
 type PlannerModal = null | { kind: "add" } | { kind: "edit"; taskId: string };
 
-export default function PlanningPage() {
+function PlanningPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get("project");
@@ -1021,5 +1021,19 @@ export default function PlanningPage() {
         </div>
       ) : null}
     </DashboardShell>
+  );
+}
+
+export default function PlanningPage() {
+  return (
+    <Suspense
+      fallback={
+        <DashboardShell user={null}>
+          <p style={{ color: "var(--muted)" }}>Loading…</p>
+        </DashboardShell>
+      }
+    >
+      <PlanningPageContent />
+    </Suspense>
   );
 }

@@ -11,7 +11,7 @@ const nav = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Projects", href: "/projects" },
   { label: "Planning", href: "/planning" },
-  { label: "Reporting", href: "#" },
+  { label: "Reporting", href: "/reporting" },
   { label: "Documents", href: "#" },
 ] as const;
 
@@ -96,9 +96,12 @@ function ProfileNavAvatar({ user }: { user: AuthUser | null }) {
 export function DashboardShell({
   children,
   user,
+  fullBleed = false,
 }: {
   children: ReactNode;
   user: AuthUser | null;
+  /** When true, main content has no max padding so pages can span full width. */
+  fullBleed?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -218,10 +221,10 @@ export function DashboardShell({
         >
           <input
             type="search"
-            placeholder="Search blueprints, files, or teams…"
+            placeholder="Quicksearch…"
             style={{
               flex: 1,
-              maxWidth: 480,
+              maxWidth: fullBleed ? "none" : 480,
               padding: "0.5rem 0.75rem",
               borderRadius: 8,
               border: "1px solid var(--border)",
@@ -233,7 +236,18 @@ export function DashboardShell({
             <div style={{ color: "var(--muted)" }}>{user ? roleLabel(user.role) : "…"}</div>
           </div>
         </header>
-        <main style={{ padding: "1.5rem", flex: 1 }}>{children}</main>
+        <main
+          style={{
+            padding: fullBleed ? 0 : "1.5rem",
+            flex: 1,
+            width: "100%",
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
