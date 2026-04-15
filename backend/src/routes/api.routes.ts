@@ -25,7 +25,7 @@ export function createApiRouter(deps: {
   reports: ReportsController;
 }): Router {
   const r = Router();
-
+  // auth routes
   r.post("/auth/register", authLimiter, deps.auth.register);
   r.post("/auth/login", authLimiter, deps.auth.login);
   r.post("/auth/logout", deps.auth.logout);
