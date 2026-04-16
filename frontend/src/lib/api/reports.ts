@@ -2,6 +2,13 @@ import { apiFetch } from "./client";
 
 export type ReportStatus = "action_required" | "in_review" | "approved";
 
+export interface ReportPhotoEntry {
+  id: string;
+  fileOriginalName: string;
+  fileMimeType: string | null;
+  createdAt: string;
+}
+
 export interface ProjectReport {
   id: string;
   projectId: string;
@@ -12,6 +19,8 @@ export interface ProjectReport {
   fileOriginalName: string | null;
   fileStorageKey: string | null;
   fileMimeType: string | null;
+  /** Gallery images attached to this report (separate from the single legacy file slot). */
+  photos?: ReportPhotoEntry[];
   createdAt: string;
   updatedAt: string;
 }
@@ -79,6 +88,31 @@ export async function uploadReportFile(
   return { ok: true, report: json as ProjectReport };
 }
 
+/** Upload one or more images to a report’s photo gallery (max 30 files, 25 MB each). */
+export async function uploadReportPhotos(
+  projectId: string,
+  reportId: string,
+  files: File[],
+): Promise<{ ok: true; report: ProjectReport } | { ok: false; status: number }> {
+  if (files.length === 0) return { ok: false, status: 400 };
+  const fd = new FormData();
+  for (const f of files) {
+    fd.append("files", f);
+  }
+  const res = await apiFetch(
+    `/api/projects/${encodeURIComponent(projectId)}/reports/${encodeURIComponent(reportId)}/photos`,
+    {
+      method: "POST",
+      body: fd,
+    },
+  );
+  const json: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) return { ok: false, status: res.status };
+  const body = json as { report?: ProjectReport };
+  if (!body.report) return { ok: false, status: 500 };
+  return { ok: true, report: body.report };
+}
+
 /** Add or replace the file attachment on an existing report. */
 export async function replaceReportAttachment(
   projectId: string,
@@ -101,4 +135,24 @@ export async function replaceReportAttachment(
 
 export function reportFileUrl(projectId: string, reportId: string): string {
   return `/api/projects/${encodeURIComponent(projectId)}/reports/${encodeURIComponent(reportId)}/file`;
+}
+
+export function reportPhotoUrl(projectId: string, reportId: string, photoId: string): string {
+  return `/api/projects/${encodeURIComponent(projectId)}/reports/${encodeURIComponent(reportId)}/photos/${encodeURIComponent(photoId)}/file`;
+}
+
+export async function deleteReportPhoto(
+  projectId: string,
+  reportId: string,
+  photoId: string,
+): Promise<{ ok: true; report: ProjectReport } | { ok: false; status: number }> {
+  const res = await apiFetch(
+    `/api/projects/${encodeURIComponent(projectId)}/reports/${encodeURIComponent(reportId)}/photos/${encodeURIComponent(photoId)}`,
+    { method: "DELETE" },
+  );
+  const json: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) return { ok: false, status: res.status };
+  const body = json as { report?: ProjectReport };
+  if (!body.report) return { ok: false, status: 500 };
+  return { ok: true, report: body.report };
 }

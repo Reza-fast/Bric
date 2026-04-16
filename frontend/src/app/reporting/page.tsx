@@ -8,18 +8,24 @@ import type { AuthUser } from "@/lib/api/auth";
 import { meRequest } from "@/lib/api/auth";
 import {
   createDigitalReport,
+  deleteReportPhoto,
   fetchProjectReports,
   replaceReportAttachment,
   type ProjectReport,
   type ReportStatus,
   reportFileUrl,
+  reportPhotoUrl,
   updateReport,
   uploadReportFile,
+  uploadReportPhotos,
 } from "@/lib/api/reports";
 import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/projects";
 
 const FILE_INPUT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.svg,.heic,.heif,.txt,.csv,.zip,.rar,.7z,.dwg,.dxf";
+
+/** Images allowed for report attachments (subset of backend ALLOWED_EXT). */
+const PICTURE_INPUT_ACCEPT = "image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff,image/svg+xml,image/heic,image/heif,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.svg,.heic,.heif";
 
 function statusStyle(s: ReportStatus): { bg: string; fg: string; label: string } {
   switch (s) {
@@ -74,6 +80,7 @@ function ReportingPageContent() {
   const [dueDigital, setDueDigital] = useState("");
   const [savingDigital, setSavingDigital] = useState(false);
   const [digitalMsg, setDigitalMsg] = useState<string | null>(null);
+  const [digitalPictures, setDigitalPictures] = useState<File[]>([]);
 
   const [titleFile, setTitleFile] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -86,11 +93,21 @@ function ReportingPageContent() {
   const [editStatus, setEditStatus] = useState<ReportStatus>("in_review");
   const [editDue, setEditDue] = useState("");
   const [editNewFile, setEditNewFile] = useState<File | null>(null);
+  const [editNewPhotos, setEditNewPhotos] = useState<File[]>([]);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
   const assetFileInputRef = useRef<HTMLInputElement>(null);
+  const narrativePicInputRef = useRef<HTMLInputElement>(null);
   const [assetDragActive, setAssetDragActive] = useState(false);
+  const [narrativePicDragActive, setNarrativePicDragActive] = useState(false);
+  const [digitalPicPreviewUrls, setDigitalPicPreviewUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    const urls = digitalPictures.map((f) => URL.createObjectURL(f));
+    setDigitalPicPreviewUrls(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [digitalPictures]);
 
   useEffect(() => {
     void meRequest().then((m) => setUser(m?.user ?? null));
@@ -147,6 +164,7 @@ function ReportingPageContent() {
     setEditStatus(r.status);
     setEditDue(r.dueAt ? toDatetimeLocalValue(r.dueAt) : "");
     setEditNewFile(null);
+    setEditNewPhotos([]);
     setEditError(null);
   }
 
@@ -155,6 +173,7 @@ function ReportingPageContent() {
     setEditSaving(false);
     setEditError(null);
     setEditNewFile(null);
+    setEditNewPhotos([]);
   }
 
   async function onSubmitDigital(e: FormEvent) {
@@ -170,17 +189,41 @@ function ReportingPageContent() {
       status: statusDigital,
       dueAt: dueAt ?? null,
     });
-    setSavingDigital(false);
     if (!res.ok) {
+      setSavingDigital(false);
       setDigitalMsg(res.status === 400 ? "Check the fields and try again." : "Could not save the report.");
       return;
     }
+
+    let reportRow: ProjectReport = res.report;
+    const queuedPhotos = digitalPictures.length;
+    if (queuedPhotos > 0) {
+      const up = await uploadReportPhotos(projectId, res.report.id, digitalPictures);
+      if (!up.ok) {
+        setSavingDigital(false);
+        setDigitalMsg(
+          up.status === 413
+            ? "Report saved, but a photo exceeds 25 MB. Remove oversized images or add smaller ones from Edit."
+            : up.status === 400
+              ? "Report saved, but one or more images are not allowed. Use Edit to attach supported formats."
+              : "Report saved, but photos could not be uploaded. You can add them from Edit.",
+        );
+        setReports((prev) => [reportRow, ...prev]);
+        return;
+      }
+      reportRow = up.report;
+    }
+
+    setSavingDigital(false);
     setTitleDigital("");
     setBodyDigital("");
     setDueDigital("");
     setStatusDigital("in_review");
-    setDigitalMsg("Report saved.");
-    setReports((prev) => [res.report, ...prev]);
+    setDigitalPictures([]);
+    setDigitalMsg(
+      queuedPhotos > 0 ? `Report saved with ${queuedPhotos} photo${queuedPhotos === 1 ? "" : "s"}.` : "Report saved.",
+    );
+    setReports((prev) => [reportRow, ...prev]);
   }
 
   async function onSubmitFileUpload(e: FormEvent) {
@@ -239,9 +282,36 @@ function ReportingPageContent() {
       }
     }
 
+    if (editNewPhotos.length > 0) {
+      const picRes = await uploadReportPhotos(projectId, editing.id, editNewPhotos);
+      if (!picRes.ok) {
+        setEditSaving(false);
+        setEditError(
+          picRes.status === 413
+            ? "A new photo exceeds 25 MB (max per file)."
+            : picRes.status === 400
+              ? "One or more images are not allowed."
+              : "Could not upload new photos.",
+        );
+        return;
+      }
+    }
+
     setEditSaving(false);
     closeEdit();
     void loadReports();
+  }
+
+  async function removeExistingPhoto(photoId: string) {
+    if (!projectId || !editing) return;
+    setEditError(null);
+    const res = await deleteReportPhoto(projectId, editing.id, photoId);
+    if (!res.ok) {
+      setEditError("Could not remove that photo.");
+      return;
+    }
+    setEditing(res.report);
+    setReports((prev) => prev.map((x) => (x.id === res.report.id ? res.report : x)));
   }
 
   const pagePad = "clamp(1rem, 3vw, 2rem)";
@@ -627,6 +697,173 @@ function ReportingPageContent() {
                         }}
                       />
                     </label>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>Site photos (optional)</span>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#64748b", lineHeight: 1.45 }}>
+                        Add multiple images (up to 30, max 25 MB each). HEIC, PNG, JPEG, WebP, and other common formats.
+                      </p>
+                      <input
+                        ref={narrativePicInputRef}
+                        type="file"
+                        accept={PICTURE_INPUT_ACCEPT}
+                        multiple
+                        onChange={(e) => {
+                          const list = e.target.files;
+                          if (!list?.length) return;
+                          const imgs = Array.from(list).filter((f) => f.type.startsWith("image/"));
+                          setDigitalPictures((prev) => [...prev, ...imgs].slice(0, 30));
+                          e.target.value = "";
+                        }}
+                        style={{ display: "none" }}
+                        id="reporting-narrative-picture"
+                      />
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setNarrativePicDragActive(true);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setNarrativePicDragActive(false);
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setNarrativePicDragActive(false);
+                          const list = e.dataTransfer.files;
+                          if (!list?.length) return;
+                          const imgs = Array.from(list).filter((f) => f.type.startsWith("image/"));
+                          setDigitalPictures((prev) => [...prev, ...imgs].slice(0, 30));
+                        }}
+                        style={{
+                          borderRadius: 12,
+                          border: `2px dashed ${narrativePicDragActive ? "#2563eb" : "#cbd5e1"}`,
+                          background: narrativePicDragActive ? "rgba(37, 99, 235, 0.06)" : "#f8fafc",
+                          padding: "0.85rem 1rem",
+                          display: "flex",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => narrativePicInputRef.current?.click()}
+                          style={{
+                            padding: "0.45rem 0.9rem",
+                            borderRadius: 10,
+                            border: "1px solid #cbd5e1",
+                            background: "#fff",
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
+                            color: "#0f172a",
+                          }}
+                        >
+                          Choose photos
+                        </button>
+                        <span style={{ fontSize: "0.8rem", color: "#64748b" }}>or drop images here</span>
+                      </div>
+                      {digitalPictures.length > 0 ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
+                            padding: "0.65rem 0.75rem",
+                            borderRadius: 10,
+                            border: "1px solid #e2e8f0",
+                            background: "#fff",
+                          }}
+                        >
+                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
+                            Selected ({digitalPictures.length}/30)
+                          </div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                            {digitalPictures.map((file, idx) => (
+                              <div
+                                key={`${file.name}-${file.size}-${idx}`}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "flex-start",
+                                  gap: 6,
+                                  padding: 6,
+                                  borderRadius: 8,
+                                  border: "1px solid #f1f5f9",
+                                  background: "#fafbfc",
+                                  maxWidth: "100%",
+                                }}
+                              >
+                                {digitalPicPreviewUrls[idx] ? (
+                                  // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
+                                  <img
+                                    src={digitalPicPreviewUrls[idx]}
+                                    alt=""
+                                    style={{
+                                      width: 56,
+                                      height: 56,
+                                      objectFit: "cover",
+                                      borderRadius: 6,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                ) : null}
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      fontWeight: 600,
+                                      color: "#0f172a",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      maxWidth: 160,
+                                    }}
+                                  >
+                                    {file.name}
+                                  </div>
+                                  <div style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{formatFileSize(file.size)}</div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setDigitalPictures((prev) => prev.filter((_, i) => i !== idx))}
+                                    style={{
+                                      marginTop: 4,
+                                      border: "none",
+                                      background: "none",
+                                      color: "#64748b",
+                                      fontSize: "0.72rem",
+                                      fontWeight: 600,
+                                      cursor: "pointer",
+                                      padding: 0,
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setDigitalPictures([])}
+                            style={{
+                              alignSelf: "flex-start",
+                              border: "none",
+                              background: "none",
+                              color: "#64748b",
+                              fontSize: "0.78rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              padding: 0,
+                            }}
+                          >
+                            Clear all
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
                       <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.82rem", fontWeight: 600, color: "#334155", flex: "1 1 160px" }}>
                         Status
@@ -673,6 +910,7 @@ function ReportingPageContent() {
                           setBodyDigital("");
                           setDueDigital("");
                           setStatusDigital("in_review");
+                          setDigitalPictures([]);
                           setDigitalMsg(null);
                         }}
                         style={{
@@ -989,11 +1227,25 @@ function ReportingPageContent() {
                                     rel="noopener noreferrer"
                                     style={{ fontSize: "0.82rem", fontWeight: 600, color: "#2563eb" }}
                                   >
-                                    Open
+                                    File
                                   </a>
-                                ) : (
+                                ) : null}
+                                {r.photos && r.photos.length > 0
+                                  ? r.photos.map((p, idx) => (
+                                      <a
+                                        key={p.id}
+                                        href={reportPhotoUrl(projectId, r.id, p.id)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ fontSize: "0.82rem", fontWeight: 600, color: "#2563eb" }}
+                                      >
+                                        Photo {idx + 1}
+                                      </a>
+                                    ))
+                                  : null}
+                                {!r.fileStorageKey && (!r.photos || r.photos.length === 0) ? (
                                   <span style={{ fontSize: "0.78rem", color: "#cbd5e1" }}>—</span>
-                                )}
+                                ) : null}
                                 <button
                                   type="button"
                                   onClick={() => openEdit(r)}
@@ -1137,6 +1389,79 @@ function ReportingPageContent() {
                   style={{ fontSize: "0.9rem" }}
                 />
               </label>
+              {editing.photos && editing.photos.length > 0 ? (
+                <div style={{ fontSize: "0.85rem" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Saved photos</div>
+                  <ul style={{ margin: 0, paddingLeft: "1.1rem", display: "flex", flexDirection: "column", gap: 6 }}>
+                    {editing.photos.map((p) => (
+                      <li key={p.id} style={{ fontSize: "0.82rem" }}>
+                        <a
+                          href={reportPhotoUrl(projectId, editing.id, p.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#2563eb", fontWeight: 600 }}
+                        >
+                          {p.fileOriginalName}
+                        </a>
+                        {" · "}
+                        <button
+                          type="button"
+                          disabled={editSaving}
+                          onClick={() => void removeExistingPhoto(p.id)}
+                          style={{
+                            border: "none",
+                            background: "none",
+                            color: "#64748b",
+                            cursor: editSaving ? "wait" : "pointer",
+                            fontSize: "0.82rem",
+                            fontWeight: 600,
+                            padding: 0,
+                            textDecoration: "underline",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.85rem" }}>
+                Add more photos (optional)
+                <input
+                  type="file"
+                  accept={PICTURE_INPUT_ACCEPT}
+                  multiple
+                  onChange={(e) => {
+                    const list = e.target.files;
+                    if (!list?.length) return;
+                    const imgs = Array.from(list).filter((f) => f.type.startsWith("image/"));
+                    setEditNewPhotos((prev) => [...prev, ...imgs].slice(0, 30));
+                    e.target.value = "";
+                  }}
+                  style={{ fontSize: "0.9rem" }}
+                />
+              </label>
+              {editNewPhotos.length > 0 ? (
+                <div style={{ fontSize: "0.82rem", color: "#64748b" }}>
+                  {editNewPhotos.length} new photo{editNewPhotos.length === 1 ? "" : "s"} queued
+                  {" · "}
+                  <button
+                    type="button"
+                    onClick={() => setEditNewPhotos([])}
+                    style={{
+                      border: "none",
+                      background: "none",
+                      color: "#2563eb",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      padding: 0,
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              ) : null}
               {editError ? (
                 <p style={{ margin: 0, fontSize: "0.85rem", color: "#b91c1c" }}>{editError}</p>
               ) : null}

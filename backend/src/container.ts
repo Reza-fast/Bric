@@ -9,6 +9,7 @@ import { ActivitiesRepository } from "./repositories/activities.repository.js";
 import { PlannedTasksRepository } from "./repositories/plannedTasks.repository.js";
 import { ProjectMembersRepository } from "./repositories/projectMembers.repository.js";
 import { ProjectsRepository } from "./repositories/projects.repository.js";
+import { ReportPhotosRepository } from "./repositories/report-photos.repository.js";
 import { ReportsRepository } from "./repositories/reports.repository.js";
 import { TimeLogsRepository } from "./repositories/timeLogs.repository.js";
 import { UsersRepository } from "./repositories/users.repository.js";
@@ -28,6 +29,7 @@ export function createAppContainer() {
   const timeLogsRepo = new TimeLogsRepository(pool);
   const activitiesRepo = new ActivitiesRepository(pool);
   const reportsRepo = new ReportsRepository(pool);
+  const reportPhotosRepo = new ReportPhotosRepository(pool);
   const plannedTasksRepo = new PlannedTasksRepository(pool);
   const usersRepo = new UsersRepository(pool);
   const membersRepo = new ProjectMembersRepository(pool);
@@ -47,7 +49,7 @@ export function createAppContainer() {
     plannedTasksRepo,
     membersRepo,
   );
-  const reportService = new ReportService(reportsRepo, projectsRepo);
+  const reportService = new ReportService(reportsRepo, projectsRepo, reportPhotosRepo);
 
   return {
     pool,

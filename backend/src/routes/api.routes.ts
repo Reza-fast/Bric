@@ -60,6 +60,13 @@ export function createApiRouter(deps: {
     ReportsController.uploadAttachmentMiddleware,
     deps.reports.replaceAttachment,
   );
+  r.post(
+    "/projects/:projectId/reports/:reportId/photos",
+    ReportsController.uploadPhotosMiddleware,
+    deps.reports.uploadPhotos,
+  );
+  r.delete("/projects/:projectId/reports/:reportId/photos/:photoId", deps.reports.deletePhoto);
+  r.get("/projects/:projectId/reports/:reportId/photos/:photoId/file", deps.reports.downloadPhoto);
   r.get("/projects/:projectId/reports/:reportId/file", deps.reports.downloadFile);
   r.get("/projects/:projectId/reports/:reportId/pdf", deps.reports.downloadFile);
 

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { config } from "../config.js";
 import { ReportStatus } from "../domain/index.js";
 import type { Report } from "../domain/index.js";
+import type { ReportPhoto } from "../domain/index.js";
 import type { ReportService } from "../services/report.service.js";
 
 /** Allowed file extensions for report attachments (lowercase, with dot). */
@@ -88,6 +89,44 @@ function safeExtension(originalname: string): string | null {
   return ALLOWED_EXT.has(ext) ? ext : null;
 }
 
+const PHOTO_ONLY_EXT = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".bmp",
+  ".tif",
+  ".tiff",
+  ".svg",
+  ".heic",
+  ".heif",
+]);
+
+function safePhotoExtension(originalname: string): string | null {
+  const ext = path.extname(originalname).toLowerCase();
+  if (!ext || ext.length > 12) return null;
+  return PHOTO_ONLY_EXT.has(ext) ? ext : null;
+}
+
+function serializeReport(report: Report, photos: ReportPhoto[]) {
+  return {
+    ...report,
+    photos: photos.map((p) => ({
+      id: p.id,
+      fileOriginalName: p.fileOriginalName,
+      fileMimeType: p.fileMimeType,
+      createdAt: p.createdAt,
+    })),
+  };
+}
+
+function mimeForPhotoDownload(photo: ReportPhoto): string {
+  if (photo.fileMimeType?.trim()) return photo.fileMimeType.trim();
+  const ext = path.extname(photo.fileOriginalName).toLowerCase();
+  return EXT_MIME[ext] ?? "application/octet-stream";
+}
+
 function normalizeMime(raw: string | undefined, originalname: string): string | null {
   const t = raw?.trim();
   if (t && t.length <= 200 && !t.includes("\r") && !t.includes("\n")) {
@@ -135,10 +174,20 @@ const upload = multer({
   },
 });
 
+const uploadPhotosMulter = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const ext = safePhotoExtension(file.originalname);
+    cb(null, Boolean(ext));
+  },
+});
+
 export class ReportsController {
   constructor(private readonly reports: ReportService) {}
 
   static readonly uploadAttachmentMiddleware = upload.single("file");
+  static readonly uploadPhotosMiddleware = uploadPhotosMulter.array("files", 30);
 
   list = async (req: Request, res: Response): Promise<void> => {
     const userId = req.authUser?.id;
@@ -152,7 +201,7 @@ export class ReportsController {
       res.status(404).json({ error: "NOT_FOUND" });
       return;
     }
-    res.json({ reports: list });
+    res.json({ reports: list.map((r) => serializeReport(r, r.photos)) });
   };
 
   createDigital = async (req: Request, res: Response): Promise<void> => {
@@ -178,7 +227,7 @@ export class ReportsController {
       res.status(404).json({ error: "NOT_FOUND" });
       return;
     }
-    res.status(201).json(report);
+    res.status(201).json(serializeReport(report, []));
   };
 
   patch = async (req: Request, res: Response): Promise<void> => {
@@ -205,7 +254,12 @@ export class ReportsController {
       res.status(404).json({ error: "NOT_FOUND" });
       return;
     }
-    res.json(report);
+    const full = await this.reports.getForUserWithPhotos(projectId, reportId, userId);
+    if (!full) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    res.json(serializeReport(full, full.photos));
   };
 
   uploadFile = async (req: Request, res: Response): Promise<void> => {
@@ -254,7 +308,12 @@ export class ReportsController {
         res.status(404).json({ error: "NOT_FOUND" });
         return;
       }
-      res.status(201).json(report);
+      const full = await this.reports.getForUserWithPhotos(projectId, reportId, userId);
+      if (!full) {
+        res.status(404).json({ error: "NOT_FOUND" });
+        return;
+      }
+      res.status(201).json(serializeReport(full, full.photos));
     } catch (e) {
       await unlink(absFile).catch(() => {});
       throw e;
@@ -310,11 +369,107 @@ export class ReportsController {
         const prevAbs = path.join(config.uploadDir, prevKey);
         await unlink(prevAbs).catch(() => {});
       }
-      res.json(updated);
+      const full = await this.reports.getForUserWithPhotos(projectId, reportId, userId);
+      if (!full) {
+        res.status(404).json({ error: "NOT_FOUND" });
+        return;
+      }
+      res.json(serializeReport(full, full.photos));
     } catch (e) {
       await unlink(absFile).catch(() => {});
       throw e;
     }
+  };
+
+  uploadPhotos = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.authUser?.id;
+    if (!userId) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const projectId = req.params.projectId!;
+    const reportId = req.params.reportId!;
+    const files = Array.isArray(req.files) ? req.files : [];
+    if (!files.length) {
+      res.status(400).json({ error: "FILES_REQUIRED" });
+      return;
+    }
+    const payload = files.map((f) => ({
+      buffer: f.buffer,
+      originalname: f.originalname,
+      mimetype: f.mimetype,
+    }));
+    const result = await this.reports.addPhotosForUser(projectId, reportId, userId, payload);
+    if (!result.ok) {
+      if (result.reason === "NOT_FOUND") {
+        res.status(404).json({ error: "NOT_FOUND" });
+        return;
+      }
+      if (result.reason === "TOO_MANY") {
+        res.status(400).json({ error: "TOO_MANY_PHOTOS", max: 30 });
+        return;
+      }
+      res.status(400).json({ error: "UNSUPPORTED_FILE_TYPE" });
+      return;
+    }
+    const full = await this.reports.getForUserWithPhotos(projectId, reportId, userId);
+    if (!full) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    res.status(201).json({ report: serializeReport(full, full.photos) });
+  };
+
+  deletePhoto = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.authUser?.id;
+    if (!userId) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const projectId = req.params.projectId!;
+    const reportId = req.params.reportId!;
+    const photoId = req.params.photoId!;
+    const ok = await this.reports.deletePhotoForUser(projectId, reportId, photoId, userId);
+    if (!ok) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    const full = await this.reports.getForUserWithPhotos(projectId, reportId, userId);
+    if (!full) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    res.json({ report: serializeReport(full, full.photos) });
+  };
+
+  downloadPhoto = async (req: Request, res: Response): Promise<void> => {
+    const userId = req.authUser?.id;
+    if (!userId) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const projectId = req.params.projectId!;
+    const reportId = req.params.reportId!;
+    const photoId = req.params.photoId!;
+    const photo = await this.reports.getPhotoForDownload(projectId, reportId, photoId, userId);
+    if (!photo) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    const absFile = path.join(config.uploadDir, photo.fileStorageKey);
+    const mime = mimeForPhotoDownload(photo);
+    res.setHeader("Content-Type", mime);
+    const safeName = photo.fileOriginalName.replace(/[\r\n"]/g, "_");
+    const disp = contentDispositionType(mime);
+    res.setHeader(
+      "Content-Disposition",
+      `${disp}; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+    );
+    res.sendFile(absFile, (err) => {
+      if (err && !res.headersSent) {
+        res.status(500).json({ error: "FILE_READ" });
+      }
+    });
   };
 
   downloadFile = async (req: Request, res: Response): Promise<void> => {
