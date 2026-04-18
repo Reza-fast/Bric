@@ -7,12 +7,17 @@ import { UserRole } from "../domain/index.js";
 import { AuthError, type AuthService } from "../services/auth.service.js";
 import { ProfileError, type ProfileService } from "../services/profile.service.js";
 
-const registerSchema = z.object({
-  email: z.string().email().max(320),
-  password: z.string().min(10).max(200),
-  displayName: z.string().min(1).max(200),
-  role: z.nativeEnum(UserRole).optional(),
-});
+const registerSchema = z
+  .object({
+    email: z.string().email().max(320),
+    password: z.string().min(10).max(200),
+    displayName: z.string().min(1).max(200),
+    role: z.nativeEnum(UserRole).optional(),
+  })
+  .refine((d) => d.role !== UserRole.Hr, {
+    message: "HR accounts cannot be created via public registration",
+    path: ["role"],
+  });
 
 const loginSchema = z.object({
   email: z.string().email(),

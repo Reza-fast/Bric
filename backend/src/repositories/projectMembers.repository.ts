@@ -1,6 +1,18 @@
 import type { Pool } from "pg";
 import { PORTFOLIO_SEED_SLUGS } from "../constants/portfolioSeedSlugs.js";
 
+export interface TeamDirectoryRow {
+  user_id: string;
+  email: string;
+  display_name: string;
+  role: string;
+  avatar_url: string | null;
+  project_id: string;
+  project_name: string;
+  project_status: string;
+  member_function: string | null;
+}
+
 export class ProjectMembersRepository {
   constructor(private readonly pool: Pool) {}
 
@@ -9,6 +21,20 @@ export class ProjectMembersRepository {
       `INSERT INTO project_members (project_id, user_id) VALUES ($1, $2)
        ON CONFLICT DO NOTHING`,
       [projectId, userId],
+    );
+  }
+
+  async addOrUpdateMemberWithFunction(
+    projectId: string,
+    userId: string,
+    memberFunction: string | null,
+  ): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO project_members (project_id, user_id, member_function)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (project_id, user_id)
+       DO UPDATE SET member_function = COALESCE(EXCLUDED.member_function, project_members.member_function)`,
+      [projectId, userId, memberFunction],
     );
   }
 
@@ -38,5 +64,49 @@ export class ProjectMembersRepository {
        ON CONFLICT DO NOTHING`,
       [userId, [...PORTFOLIO_SEED_SLUGS]],
     );
+  }
+
+  async listTeamDirectoryRows(projectIds: string[]): Promise<TeamDirectoryRow[]> {
+    if (projectIds.length === 0) return [];
+    const { rows } = await this.pool.query<TeamDirectoryRow>(
+      `SELECT
+         u.id AS user_id,
+         u.email,
+         u.display_name,
+         u.role,
+         u.avatar_url,
+         p.id AS project_id,
+         p.name AS project_name,
+         p.status AS project_status,
+         pm.member_function
+       FROM project_members pm
+       INNER JOIN users u ON u.id = pm.user_id
+       INNER JOIN projects p ON p.id = pm.project_id
+       WHERE pm.project_id = ANY($1::uuid[])
+       ORDER BY u.display_name ASC, p.name ASC`,
+      [projectIds],
+    );
+    return rows;
+  }
+
+  /** All project–member rows (for HR org directory). */
+  async listTeamDirectoryRowsAll(): Promise<TeamDirectoryRow[]> {
+    const { rows } = await this.pool.query<TeamDirectoryRow>(
+      `SELECT
+         u.id AS user_id,
+         u.email,
+         u.display_name,
+         u.role,
+         u.avatar_url,
+         p.id AS project_id,
+         p.name AS project_name,
+         p.status AS project_status,
+         pm.member_function
+       FROM project_members pm
+       INNER JOIN users u ON u.id = pm.user_id
+       INNER JOIN projects p ON p.id = pm.project_id
+       ORDER BY u.display_name ASC, p.name ASC`,
+    );
+    return rows;
   }
 }

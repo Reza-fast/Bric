@@ -1,5 +1,6 @@
-/** Roles that can participate in a construction project. */
+/** App + project roles. HR is for directory, invites, and org-wide time oversight. */
 export enum UserRole {
+  Hr = "hr",
   Architect = "architect",
   Contractor = "contractor",
   Subcontractor = "subcontractor",

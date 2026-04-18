@@ -5,8 +5,10 @@ import type { DashboardController } from "../controllers/dashboard.controller.js
 import type { ProjectsController } from "../controllers/projects.controller.js";
 import type { PlannedTasksController } from "../controllers/plannedTasks.controller.js";
 import { ReportsController } from "../controllers/reports.controller.js";
+import type { TeamController } from "../controllers/team.controller.js";
 import type { TimeLogsController } from "../controllers/timeLogs.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { requireHr } from "../middleware/requireHr.js";
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -23,6 +25,7 @@ export function createApiRouter(deps: {
   plannedTasks: PlannedTasksController;
   timeLogs: TimeLogsController;
   reports: ReportsController;
+  team: TeamController;
 }): Router {
   const r = Router();
   // auth routes
@@ -45,7 +48,11 @@ export function createApiRouter(deps: {
   r.patch("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.update);
   r.delete("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.remove);
 
+  r.get("/time-logs", deps.timeLogs.list);
+  r.delete("/time-logs/:id", deps.timeLogs.delete);
   r.post("/time-logs", deps.timeLogs.create);
+  r.get("/team", requireHr, deps.team.list);
+  r.post("/team/invite", requireHr, deps.team.invite);
 
   r.get("/projects/:projectId/reports", deps.reports.list);
   r.post("/projects/:projectId/reports", deps.reports.createDigital);

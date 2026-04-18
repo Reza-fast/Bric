@@ -1,6 +1,7 @@
 export interface TimeLog {
   id: string;
-  projectId: string;
+  /** `null` = day-level clock (timer); otherwise hours allocated to a project. */
+  projectId: string | null;
   userId: string;
   durationHours: number;
   loggedAt: Date;
@@ -8,10 +9,8 @@ export interface TimeLog {
   createdAt: Date;
 }
 
-export type TimeLogCreateInput = Pick<
-  TimeLog,
-  "projectId" | "userId" | "durationHours"
-> & {
+export type TimeLogCreateInput = Pick<TimeLog, "userId" | "durationHours"> & {
+  projectId: string | null;
   loggedAt?: Date;
   note?: string | null;
 };

@@ -276,4 +276,9 @@ export class ProjectsRepository {
       };
     });
   }
+
+  async listAllIds(): Promise<string[]> {
+    const { rows } = await this.pool.query<{ id: string }>(`SELECT id FROM projects ORDER BY name ASC`);
+    return rows.map((r) => r.id);
+  }
 }

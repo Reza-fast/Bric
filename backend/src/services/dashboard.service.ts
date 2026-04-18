@@ -67,7 +67,7 @@ export class DashboardService {
     const [activeProjects, totalHoursThisWeek, pendingReportsActionRequired, feed, projectHours, weekTasks] =
       await Promise.all([
         this.projects.countActiveInProjectIds(projectIds),
-        this.timeLogs.sumHoursInRangeForProjects(weekStart, weekEnd, projectIds),
+        this.timeLogs.sumDayClockHoursForUserInRange(userId, weekStart, weekEnd),
         this.reports.countByStatusInProjects(ReportStatus.ActionRequired, projectIds),
         this.activities.listRecentForProjects(projectIds, 15),
         this.projects.listHoursSummariesInProjectIds(projectIds),

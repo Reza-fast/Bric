@@ -6,10 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import type { AuthUser } from "@/lib/api/auth";
 import { logoutRequest } from "@/lib/api/auth";
+import { canAccessTeam } from "@/lib/api/roles";
 
-const nav = [
+const navAll = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Projects", href: "/projects" },
+  { label: "Time", href: "/time" },
+  { label: "Team", href: "/team", requiresHr: true },
   { label: "Planning", href: "/planning" },
   { label: "Reporting", href: "/reporting" },
   { label: "Documents", href: "#" },
@@ -129,7 +132,9 @@ export function DashboardShell({
           BRIC
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.25rem", marginTop: "1rem" }}>
-          {nav.map((item) => {
+          {navAll
+            .filter((item) => !("requiresHr" in item && item.requiresHr) || canAccessTeam(user?.role))
+            .map((item) => {
             const active = item.href !== "#" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
             const content = (
               <span

@@ -3,6 +3,7 @@ import { DashboardController } from "./controllers/dashboard.controller.js";
 import { PlannedTasksController } from "./controllers/plannedTasks.controller.js";
 import { ProjectsController } from "./controllers/projects.controller.js";
 import { ReportsController } from "./controllers/reports.controller.js";
+import { TeamController } from "./controllers/team.controller.js";
 import { TimeLogsController } from "./controllers/timeLogs.controller.js";
 import { getPool } from "./infrastructure/database.js";
 import { ActivitiesRepository } from "./repositories/activities.repository.js";
@@ -20,6 +21,7 @@ import { DashboardService } from "./services/dashboard.service.js";
 import { PlannedTaskService } from "./services/plannedTask.service.js";
 import { ProjectService } from "./services/project.service.js";
 import { ReportService } from "./services/report.service.js";
+import { TeamService } from "./services/team.service.js";
 import { TimeLogService } from "./services/timeLog.service.js";
 import { UserService } from "./services/user.service.js";
 
@@ -50,6 +52,7 @@ export function createAppContainer() {
     membersRepo,
   );
   const reportService = new ReportService(reportsRepo, projectsRepo, reportPhotosRepo);
+  const teamService = new TeamService(membersRepo, usersRepo, projectsRepo);
 
   return {
     pool,
@@ -63,6 +66,7 @@ export function createAppContainer() {
       authService,
       profileService,
       reportService,
+      teamService,
     },
     controllers: {
       dashboard: new DashboardController(dashboardService),
@@ -71,6 +75,7 @@ export function createAppContainer() {
       timeLogs: new TimeLogsController(timeLogService),
       auth: new AuthController(authService, profileService),
       reports: new ReportsController(reportService),
+      team: new TeamController(teamService),
     },
   };
 }
