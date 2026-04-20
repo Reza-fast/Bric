@@ -67,6 +67,7 @@ export function createApiRouter(deps: {
     ReportsController.uploadAttachmentMiddleware,
     deps.reports.replaceAttachment,
   );
+  //post 
   r.post(
     "/projects/:projectId/reports/:reportId/photos",
     ReportsController.uploadPhotosMiddleware,
