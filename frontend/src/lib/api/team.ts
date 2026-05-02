@@ -19,6 +19,14 @@ export interface TeamMember {
   projects: TeamProjectAssignment[];
 }
 
+/** HR-only: GET /api/team/members/:userId/hours */
+export interface MemberHoursBreakdown {
+  userId: string;
+  byProject: Array<{ projectId: string; projectName: string; hours: number }>;
+  dayPoolHours: number;
+  totalLoggedHours: number;
+}
+
 export async function fetchTeamDirectory(): Promise<TeamMember[] | null> {
   const res = await apiFetch("/api/team", { cache: "no-store" });
   if (!res.ok) return null;
@@ -47,4 +55,26 @@ export async function inviteTeamMember(payload: {
   }
   const body = json as { member: TeamMember; temporaryPassword?: string | null };
   return { ok: true, member: body.member, temporaryPassword: body.temporaryPassword ?? null };
+}
+
+export async function fetchTeamMemberHours(userId: string): Promise<MemberHoursBreakdown | null> {
+  const res = await apiFetch(`/api/team/members/${encodeURIComponent(userId)}/hours`, { cache: "no-store" });
+  if (!res.ok) return null;
+  return (await res.json()) as MemberHoursBreakdown;
+}
+
+export async function assignTeamMemberToProject(userId: string, projectId: string): Promise<boolean> {
+  const res = await apiFetch(`/api/team/members/${encodeURIComponent(userId)}/projects`, {
+    method: "POST",
+    body: JSON.stringify({ projectId }),
+  });
+  return res.status === 204;
+}
+
+export async function removeTeamMemberFromProject(userId: string, projectId: string): Promise<boolean> {
+  const res = await apiFetch(
+    `/api/team/members/${encodeURIComponent(userId)}/projects/${encodeURIComponent(projectId)}`,
+    { method: "DELETE" },
+  );
+  return res.status === 204;
 }

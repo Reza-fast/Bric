@@ -100,11 +100,14 @@ export function DashboardShell({
   children,
   user,
   fullBleed = false,
+  headerTabs,
 }: {
   children: ReactNode;
   user: AuthUser | null;
   /** When true, main content has no max padding so pages can span full width. */
   fullBleed?: boolean;
+  /** Optional row shown in the top bar (e.g. project sub-navigation). */
+  headerTabs?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -215,15 +218,19 @@ export function DashboardShell({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <header
           style={{
-            height: 64,
+            minHeight: 64,
             borderBottom: "1px solid var(--border)",
             background: "var(--surface)",
             display: "flex",
             alignItems: "center",
-            padding: "0 1.5rem",
-            gap: "1rem",
+            flexWrap: "wrap",
+            padding: "0.65rem 1.5rem",
+            gap: "0.75rem 1rem",
           }}
         >
+          {headerTabs ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem", flexShrink: 0 }}>{headerTabs}</div>
+          ) : null}
           <input
             type="search"
             placeholder="Quicksearch…"

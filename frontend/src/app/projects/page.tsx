@@ -405,8 +405,8 @@ export default function ProjectsPage() {
             {pageSlice.map((card) => (
               <Link
                 key={card.id}
-                href={`/projects/${card.id}/edit`}
-                aria-label={`Edit project ${card.name}`}
+                href={`/projects/${card.id}`}
+                aria-label={`View project ${card.name}`}
                 style={{
                   textDecoration: "none",
                   color: "inherit",

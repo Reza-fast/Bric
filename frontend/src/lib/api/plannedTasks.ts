@@ -29,6 +29,18 @@ export interface PlanningListResponse {
   range: { start: string; end: string };
 }
 
+/** All milestones/tasks for a project (no date filter). Backend: `?scope=all`. */
+export async function fetchPlanningTasksAll(projectId: string): Promise<PlanningTask[] | null> {
+  const res = await apiFetch(
+    `/api/projects/${encodeURIComponent(projectId)}/planned-tasks?scope=all`,
+    { cache: "no-store" },
+  );
+  if (res.status === 401 || res.status === 404) return null;
+  if (!res.ok) return null;
+  const json = (await res.json()) as { tasks: PlanningTask[] };
+  return json.tasks;
+}
+
 export async function fetchPlanningTasks(
   projectId: string,
   start: Date,

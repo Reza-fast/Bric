@@ -24,6 +24,15 @@ export class ProjectMembersRepository {
     );
   }
 
+  /** Returns true if a row was deleted. */
+  async removeMember(projectId: string, userId: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(
+      `DELETE FROM project_members WHERE project_id = $1 AND user_id = $2`,
+      [projectId, userId],
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
   async addOrUpdateMemberWithFunction(
     projectId: string,
     userId: string,

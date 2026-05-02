@@ -5,6 +5,7 @@ import { UserRole } from "../domain/index.js";
 import type { TeamDirectoryRow } from "../repositories/projectMembers.repository.js";
 import { ProjectMembersRepository } from "../repositories/projectMembers.repository.js";
 import { ProjectsRepository } from "../repositories/projects.repository.js";
+import { TimeLogsRepository } from "../repositories/timeLogs.repository.js";
 import { UsersRepository } from "../repositories/users.repository.js";
 
 export interface TeamMemberSummary {
@@ -58,11 +59,19 @@ function aggregateDirectoryRows(rows: TeamDirectoryRow[]): TeamMemberSummary[] {
   return [...map.values()].sort((a, b) => a.displayName.localeCompare(b.displayName));
 }
 
+export interface MemberHoursBreakdown {
+  userId: string;
+  byProject: Array<{ projectId: string; projectName: string; hours: number }>;
+  dayPoolHours: number;
+  totalLoggedHours: number;
+}
+
 export class TeamService {
   constructor(
     private readonly members: ProjectMembersRepository,
     private readonly users: UsersRepository,
     private readonly projects: ProjectsRepository,
+    private readonly timeLogs: TimeLogsRepository,
   ) {}
 
   /** Full org directory (HR). */
@@ -119,5 +128,30 @@ export class TeamService {
     const member = directory.find((m) => m.userId === user.id) ?? null;
     if (!member) return null;
     return { member, temporaryPassword };
+  }
+
+  /** HR: logged hours per project (+ day pool) for any user. */
+  async getMemberHoursBreakdown(userId: string): Promise<MemberHoursBreakdown | null> {
+    const user = await this.users.findById(userId);
+    if (!user) return null;
+    const byProject = await this.timeLogs.aggregateHoursByProjectForUser(userId);
+    const dayPoolHours = await this.timeLogs.sumDayPoolHoursAllTimeForUser(userId);
+    const totalProjectHours = byProject.reduce((s, r) => s + r.hours, 0);
+    const totalLoggedHours = totalProjectHours + dayPoolHours;
+    return { userId, byProject, dayPoolHours, totalLoggedHours };
+  }
+
+  /** HR: add project membership (idempotent). */
+  async assignUserToProject(userId: string, projectId: string): Promise<boolean> {
+    const user = await this.users.findById(userId);
+    const project = await this.projects.findById(projectId);
+    if (!user || !project) return false;
+    await this.members.addMember(projectId, userId);
+    return true;
+  }
+
+  /** HR: remove project membership. */
+  async removeUserFromProject(userId: string, projectId: string): Promise<boolean> {
+    return this.members.removeMember(projectId, userId);
   }
 }

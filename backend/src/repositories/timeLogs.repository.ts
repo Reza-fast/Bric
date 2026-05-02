@@ -172,4 +172,34 @@ export class TimeLogsRepository {
     );
     return Number(rows[0]?.s ?? 0);
   }
+
+  /** HR: total hours logged to each project by user (all time). */
+  async aggregateHoursByProjectForUser(userId: string): Promise<Array<{ projectId: string; projectName: string; hours: number }>> {
+    const { rows } = await this.pool.query<{ project_id: string; project_name: string; hours: string }>(
+      `SELECT tl.project_id::text AS project_id,
+              p.name AS project_name,
+              COALESCE(SUM(tl.duration_hours), 0)::text AS hours
+       FROM time_logs tl
+       INNER JOIN projects p ON p.id = tl.project_id
+       WHERE tl.user_id = $1 AND tl.project_id IS NOT NULL
+       GROUP BY tl.project_id, p.name
+       ORDER BY SUM(tl.duration_hours) DESC`,
+      [userId],
+    );
+    return rows.map((r) => ({
+      projectId: r.project_id,
+      projectName: r.project_name,
+      hours: Number(r.hours),
+    }));
+  }
+
+  /** Hours logged without a project (day pool / registration only). */
+  async sumDayPoolHoursAllTimeForUser(userId: string): Promise<number> {
+    const { rows } = await this.pool.query<{ s: string }>(
+      `SELECT COALESCE(SUM(duration_hours), 0)::text AS s
+       FROM time_logs WHERE user_id = $1 AND project_id IS NULL`,
+      [userId],
+    );
+    return Number(rows[0]?.s ?? 0);
+  }
 }

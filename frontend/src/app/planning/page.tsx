@@ -794,7 +794,7 @@ function PlanningPageContent() {
               </div>
               <button
                 type="button"
-                onClick={() => projectId && router.push(`/projects/${projectId}/edit`)}
+                onClick={() => projectId && router.push(`/projects/${projectId}`)}
                 style={{
                   marginTop: 12,
                   background: "none",
@@ -838,7 +838,7 @@ function PlanningPageContent() {
                       fontSize: "0.85rem",
                       cursor: "pointer",
                     }}
-                    onClick={() => projectId && router.push(`/projects/${projectId}/edit`)}
+                    onClick={() => projectId && router.push(`/projects/${projectId}`)}
                   >
                     Edit project
                   </button>

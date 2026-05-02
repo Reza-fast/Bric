@@ -52,7 +52,7 @@ export function createAppContainer() {
     membersRepo,
   );
   const reportService = new ReportService(reportsRepo, projectsRepo, reportPhotosRepo);
-  const teamService = new TeamService(membersRepo, usersRepo, projectsRepo);
+  const teamService = new TeamService(membersRepo, usersRepo, projectsRepo, timeLogsRepo);
 
   return {
     pool,

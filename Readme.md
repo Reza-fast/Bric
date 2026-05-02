@@ -32,3 +32,7 @@ If your database already had `001_initial.sql` applied **before** the migration 
 Enable hooks so `node_modules` and `.next` cannot be committed:
 
 `git config core.hooksPath .githooks`
+
+
+hr: architect2@gmail.com
+architect: stagair@gmail.com

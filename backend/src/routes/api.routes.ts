@@ -53,6 +53,9 @@ export function createApiRouter(deps: {
   r.post("/time-logs", deps.timeLogs.create);
   r.get("/team", requireHr, deps.team.list);
   r.post("/team/invite", requireHr, deps.team.invite);
+  r.get("/team/members/:userId/hours", requireHr, deps.team.memberHours);
+  r.post("/team/members/:userId/projects", requireHr, deps.team.assignProject);
+  r.delete("/team/members/:userId/projects/:projectId", requireHr, deps.team.removeProject);
 
   r.get("/projects/:projectId/reports", deps.reports.list);
   r.post("/projects/:projectId/reports", deps.reports.createDigital);

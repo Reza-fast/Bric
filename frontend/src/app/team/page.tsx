@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { MemberDetailModal } from "@/components/team/MemberDetailModal";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
 import { meRequest } from "@/lib/api/auth";
@@ -50,6 +51,7 @@ export default function TeamPage() {
   const [selectedProjectIds, setSelectedProjectIds] = useState<string[]>([]);
   const [inviteMsg, setInviteMsg] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
+  const [detailMember, setDetailMember] = useState<TeamMember | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,6 +83,13 @@ export default function TeamPage() {
     const projectCount = new Set(members.flatMap((m) => m.projects.map((p) => p.id))).size;
     return { total, activeToday, projectCount };
   }, [members]);
+
+  async function refreshTeamDirectory(): Promise<void> {
+    const team = await fetchTeamDirectory();
+    if (!team) return;
+    setMembers(team);
+    setDetailMember((prev) => (prev ? team.find((x) => x.userId === prev.userId) ?? null : null));
+  }
 
   async function onInvite(e: FormEvent) {
     e.preventDefault();
@@ -129,7 +138,7 @@ export default function TeamPage() {
           <div style={{ fontSize: "0.72rem", color: "#64748b", letterSpacing: "0.12em", fontWeight: 700 }}>TEAM DIRECTORY</div>
           <h1 style={{ margin: "0.35rem 0 0", fontSize: "1.8rem", fontWeight: 800 }}>Manage Team Members</h1>
           <p style={{ margin: "0.4rem 0 0", color: "#64748b", maxWidth: 720 }}>
-            Invite new members, assign their function, and see which projects they are currently on.
+            Invite new members, assign their function, and see which projects they are currently on. Select someone in the table to view hours by project and manage assignments.
           </p>
         </div>
 
@@ -168,7 +177,23 @@ export default function TeamPage() {
                 </thead>
                 <tbody>
                   {members.map((m, idx) => (
-                    <tr key={m.userId} style={{ borderBottom: idx < members.length - 1 ? "1px solid #f1f5f9" : undefined }}>
+                    <tr
+                      key={m.userId}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Open details for ${m.displayName}`}
+                      onClick={() => setDetailMember(m)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setDetailMember(m);
+                        }
+                      }}
+                      style={{
+                        borderBottom: idx < members.length - 1 ? "1px solid #f1f5f9" : undefined,
+                        cursor: "pointer",
+                      }}
+                    >
                       <td style={{ padding: "0.75rem 0.9rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                           <div
@@ -315,6 +340,15 @@ export default function TeamPage() {
           </aside>
         </div>
       </div>
+
+      {detailMember ? (
+        <MemberDetailModal
+          member={detailMember}
+          allProjects={projects}
+          onClose={() => setDetailMember(null)}
+          onMembershipsChanged={() => void refreshTeamDirectory()}
+        />
+      ) : null}
     </DashboardShell>
   );
 }
