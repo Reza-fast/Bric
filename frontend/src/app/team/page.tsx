@@ -345,6 +345,7 @@ export default function TeamPage() {
         <MemberDetailModal
           member={detailMember}
           allProjects={projects}
+          currentUserId={user?.id}
           onClose={() => setDetailMember(null)}
           onMembershipsChanged={() => void refreshTeamDirectory()}
         />

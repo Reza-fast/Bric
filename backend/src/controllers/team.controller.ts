@@ -15,6 +15,9 @@ const assignProjectSchema = z.object({
   projectId: z.string().uuid(),
 });
 
+/** Firm staff roles only (architect practice directory). */
+const assignableTeamRoleSchema = z.enum([UserRole.Hr, UserRole.Architect]);
+
 export class TeamController {
   constructor(private readonly team: TeamService) {}
 
@@ -110,6 +113,48 @@ export class TeamController {
     const removed = await this.team.removeUserFromProject(userId, projectId);
     if (!removed) {
       res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    res.status(204).end();
+  };
+
+  patchMember = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authUser?.id) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const userId = req.params.userId;
+    if (!userId || !z.string().uuid().safeParse(userId).success) {
+      res.status(400).json({ error: "VALIDATION_ERROR" });
+      return;
+    }
+    const parsed = z.object({ role: assignableTeamRoleSchema }).safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "VALIDATION_ERROR", details: parsed.error.flatten() });
+      return;
+    }
+    const member = await this.team.updateMemberRole(userId, parsed.data.role);
+    if (!member) {
+      res.status(404).json({ error: "NOT_FOUND" });
+      return;
+    }
+    res.json({ member });
+  };
+
+  deleteMember = async (req: Request, res: Response): Promise<void> => {
+    const operatorId = req.authUser?.id;
+    if (!operatorId) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const userId = req.params.userId;
+    if (!userId || !z.string().uuid().safeParse(userId).success) {
+      res.status(400).json({ error: "VALIDATION_ERROR" });
+      return;
+    }
+    const ok = await this.team.deleteMember(operatorId, userId);
+    if (!ok) {
+      res.status(400).json({ error: "CANNOT_DELETE", message: "Member not found or you cannot delete your own account." });
       return;
     }
     res.status(204).end();

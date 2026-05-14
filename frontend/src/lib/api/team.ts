@@ -78,3 +78,21 @@ export async function removeTeamMemberFromProject(userId: string, projectId: str
   );
   return res.status === 204;
 }
+
+export async function updateTeamMemberRole(
+  userId: string,
+  role: UserRole,
+): Promise<{ ok: true; member: TeamMember } | { ok: false; status: number }> {
+  const res = await apiFetch(`/api/team/members/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+  if (!res.ok) return { ok: false, status: res.status };
+  const body = (await res.json()) as { member: TeamMember };
+  return { ok: true, member: body.member };
+}
+
+export async function deleteTeamMember(userId: string): Promise<boolean> {
+  const res = await apiFetch(`/api/team/members/${encodeURIComponent(userId)}`, { method: "DELETE" });
+  return res.status === 204;
+}

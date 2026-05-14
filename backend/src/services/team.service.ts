@@ -154,4 +154,22 @@ export class TeamService {
   async removeUserFromProject(userId: string, projectId: string): Promise<boolean> {
     return this.members.removeMember(projectId, userId);
   }
+
+  /** HR: set firm staff role (HR or architect only). */
+  async updateMemberRole(targetUserId: string, role: UserRole): Promise<TeamMemberSummary | null> {
+    if (role !== UserRole.Hr && role !== UserRole.Architect) return null;
+    const existing = await this.users.findById(targetUserId);
+    if (!existing) return null;
+    await this.users.update(targetUserId, { role });
+    const directory = await this.listOrgDirectory();
+    return directory.find((m) => m.userId === targetUserId) ?? null;
+  }
+
+  /** HR: permanently remove a user and their memberships / time logs (cascade). */
+  async deleteMember(operatorUserId: string, targetUserId: string): Promise<boolean> {
+    if (targetUserId === operatorUserId) return false;
+    const target = await this.users.findById(targetUserId);
+    if (!target) return false;
+    return this.users.deleteById(targetUserId);
+  }
 }

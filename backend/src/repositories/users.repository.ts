@@ -141,4 +141,9 @@ export class UsersRepository {
     );
     return rows[0] ? mapUser(rows[0]) : null;
   }
+
+  async deleteById(id: string): Promise<boolean> {
+    const { rowCount } = await this.pool.query(`DELETE FROM users WHERE id = $1`, [id]);
+    return (rowCount ?? 0) > 0;
+  }
 }

@@ -20,6 +20,7 @@ import {
   uploadReportPhotos,
 } from "@/lib/api/reports";
 import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/projects";
+import { htmlToPlainPreview, isEffectivelyEmptyHtml, RichTextEditor } from "@/components/reporting/RichTextEditor";
 
 const FILE_INPUT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.svg,.heic,.heif,.txt,.csv,.zip,.rar,.7z,.dwg,.dxf";
@@ -180,6 +181,10 @@ function ReportingPageContent() {
     e.preventDefault();
     if (!projectId) return;
     setDigitalMsg(null);
+    if (isEffectivelyEmptyHtml(bodyDigital)) {
+      setDigitalMsg("Add some content to the report body (including formatted text).");
+      return;
+    }
     setSavingDigital(true);
     const dueAt =
       dueDigital.trim().length > 0 ? new Date(dueDigital).toISOString() : undefined;
@@ -256,7 +261,7 @@ function ReportingPageContent() {
 
     const jsonRes = await updateReport(projectId, editing.id, {
       title: editTitle.trim(),
-      body: editBody.trim().length > 0 ? editBody.trim() : null,
+      body: !isEffectivelyEmptyHtml(editBody) ? editBody.trim() : null,
       status: editStatus,
       dueAt: editDue.trim().length > 0 ? new Date(editDue).toISOString() : null,
     });
@@ -676,27 +681,17 @@ function ReportingPageContent() {
                         }}
                       />
                     </label>
-                    <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>
-                      Executive content
-                      <textarea
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>Executive content</span>
+                      <RichTextEditor
+                        id="reporting-narrative-body"
+                        aria-label="Report narrative body"
                         value={bodyDigital}
-                        onChange={(e) => setBodyDigital(e.target.value)}
-                        required
-                        rows={9}
-                        placeholder="Weather, crew, progress, safety, next steps…"
-                        style={{
-                          padding: "0.65rem 0.75rem",
-                          borderRadius: 10,
-                          border: "1px solid #cbd5e1",
-                          fontSize: "0.9rem",
-                          resize: "vertical",
-                          fontFamily: "inherit",
-                          lineHeight: 1.5,
-                          minHeight: 200,
-                          background: "#f8fafc",
-                        }}
+                        onChange={setBodyDigital}
+                        disabled={savingDigital}
+                        minHeight={220}
                       />
-                    </label>
+                    </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>Site photos (optional)</span>
                       <p style={{ margin: 0, fontSize: "0.8rem", color: "#64748b", lineHeight: 1.45 }}>
@@ -1198,7 +1193,7 @@ function ReportingPageContent() {
                               ) : null}
                               {r.body ? (
                                 <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 4, lineHeight: 1.4 }}>
-                                  {r.body.length > 120 ? `${r.body.slice(0, 120)}…` : r.body}
+                                  {htmlToPlainPreview(r.body, 120)}
                                 </div>
                               ) : null}
                             </td>
@@ -1300,7 +1295,7 @@ function ReportingPageContent() {
             onSubmit={(e) => void onSaveEdit(e)}
             style={{
               width: "100%",
-              maxWidth: 520,
+              maxWidth: 620,
               marginTop: "2rem",
               marginBottom: "2rem",
               borderRadius: 12,
@@ -1330,23 +1325,19 @@ function ReportingPageContent() {
                   }}
                 />
               </label>
-              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.85rem" }}>
-                Content (optional)
-                <textarea
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Content (optional)</span>
+                <RichTextEditor
+                  aria-label="Report content"
                   value={editBody}
-                  onChange={(e) => setEditBody(e.target.value)}
-                  rows={6}
-                  placeholder="Leave empty if this report is file-only."
-                  style={{
-                    padding: "0.5rem 0.65rem",
-                    borderRadius: 8,
-                    border: "1px solid var(--border)",
-                    fontSize: "0.9rem",
-                    resize: "vertical",
-                    fontFamily: "inherit",
-                  }}
+                  onChange={setEditBody}
+                  disabled={editSaving}
+                  minHeight={200}
                 />
-              </label>
+                <span style={{ fontSize: "0.75rem", color: "var(--muted, #64748b)" }}>
+                  Leave empty if this report is file-only. Use bold, italic, and size after selecting text.
+                </span>
+              </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.65rem" }}>
                 <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.85rem", flex: "1 1 140px" }}>
                   Status
