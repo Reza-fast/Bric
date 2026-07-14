@@ -17,11 +17,25 @@ export interface ProjectPortfolioCard {
   location: string | null;
   completionPercent: number;
   portfolioLeadName: string | null;
+  logoOriginalName: string | null;
+  logoStorageKey: string | null;
+  logoMimeType: string | null;
   createdAt: string;
   updatedAt: string;
   actualHours: number;
   hoursPercentUsed: number;
   isOverBudget: boolean;
+}
+
+export function projectHasLogo(project: { logoStorageKey?: string | null }): boolean {
+  return Boolean(project.logoStorageKey);
+}
+
+/** Authenticated same-origin URL for project cover/logo (append updatedAt for cache busting). */
+export function projectLogoUrl(projectId: string, cacheKey?: string | null): string {
+  const base = `/api/projects/${encodeURIComponent(projectId)}/logo/file`;
+  if (!cacheKey) return base;
+  return `${base}?v=${encodeURIComponent(cacheKey)}`;
 }
 
 export async function fetchProjectPortfolio(): Promise<ProjectPortfolioCard[] | null> {
@@ -46,6 +60,9 @@ export interface CreatedProject {
   location: string | null;
   completionPercent: number;
   portfolioLeadName: string | null;
+  logoOriginalName: string | null;
+  logoStorageKey: string | null;
+  logoMimeType: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -114,5 +131,34 @@ export async function updateProject(
   if (!res.ok) {
     return { ok: false, status: res.status, body: json as CreateProjectError };
   }
+  return { ok: true, project: json as ProjectDetail };
+}
+
+export const LOGO_INPUT_ACCEPT =
+  "image/png,image/jpeg,image/gif,image/webp,image/bmp,image/tiff,image/svg+xml,image/heic,image/heif,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.svg,.heic,.heif";
+
+export async function uploadProjectLogo(
+  projectId: string,
+  file: File,
+): Promise<{ ok: true; project: ProjectDetail } | { ok: false; status: number }> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await apiFetch(`/api/projects/${encodeURIComponent(projectId)}/logo`, {
+    method: "POST",
+    body: fd,
+  });
+  const json: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) return { ok: false, status: res.status };
+  return { ok: true, project: json as ProjectDetail };
+}
+
+export async function deleteProjectLogo(
+  projectId: string,
+): Promise<{ ok: true; project: ProjectDetail } | { ok: false; status: number }> {
+  const res = await apiFetch(`/api/projects/${encodeURIComponent(projectId)}/logo`, {
+    method: "DELETE",
+  });
+  const json: unknown = await res.json().catch(() => ({}));
+  if (!res.ok) return { ok: false, status: res.status };
   return { ok: true, project: json as ProjectDetail };
 }

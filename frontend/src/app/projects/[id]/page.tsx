@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import type { CSSProperties, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EditProjectModal } from "@/components/projects/EditProjectModal";
+import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 import { UploadReportModal } from "@/components/projects/UploadReportModal";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
@@ -497,7 +498,16 @@ export default function ProjectDetailPage() {
             </span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "1.25rem", alignItems: "flex-start" }}>
-            <div style={{ flex: "1 1 280px", minWidth: 0 }}>
+            <div style={{ display: "flex", gap: "1.15rem", alignItems: "flex-start", flex: "1 1 280px", minWidth: 0 }}>
+              <ProjectLogoThumb
+                projectId={projectId}
+                name={project.name}
+                logoStorageKey={project.logoStorageKey}
+                updatedAt={project.updatedAt}
+                size={96}
+                borderRadius={16}
+              />
+            <div style={{ flex: 1, minWidth: 0 }}>
               <h1
                 style={{
                   margin: 0,
@@ -515,6 +525,7 @@ export default function ProjectDetailPage() {
                   ? project.description
                   : "Construction registry overview — milestones, labor hours, and documents for stakeholders assigned to this project."}
               </p>
+            </div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.55rem", flexShrink: 0 }}>
               <button

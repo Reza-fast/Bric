@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 import type { ProjectDetail, ProjectStatus } from "@/lib/api/projects";
-import { updateProject } from "@/lib/api/projects";
+import {
+  deleteProjectLogo,
+  LOGO_INPUT_ACCEPT,
+  projectHasLogo,
+  projectLogoUrl,
+  updateProject,
+  uploadProjectLogo,
+} from "@/lib/api/projects";
+import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 import {
   hintStyle,
   inputStyle,
@@ -32,6 +40,9 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
   const [portfolioLeadName, setPortfolioLeadName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [removeLogo, setRemoveLogo] = useState(false);
 
   useEffect(() => {
     if (!open || !project) return;
@@ -45,7 +56,19 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     setPortfolioLeadName(project.portfolioLeadName ?? "");
     setError(null);
     setSaving(false);
+    setLogoFile(null);
+    setRemoveLogo(false);
   }, [open, project]);
+
+  useEffect(() => {
+    if (!logoFile) {
+      setLogoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(logoFile);
+    setLogoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logoFile]);
 
   if (!open) return null;
 
@@ -84,7 +107,34 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         }
         return;
       }
-      onSaved(result.project);
+
+      let saved = result.project;
+
+      if (logoFile) {
+        const up = await uploadProjectLogo(projectId, logoFile);
+        if (!up.ok) {
+          setError(
+            up.status === 413
+              ? "Project saved, but the logo exceeds 10 MB."
+              : up.status === 400
+                ? "Project saved, but that image type is not allowed."
+                : "Project saved, but the logo could not be uploaded.",
+          );
+          onSaved(saved);
+          return;
+        }
+        saved = up.project;
+      } else if (removeLogo && project && projectHasLogo(project)) {
+        const del = await deleteProjectLogo(projectId);
+        if (!del.ok) {
+          setError("Project saved, but the logo could not be removed.");
+          onSaved(saved);
+          return;
+        }
+        saved = del.project;
+      }
+
+      onSaved(saved);
       onClose();
     } finally {
       setSaving(false);
@@ -182,6 +232,82 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
                 style={{ ...inputStyle, resize: "vertical", minHeight: 88, lineHeight: 1.5 }}
               />
             </label>
+          </div>
+        </div>
+
+        <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
+          <div style={sectionTitle}>BRANDING</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Project logo / cover</h3>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-start" }}>
+            {logoPreviewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoPreviewUrl}
+                alt=""
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 14,
+                  objectFit: "cover",
+                  border: "1px solid var(--border)",
+                  flexShrink: 0,
+                }}
+              />
+            ) : removeLogo || !project || !projectHasLogo(project) ? (
+              <ProjectLogoThumb projectId={projectId} name={name || "Project"} size={88} />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={projectLogoUrl(projectId, project.updatedAt)}
+                alt=""
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: 14,
+                  objectFit: "cover",
+                  border: "1px solid var(--border)",
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <span style={hintStyle}>PNG, JPEG, WebP, or other common image formats. Max 10 MB.</span>
+              <input
+                type="file"
+                accept={LOGO_INPUT_ACCEPT}
+                disabled={saving}
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  setLogoFile(f);
+                  if (f) setRemoveLogo(false);
+                  e.target.value = "";
+                }}
+                style={{ fontSize: "0.85rem" }}
+              />
+              {(project && projectHasLogo(project) && !removeLogo && !logoFile) || logoFile ? (
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => {
+                    setLogoFile(null);
+                    setRemoveLogo(true);
+                  }}
+                  style={{
+                    alignSelf: "flex-start",
+                    padding: "0.35rem 0.65rem",
+                    borderRadius: 8,
+                    border: "1px solid #fecaca",
+                    background: "#fff",
+                    color: "#b91c1c",
+                    fontWeight: 600,
+                    fontSize: "0.78rem",
+                    cursor: saving ? "wait" : "pointer",
+                  }}
+                >
+                  Remove logo
+                </button>
+              ) : null}
+            </div>
           </div>
         </div>
 

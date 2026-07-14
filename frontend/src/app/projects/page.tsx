@@ -7,6 +7,7 @@ import type { AuthUser } from "@/lib/api/auth";
 import { meRequest } from "@/lib/api/auth";
 import type { ProjectPortfolioCard, ProjectStatus } from "@/lib/api/projects";
 import { fetchProjectPortfolio } from "@/lib/api/projects";
+import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 
 type FilterTab = "all" | "active" | "planning" | "completed";
 
@@ -64,22 +65,6 @@ function filterProjects(list: ProjectPortfolioCard[], tab: FilterTab): ProjectPo
   return list;
 }
 
-function ProjectThumb() {
-  return (
-    <div
-      style={{
-        width: 88,
-        height: 88,
-        borderRadius: 14,
-        background: "linear-gradient(145deg, #27272a 0%, #3f3f46 50%, #18181b 100%)",
-        flexShrink: 0,
-        border: "1px solid var(--border)",
-      }}
-      aria-hidden
-    />
-  );
-}
-
 function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
   const pill = statusPillStyle(card.status);
   const pct = Math.min(100, Math.max(0, Math.round(card.completionPercent)));
@@ -102,7 +87,12 @@ function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
       }}
     >
       <div style={{ display: "flex", gap: "1.1rem", alignItems: "flex-start" }}>
-        <ProjectThumb />
+        <ProjectLogoThumb
+          projectId={card.id}
+          name={card.name}
+          logoStorageKey={card.logoStorageKey}
+          updatedAt={card.updatedAt}
+        />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
             <h2

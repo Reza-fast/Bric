@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
 import { meRequest } from "@/lib/api/auth";
-import { createProject } from "@/lib/api/projects";
+import { createProject, LOGO_INPUT_ACCEPT, uploadProjectLogo } from "@/lib/api/projects";
 import type { ProjectStatus } from "@/lib/api/projects";
 import {
   hintStyle,
@@ -33,6 +33,7 @@ export default function NewProjectPage() {
   const [portfolioLeadName, setPortfolioLeadName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,6 +101,19 @@ export default function NewProjectPage() {
           setError("Could not create the project. Try again.");
         }
         return;
+      }
+      if (logoFile) {
+        const up = await uploadProjectLogo(result.project.id, logoFile);
+        if (!up.ok) {
+          setError(
+            up.status === 413
+              ? "Project created, but the logo exceeds 10 MB. Add it from Edit project."
+              : up.status === 400
+                ? "Project created, but that image type is not allowed. Add a logo from Edit project."
+                : "Project created, but the logo could not be uploaded. Add it from Edit project.",
+          );
+          return;
+        }
       }
       try {
         sessionStorage.setItem("bric_project_created", result.project.name);
@@ -181,6 +195,25 @@ export default function NewProjectPage() {
                 />
               </label>
             </div>
+          </div>
+
+          <div style={sectionStyle}>
+            <div style={sectionTitle}>BRANDING</div>
+            <h2 style={sectionHeading}>Project logo / cover (optional)</h2>
+            <label style={labelStyle}>
+              Image file
+              <span style={hintStyle}>Shown on project cards. PNG, JPEG, WebP, and other common formats — max 10 MB.</span>
+              <input
+                type="file"
+                accept={LOGO_INPUT_ACCEPT}
+                disabled={loading}
+                onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+                style={{ fontSize: "0.9rem" }}
+              />
+              {logoFile ? (
+                <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>{logoFile.name}</span>
+              ) : null}
+            </label>
           </div>
 
           <div style={sectionStyle}>
