@@ -41,4 +41,42 @@ export class ProjectService {
     if (!allowed) return null;
     return this.projects.update(projectId, input);
   }
+
+  async setLogoForUser(
+    projectId: string,
+    userId: string,
+    logo: { originalName: string; storageKey: string; mimeType: string | null },
+  ): Promise<{ project: Project; previousStorageKey: string | null } | null> {
+    const allowed = await this.projects.findByIdForMember(projectId, userId);
+    if (!allowed) return null;
+    const previousStorageKey = allowed.logoStorageKey;
+    const project = await this.projects.updateLogo(projectId, logo);
+    if (!project) return null;
+    return { project, previousStorageKey };
+  }
+
+  async clearLogoForUser(
+    projectId: string,
+    userId: string,
+  ): Promise<{ project: Project; previousStorageKey: string | null } | null> {
+    const allowed = await this.projects.findByIdForMember(projectId, userId);
+    if (!allowed) return null;
+    const previousStorageKey = allowed.logoStorageKey;
+    const project = await this.projects.clearLogo(projectId);
+    if (!project) return null;
+    return { project, previousStorageKey };
+  }
+
+  async getLogoForMember(
+    projectId: string,
+    userId: string,
+  ): Promise<{ originalName: string; storageKey: string; mimeType: string | null } | null> {
+    const project = await this.projects.findByIdForMember(projectId, userId);
+    if (!project?.logoStorageKey) return null;
+    return {
+      originalName: project.logoOriginalName ?? "logo",
+      storageKey: project.logoStorageKey,
+      mimeType: project.logoMimeType,
+    };
+  }
 }

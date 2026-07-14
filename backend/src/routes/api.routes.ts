@@ -2,7 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import type { AuthController } from "../controllers/auth.controller.js";
 import type { DashboardController } from "../controllers/dashboard.controller.js";
-import type { ProjectsController } from "../controllers/projects.controller.js";
+import { ProjectsController } from "../controllers/projects.controller.js";
 import type { PlannedTasksController } from "../controllers/plannedTasks.controller.js";
 import { ReportsController } from "../controllers/reports.controller.js";
 import type { TeamController } from "../controllers/team.controller.js";
@@ -42,6 +42,9 @@ export function createApiRouter(deps: {
   r.get("/projects/:id", deps.projects.getById);
   r.post("/projects", deps.projects.create);
   r.patch("/projects/:id", deps.projects.update);
+  r.post("/projects/:id/logo", ProjectsController.uploadLogoMiddleware, deps.projects.uploadLogo);
+  r.delete("/projects/:id/logo", deps.projects.deleteLogo);
+  r.get("/projects/:id/logo/file", deps.projects.downloadLogo);
 
   r.get("/projects/:projectId/planned-tasks", deps.plannedTasks.list);
   r.post("/projects/:projectId/planned-tasks", deps.plannedTasks.create);

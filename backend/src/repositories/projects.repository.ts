@@ -18,6 +18,9 @@ interface ProjectRow {
   location?: string | null;
   completion_percent?: string | null;
   portfolio_lead_name?: string | null;
+  logo_original_name?: string | null;
+  logo_storage_key?: string | null;
+  logo_mime_type?: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -36,6 +39,9 @@ function mapProject(row: ProjectRow): Project {
     location: row.location ?? null,
     completionPercent,
     portfolioLeadName: row.portfolio_lead_name ?? null,
+    logoOriginalName: row.logo_original_name ?? null,
+    logoStorageKey: row.logo_storage_key ?? null,
+    logoMimeType: row.logo_mime_type ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -132,6 +138,37 @@ export class ProjectsRepository {
         next.completionPercent,
         next.portfolioLeadName,
       ],
+    );
+    return rows[0] ? mapProject(rows[0]) : null;
+  }
+
+  async updateLogo(
+    id: string,
+    logo: { originalName: string; storageKey: string; mimeType: string | null },
+  ): Promise<Project | null> {
+    const { rows } = await this.pool.query<ProjectRow>(
+      `UPDATE projects SET
+        logo_original_name = $2,
+        logo_storage_key = $3,
+        logo_mime_type = $4,
+        updated_at = now()
+       WHERE id = $1
+       RETURNING *`,
+      [id, logo.originalName, logo.storageKey, logo.mimeType],
+    );
+    return rows[0] ? mapProject(rows[0]) : null;
+  }
+
+  async clearLogo(id: string): Promise<Project | null> {
+    const { rows } = await this.pool.query<ProjectRow>(
+      `UPDATE projects SET
+        logo_original_name = NULL,
+        logo_storage_key = NULL,
+        logo_mime_type = NULL,
+        updated_at = now()
+       WHERE id = $1
+       RETURNING *`,
+      [id],
     );
     return rows[0] ? mapProject(rows[0]) : null;
   }

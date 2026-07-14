@@ -11,6 +11,9 @@ export interface Project {
   location: string | null;
   completionPercent: number;
   portfolioLeadName: string | null;
+  logoOriginalName: string | null;
+  logoStorageKey: string | null;
+  logoMimeType: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,7 +31,16 @@ export type ProjectCreateInput = Pick<
 export type ProjectUpdateInput = Partial<
   Pick<
     Project,
-    "name" | "status" | "budgetedHours" | "description" | "location" | "completionPercent" | "portfolioLeadName"
+    | "name"
+    | "status"
+    | "budgetedHours"
+    | "description"
+    | "location"
+    | "completionPercent"
+    | "portfolioLeadName"
+    | "logoOriginalName"
+    | "logoStorageKey"
+    | "logoMimeType"
   >
 >;
 
