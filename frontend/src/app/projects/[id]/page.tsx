@@ -6,6 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EditProjectModal } from "@/components/projects/EditProjectModal";
 import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
+import { TechnicalPlansSection } from "@/components/projects/TechnicalPlansSection";
 import { UploadReportModal } from "@/components/projects/UploadReportModal";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import type { AuthUser } from "@/lib/api/auth";
@@ -19,6 +20,7 @@ import type { ProjectReport } from "@/lib/api/reports";
 import { fetchProjectReports, reportFileUrl, reportPhotoUrl } from "@/lib/api/reports";
 import type { TeamMember } from "@/lib/api/team";
 import { fetchTeamDirectory } from "@/lib/api/team";
+import { formatLaborBudget } from "@/app/projects/projectFormShared";
 
 const CANVAS_BG = "#e8eef7";
 const NAVY = "#0f172a";
@@ -343,9 +345,11 @@ export default function ProjectDetailPage() {
   const hoursMeta = useMemo(() => {
     const budget = portfolioCard?.budgetedHours ?? project?.budgetedHours ?? 0;
     const actual = portfolioCard?.actualHours ?? 0;
+    const hourlyWage = portfolioCard?.hourlyWage ?? project?.hourlyWage ?? null;
     const pctUsed = budget > 0 ? Math.min(100, Math.round((actual / budget) * 100)) : 0;
-    return { budget, actual, pctUsed };
-  }, [portfolioCard, project?.budgetedHours]);
+    const laborBudget = formatLaborBudget(budget, hourlyWage);
+    return { budget, actual, pctUsed, hourlyWage, laborBudget };
+  }, [portfolioCard, project?.budgetedHours, project?.hourlyWage]);
 
   const upcomingMilestones = useMemo(() => {
     const now = Date.now();
@@ -397,6 +401,9 @@ export default function ProjectDetailPage() {
         </Link>
         <Link href={`/planning?project=${encodeURIComponent(projectId)}`} prefetch={false} style={tabStyle(false)}>
           Planning
+        </Link>
+        <Link href={`/documents?project=${encodeURIComponent(projectId)}`} prefetch={false} style={tabStyle(false)}>
+          Documents
         </Link>
         <Link href="/time" prefetch={false} style={tabStyle(false)}>
           Financials
@@ -567,12 +574,24 @@ export default function ProjectDetailPage() {
           <section style={whiteCard}>
             <p style={eyebrow}>Labor budget</p>
             <p style={{ ...cardTitle, marginTop: "0.25rem" }}>Hours health</p>
-            <p style={{ margin: "0.85rem 0 0.35rem", fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>
+            {hoursMeta.laborBudget ? (
+              <>
+                <p style={{ margin: "0.85rem 0 0.15rem", fontSize: "1.85rem", fontWeight: 800, color: NAVY }}>
+                  {hoursMeta.laborBudget}
+                </p>
+                <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", color: SLATE_HEADER, fontWeight: 600 }}>
+                  {hoursMeta.hourlyWage != null
+                    ? `Total budget · ${hoursMeta.budget.toLocaleString()} hrs @ ${new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(hoursMeta.hourlyWage)}/hr`
+                    : "Total labor budget"}
+                </p>
+              </>
+            ) : null}
+            <p style={{ margin: hoursMeta.laborBudget ? "0 0 0.35rem" : "0.85rem 0 0.35rem", fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>
               {hoursMeta.actual.toLocaleString()} / {hoursMeta.budget.toLocaleString()} hrs
             </p>
             <ProgressTrack pct={hoursMeta.pctUsed} tone="amber" />
             <p style={{ margin: "0.65rem 0 0", fontSize: "0.78rem", color: SLATE_HEADER }}>
-              {hoursMeta.budget > 0 ? `${hoursMeta.pctUsed}% of budgeted hours logged` : "Set budgeted hours in settings"}
+              {hoursMeta.budget > 0 ? `${hoursMeta.pctUsed}% of budgeted hours logged` : "Set planned hours in project settings"}
             </p>
           </section>
           <section style={whiteCard}>
@@ -624,6 +643,12 @@ export default function ProjectDetailPage() {
             </p>
             <BurnBars pct={hoursMeta.pctUsed} />
             <div style={{ marginTop: "1rem", paddingTop: "0.85rem", borderTop: "1px solid #e8eef7", display: "grid", gap: "0.35rem" }}>
+              {hoursMeta.laborBudget ? (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: SLATE_HEADER }}>
+                  <span style={{ fontWeight: 700, letterSpacing: "0.05em" }}>TOTAL BUDGET</span>
+                  <span style={{ fontWeight: 700, color: NAVY }}>{hoursMeta.laborBudget}</span>
+                </div>
+              ) : null}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: SLATE_HEADER }}>
                 <span style={{ fontWeight: 700, letterSpacing: "0.05em" }}>UTILIZATION</span>
                 <span style={{ fontWeight: 700, color: NAVY }}>{hoursMeta.pctUsed}%</span>
@@ -749,6 +774,35 @@ export default function ProjectDetailPage() {
             </div>
           </section>
         </div>
+
+        {/* Technical plans */}
+        <section style={{ ...whiteCard, marginBottom: "1.15rem" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
+            <div>
+              <p style={eyebrow}>Drawings & specs</p>
+              <h2 style={{ ...cardTitle, marginTop: "0.35rem" }}>Technical plans</h2>
+            </div>
+            <Link
+              href={`/documents?project=${encodeURIComponent(projectId)}`}
+              style={{
+                padding: "0.5rem 1rem",
+                borderRadius: 10,
+                border: "1px solid #dbe4f0",
+                background: "#fff",
+                color: NAVY,
+                fontWeight: 700,
+                fontSize: "0.82rem",
+                textDecoration: "none",
+              }}
+            >
+              All documents
+            </Link>
+          </div>
+          <p style={{ margin: "0.65rem 0 0", fontSize: "0.86rem", color: SLATE_HEADER, lineHeight: 1.55, maxWidth: 720 }}>
+            Upload structural drawings, MEP layouts, CAD files, and specifications. Each upload records the date and time.
+          </p>
+          <TechnicalPlansSection projectId={projectId} embedded />
+        </section>
 
         {/* Documents */}
         <section style={{ ...whiteCard, marginBottom: 0 }}>

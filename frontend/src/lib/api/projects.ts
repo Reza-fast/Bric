@@ -13,6 +13,7 @@ export interface ProjectPortfolioCard {
   slug: string;
   status: ProjectStatus;
   budgetedHours: number;
+  hourlyWage: number | null;
   description: string | null;
   location: string | null;
   completionPercent: number;
@@ -56,6 +57,7 @@ export interface CreatedProject {
   slug: string;
   status: ProjectStatus;
   budgetedHours: number;
+  hourlyWage: number | null;
   description: string | null;
   location: string | null;
   completionPercent: number;
@@ -72,6 +74,7 @@ export interface CreateProjectPayload {
   slug: string;
   status?: ProjectStatus;
   budgetedHours: number;
+  hourlyWage?: number | null;
   description?: string | null;
   location?: string | null;
   completionPercent?: number;
@@ -113,6 +116,7 @@ export type UpdateProjectPayload = {
   name: string;
   status: ProjectStatus;
   budgetedHours: number;
+  hourlyWage: number | null;
   description: string | null;
   location: string | null;
   completionPercent: number;

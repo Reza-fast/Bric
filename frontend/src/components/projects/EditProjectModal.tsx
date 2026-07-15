@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ProjectDetail, ProjectStatus } from "@/lib/api/projects";
 import {
   deleteProjectLogo,
@@ -12,6 +12,8 @@ import {
 } from "@/lib/api/projects";
 import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 import {
+  computeLaborBudget,
+  formatLaborBudget,
   hintStyle,
   inputStyle,
   labelStyle,
@@ -29,6 +31,41 @@ type Props = {
   onSaved: (project: ProjectDetail) => void;
 };
 
+const fieldGrid: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "1rem",
+};
+
+const budgetSummaryStyle: React.CSSProperties = {
+  marginTop: "1rem",
+  padding: "1rem 1.1rem",
+  borderRadius: 12,
+  border: "1px solid var(--border)",
+  background: "var(--bg, #f8fafc)",
+  display: "grid",
+  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+  gap: "0.75rem 1rem",
+  alignItems: "end",
+};
+
+const budgetMetricLabel: React.CSSProperties = {
+  display: "block",
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: "var(--muted)",
+  marginBottom: "0.35rem",
+};
+
+const budgetMetricValue: React.CSSProperties = {
+  fontSize: "1.05rem",
+  fontWeight: 700,
+  color: "var(--text)",
+  lineHeight: 1.2,
+};
+
 export function EditProjectModal({ open, projectId, project, onClose, onSaved }: Props) {
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
@@ -36,6 +73,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
   const [location, setLocation] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("active");
   const [budgetedHours, setBudgetedHours] = useState("");
+  const [hourlyWage, setHourlyWage] = useState("");
   const [completionPercent, setCompletionPercent] = useState("0");
   const [portfolioLeadName, setPortfolioLeadName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +90,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     setLocation(project.location ?? "");
     setStatus(project.status);
     setBudgetedHours(String(project.budgetedHours));
+    setHourlyWage(project.hourlyWage != null ? String(project.hourlyWage) : "");
     setCompletionPercent(String(project.completionPercent ?? 0));
     setPortfolioLeadName(project.portfolioLeadName ?? "");
     setError(null);
@@ -70,6 +109,15 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     return () => URL.revokeObjectURL(url);
   }, [logoFile]);
 
+  const parsedHours = Number(budgetedHours);
+  const parsedWage = hourlyWage.trim() === "" ? null : Number(hourlyWage);
+  const laborBudgetLabel = useMemo(() => {
+    if (hourlyWage.trim() === "") return "—";
+    if (!Number.isFinite(parsedWage) || parsedWage! < 0) return "—";
+    if (!Number.isFinite(parsedHours) || parsedHours < 0) return "—";
+    return formatLaborBudget(parsedHours, parsedWage) ?? "—";
+  }, [hourlyWage, parsedHours, parsedWage]);
+
   if (!open) return null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -77,8 +125,17 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     setError(null);
     const hours = Number(budgetedHours);
     if (!Number.isFinite(hours) || hours < 0) {
-      setError("Enter a valid budgeted hours total (0 or greater).");
+      setError("Enter a valid total planned hours value (0 or greater).");
       return;
+    }
+    const wageRaw = hourlyWage.trim();
+    let wage: number | null = null;
+    if (wageRaw !== "") {
+      wage = Number(wageRaw);
+      if (!Number.isFinite(wage) || wage < 0) {
+        setError("Enter a valid hourly wage (0 or greater), or leave it empty.");
+        return;
+      }
     }
     const completion = Number(completionPercent);
     if (!Number.isFinite(completion) || completion < 0 || completion > 100) {
@@ -92,6 +149,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         name: name.trim(),
         status,
         budgetedHours: hours,
+        hourlyWage: wage,
         description: description.trim() || null,
         location: location.trim() || null,
         completionPercent: completion,
@@ -165,7 +223,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         onSubmit={(e) => void onSubmit(e)}
         style={{
           width: "100%",
-          maxWidth: 560,
+          maxWidth: 640,
           marginTop: "1.5rem",
           marginBottom: "2rem",
           borderRadius: 14,
@@ -178,7 +236,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", marginBottom: "1.25rem" }}>
           <div>
             <div style={{ ...sectionTitle, marginBottom: "0.35rem" }}>PROJECT SETTINGS</div>
             <h2 id="edit-project-modal-title" style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
@@ -314,7 +372,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
           <div style={sectionTitle}>SITE & LIFECYCLE</div>
           <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Location and status</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={fieldGrid}>
             <label style={labelStyle}>
               Site / region
               <span style={hintStyle}>Address or site label.</span>
@@ -338,12 +396,12 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         </div>
 
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>PLAN & CONTROLS</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Budget hours and completion</h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+          <div style={sectionTitle}>LABOR BUDGET</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Planned hours, rate & total</h3>
+          <div style={fieldGrid}>
             <label style={labelStyle}>
-              Budgeted hours <span style={{ color: "#b91c1c" }}>*</span>
-              <span style={hintStyle}>Total planned labor hours.</span>
+              Total planned hours <span style={{ color: "#b91c1c" }}>*</span>
+              <span style={hintStyle}>All labor hours planned for this project.</span>
               <input
                 required
                 type="number"
@@ -356,8 +414,64 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               />
             </label>
             <label style={labelStyle}>
+              Hourly wage
+              <span style={hintStyle}>Blended labor rate (optional).</span>
+              <div style={{ display: "flex", alignItems: "stretch" }}>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 0.65rem",
+                    borderRadius: "10px 0 0 10px",
+                    border: "1px solid var(--border)",
+                    borderRight: "none",
+                    background: "var(--bg, #f8fafc)",
+                    color: "var(--muted)",
+                    fontSize: "0.9rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  €
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={hourlyWage}
+                  onChange={(e) => setHourlyWage(e.target.value)}
+                  style={{ ...inputStyle, borderRadius: "0 10px 10px 0", flex: 1 }}
+                />
+              </div>
+            </label>
+          </div>
+          <div style={budgetSummaryStyle} aria-live="polite">
+            <div>
+              <span style={budgetMetricLabel}>Planned hours</span>
+              <span style={budgetMetricValue}>
+                {Number.isFinite(parsedHours) && parsedHours >= 0 ? `${parsedHours.toLocaleString()} h` : "—"}
+              </span>
+            </div>
+            <div>
+              <span style={budgetMetricLabel}>Hourly rate</span>
+              <span style={budgetMetricValue}>
+                {parsedWage != null && Number.isFinite(parsedWage) && parsedWage >= 0
+                  ? new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(parsedWage)
+                  : "—"}
+              </span>
+            </div>
+            <div>
+              <span style={budgetMetricLabel}>Total labor budget</span>
+              <span style={{ ...budgetMetricValue, fontSize: "1.2rem", color: computeLaborBudget(parsedHours, parsedWage) != null ? "var(--text)" : "var(--muted)" }}>
+                {laborBudgetLabel}
+              </span>
+            </div>
+          </div>
+          <div style={{ ...fieldGrid, marginTop: "1rem" }}>
+            <label style={labelStyle}>
               Completion %
-              <span style={hintStyle}>0–100.</span>
+              <span style={hintStyle}>0–100 progress estimate.</span>
               <input
                 type="number"
                 min={0}
@@ -368,22 +482,17 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
                 style={inputStyle}
               />
             </label>
+            <label style={labelStyle}>
+              Lead / architect display name
+              <span style={hintStyle}>Shown on project cards.</span>
+              <input
+                value={portfolioLeadName}
+                onChange={(e) => setPortfolioLeadName(e.target.value)}
+                maxLength={200}
+                style={inputStyle}
+              />
+            </label>
           </div>
-        </div>
-
-        <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>ACCOUNTABILITY</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Primary contact on record</h3>
-          <label style={labelStyle}>
-            Lead / architect display name
-            <span style={hintStyle}>Shown on project cards.</span>
-            <input
-              value={portfolioLeadName}
-              onChange={(e) => setPortfolioLeadName(e.target.value)}
-              maxLength={200}
-              style={inputStyle}
-            />
-          </label>
         </div>
 
         {error ? (

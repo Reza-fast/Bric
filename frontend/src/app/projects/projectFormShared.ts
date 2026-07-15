@@ -1,6 +1,20 @@
 import type { CSSProperties } from "react";
 import type { ProjectStatus } from "@/lib/api/projects";
 
+export function formatLaborBudget(hours: number, hourlyWage: number | null | undefined): string | null {
+  if (hourlyWage == null || !Number.isFinite(hourlyWage) || hourlyWage < 0) return null;
+  if (!Number.isFinite(hours) || hours < 0) return null;
+  return new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(
+    hours * hourlyWage,
+  );
+}
+
+export function computeLaborBudget(hours: number, hourlyWage: number | null | undefined): number | null {
+  if (hourlyWage == null || !Number.isFinite(hourlyWage) || hourlyWage < 0) return null;
+  if (!Number.isFinite(hours) || hours < 0) return null;
+  return hours * hourlyWage;
+}
+
 export function slugifyName(name: string): string {
   const s = name
     .toLowerCase()

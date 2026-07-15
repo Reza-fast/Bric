@@ -15,7 +15,7 @@ const navAll = [
   { label: "Team", href: "/team", requiresHr: true },
   { label: "Planning", href: "/planning" },
   { label: "Reporting", href: "/reporting" },
-  { label: "Documents", href: "#" },
+  { label: "Documents", href: "/documents" },
 ] as const;
 
 function roleLabel(role: string): string {
@@ -138,28 +138,21 @@ export function DashboardShell({
           {navAll
             .filter((item) => !("requiresHr" in item && item.requiresHr) || canAccessTeam(user?.role))
             .map((item) => {
-            const active = item.href !== "#" && (pathname === item.href || pathname.startsWith(`${item.href}/`));
-            const content = (
-              <span
-                style={{
-                  padding: "0.5rem 0.75rem",
-                  borderRadius: 8,
-                  color: active ? "var(--accent)" : "var(--text)",
-                  fontWeight: active ? 600 : 400,
-                  fontSize: "0.9rem",
-                  display: "block",
-                }}
-              >
-                {item.label}
-              </span>
-            );
-            return item.href === "#" ? (
-              <span key={item.label} style={{ cursor: "default", opacity: 0.75 }}>
-                {content}
-              </span>
-            ) : (
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
               <Link key={item.href} href={item.href} style={{ textDecoration: "none", color: "inherit" }}>
-                {content}
+                <span
+                  style={{
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: 8,
+                    color: active ? "var(--accent)" : "var(--text)",
+                    fontWeight: active ? 600 : 400,
+                    fontSize: "0.9rem",
+                    display: "block",
+                  }}
+                >
+                  {item.label}
+                </span>
               </Link>
             );
           })}
