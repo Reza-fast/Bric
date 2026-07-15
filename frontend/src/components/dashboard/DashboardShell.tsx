@@ -1,22 +1,23 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { AuthUser } from "@/lib/api/auth";
 import { logoutRequest } from "@/lib/api/auth";
 import { canAccessTeam } from "@/lib/api/roles";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 const navAll = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Projects", href: "/projects" },
-  { label: "Time", href: "/time" },
-  { label: "Team", href: "/team", requiresHr: true },
-  { label: "Planning", href: "/planning" },
-  { label: "Reporting", href: "/reporting" },
-  { label: "Documents", href: "/documents" },
+  { key: "dashboard" as const, href: "/dashboard" },
+  { key: "projects" as const, href: "/projects" },
+  { key: "time" as const, href: "/time" },
+  { key: "team" as const, href: "/team", requiresHr: true },
+  { key: "planning" as const, href: "/planning" },
+  { key: "reporting" as const, href: "/reporting" },
+  { key: "documents" as const, href: "/documents" },
 ] as const;
 
 function roleLabel(role: string): string {
@@ -55,6 +56,7 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 function ProfileNavAvatar({ user }: { user: AuthUser | null }) {
+  const t = useTranslations("Nav");
   const [imgFailed, setImgFailed] = useState(false);
   const onImgError = useCallback(() => setImgFailed(true), []);
   const url = user?.avatarUrl?.trim();
@@ -63,8 +65,8 @@ function ProfileNavAvatar({ user }: { user: AuthUser | null }) {
   return (
     <Link
       href="/profile"
-      title="Profile"
-      aria-label="Open profile"
+      title={t("profile")}
+      aria-label={t("profile")}
       style={{
         display: "flex",
         alignItems: "center",
@@ -123,6 +125,7 @@ export function DashboardShell({
   /** Optional row shown in the top bar (e.g. project sub-navigation). */
   headerTabs?: ReactNode;
 }) {
+  const t = useTranslations("Nav");
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile(768);
@@ -158,7 +161,7 @@ export function DashboardShell({
       {isMobile && navOpen ? (
         <button
           type="button"
-          aria-label="Close menu"
+          aria-label={t("closeMenu")}
           onClick={() => setNavOpen(false)}
           style={{
             position: "fixed",
@@ -206,7 +209,7 @@ export function DashboardShell({
           {isMobile ? (
             <button
               type="button"
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
               onClick={() => setNavOpen(false)}
               style={{
                 display: "flex",
@@ -247,7 +250,7 @@ export function DashboardShell({
                       display: "block",
                     }}
                   >
-                    {item.label}
+                    {t(item.key)}
                   </span>
                 </Link>
               );
@@ -270,7 +273,7 @@ export function DashboardShell({
             textDecoration: "none",
           }}
         >
-          New project
+          {t("newProject")}
         </Link>
         <div
           style={{
@@ -299,9 +302,9 @@ export function DashboardShell({
                 font: "inherit",
               }}
             >
-              Sign out
+              {t("signOut")}
             </button>
-            <span> · Settings</span>
+            <span> · {t("settings")}</span>
           </div>
         </div>
       </aside>
@@ -322,7 +325,7 @@ export function DashboardShell({
           {isMobile ? (
             <button
               type="button"
-              aria-label="Open menu"
+              aria-label={t("openMenu")}
               aria-expanded={navOpen}
               onClick={() => setNavOpen(true)}
               style={{
@@ -359,7 +362,7 @@ export function DashboardShell({
           ) : null}
           <input
             type="search"
-            placeholder="Quicksearch…"
+            placeholder={t("quicksearch")}
             style={{
               flex: "1 1 120px",
               minWidth: isMobile ? 0 : 120,
@@ -370,12 +373,23 @@ export function DashboardShell({
               fontSize: "0.9rem",
             }}
           />
-          {!isMobile ? (
-            <div style={{ marginLeft: "auto", textAlign: "right", fontSize: "0.85rem" }}>
-              <div style={{ fontWeight: 600 }}>{user?.displayName ?? "…"}</div>
-              <div style={{ color: "var(--muted)" }}>{user ? roleLabel(user.role) : "…"}</div>
-            </div>
-          ) : null}
+          <div
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              flexShrink: 0,
+            }}
+          >
+            <LanguageSwitcher />
+            {!isMobile ? (
+              <div style={{ textAlign: "right", fontSize: "0.85rem" }}>
+                <div style={{ fontWeight: 600 }}>{user?.displayName ?? "…"}</div>
+                <div style={{ color: "var(--muted)" }}>{user ? roleLabel(user.role) : "…"}</div>
+              </div>
+            ) : null}
+          </div>
         </header>
         <main
           style={{

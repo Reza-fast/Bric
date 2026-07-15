@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import type { ProjectPortfolioCard } from "@/lib/api/projects";
 import {
   canOpenInline,
@@ -12,11 +13,12 @@ import {
   uploadTechnicalPlan,
   type TechnicalPlan,
 } from "@/lib/api/technicalPlans";
+import { intlLocaleTags, type AppLocale } from "@/i18n/routing";
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string, locale: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  return d.toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" });
 }
 
 type Props = {
@@ -37,6 +39,12 @@ export function TechnicalPlansSection({
   hideUpload = false,
   embedded = false,
 }: Props) {
+  const t = useTranslations("TechnicalPlans");
+  const tCommon = useTranslations("Common");
+  const tDocs = useTranslations("Documents");
+  const locale = useLocale() as AppLocale;
+  const intlLocale = intlLocaleTags[locale];
+
   const [plans, setPlans] = useState<TechnicalPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +53,7 @@ export function TechnicalPlansSection({
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const [uploadMsgError, setUploadMsgError] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,13 +62,13 @@ export function TechnicalPlansSection({
     setError(null);
     const list = await fetchTechnicalPlans(scopeProjectId);
     if (list === null) {
-      setError("Could not load technical plans.");
+      setError(t("loadError"));
       setPlans([]);
     } else {
       setPlans(list);
     }
     setLoading(false);
-  }, [scopeProjectId]);
+  }, [scopeProjectId, t]);
 
   useEffect(() => {
     void reload();
@@ -75,38 +84,43 @@ export function TechnicalPlansSection({
   async function onUpload(e: React.FormEvent) {
     e.preventDefault();
     setUploadMsg(null);
+    setUploadMsgError(false);
     const pid = scopeProjectId ?? uploadProjectId;
     if (!pid) {
-      setUploadMsg("Choose a project first.");
+      setUploadMsg(t("chooseProject"));
+      setUploadMsgError(true);
       return;
     }
     if (!uploadFile) {
-      setUploadMsg("Choose a file to upload.");
+      setUploadMsg(t("chooseFile"));
+      setUploadMsgError(true);
       return;
     }
     setUploading(true);
     const res = await uploadTechnicalPlan(pid, uploadFile, uploadTitle.trim() || undefined);
     setUploading(false);
     if (!res.ok) {
-      if (res.status === 413) setUploadMsg("File is too large (max 25 MB).");
-      else if (res.status === 400) setUploadMsg("This file type is not allowed.");
-      else setUploadMsg("Upload failed. Try again.");
+      setUploadMsgError(true);
+      if (res.status === 413) setUploadMsg(t("fileTooLarge"));
+      else if (res.status === 400) setUploadMsg(t("fileTypeInvalid"));
+      else setUploadMsg(t("uploadError"));
       return;
     }
     setUploadFile(null);
     setUploadTitle("");
     if (fileInputRef.current) fileInputRef.current.value = "";
-    setUploadMsg("Plan uploaded.");
+    setUploadMsg(t("uploadSuccess"));
+    setUploadMsgError(false);
     await reload();
   }
 
   async function onDelete(plan: TechnicalPlan) {
-    if (!window.confirm(`Delete “${plan.title}”? This cannot be undone.`)) return;
+    if (!window.confirm(t("deleteConfirm"))) return;
     setBusyId(plan.id);
     const ok = await deleteTechnicalPlan(plan.projectId, plan.id);
     setBusyId(null);
     if (!ok) {
-      setError("Could not delete this plan.");
+      setError(t("deleteError"));
       return;
     }
     await reload();
@@ -139,11 +153,11 @@ export function TechnicalPlansSection({
           }}
         >
           <div style={{ fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.08em", color: "#64748b" }}>
-            UPLOAD TECHNICAL PLAN
+            {t("uploadTitle").toUpperCase()}
           </div>
           {!scopeProjectId ? (
             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-              Project
+              {t("projectLabel")}
               <select
                 value={uploadProjectId}
                 onChange={(e) => setUploadProjectId(e.target.value)}
@@ -151,7 +165,7 @@ export function TechnicalPlansSection({
                 style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1", fontSize: "0.88rem" }}
               >
                 {projects.length === 0 ? (
-                  <option value="">No projects</option>
+                  <option value="">{tDocs("noProjects")}</option>
                 ) : (
                   projects.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -163,11 +177,11 @@ export function TechnicalPlansSection({
             </label>
           ) : null}
           <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-            Title (optional)
+            {t("titleOptional")}
             <input
               value={uploadTitle}
               onChange={(e) => setUploadTitle(e.target.value)}
-              placeholder="e.g. Structural drawings — Rev B"
+              placeholder={t("titlePlaceholder")}
               maxLength={500}
               style={{ padding: "0.45rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1", fontSize: "0.88rem" }}
             />
@@ -194,20 +208,12 @@ export function TechnicalPlansSection({
                 cursor: uploading ? "wait" : "pointer",
               }}
             >
-              {uploading ? "Uploading…" : "Upload plan"}
+              {uploading ? t("uploading") : t("uploadPlan")}
             </button>
           </div>
-          <p style={{ margin: 0, fontSize: "0.78rem", color: "#64748b" }}>
-            PDF, CAD (.dwg, .dxf), Office, images, archives — max 25 MB.
-          </p>
+          <p style={{ margin: 0, fontSize: "0.78rem", color: "#64748b" }}>{t("fileTypesHint")}</p>
           {uploadMsg ? (
-            <p
-              style={{
-                margin: 0,
-                fontSize: "0.82rem",
-                color: uploadMsg.includes("failed") || uploadMsg.includes("too large") || uploadMsg.includes("not allowed") || uploadMsg.includes("Choose") ? "#b91c1c" : "#047857",
-              }}
-            >
+            <p style={{ margin: 0, fontSize: "0.82rem", color: uploadMsgError ? "#b91c1c" : "#047857" }}>
               {uploadMsg}
             </p>
           ) : null}
@@ -217,10 +223,10 @@ export function TechnicalPlansSection({
       {error ? <p style={{ margin: "0 0 0.75rem", color: "#b91c1c", fontSize: "0.88rem" }}>{error}</p> : null}
 
       {loading ? (
-        <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>Loading plans…</p>
+        <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>{t("loading")}</p>
       ) : plans.length === 0 ? (
         <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>
-          No technical plans yet.{hideUpload ? " Upload from the Documents workspace." : " Use the form above to add drawings or specifications."}
+          {t("empty")} {hideUpload ? t("emptyFromDocs") : t("emptyUploadHint")}
         </p>
       ) : (
         <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
@@ -230,17 +236,17 @@ export function TechnicalPlansSection({
                 <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
                   {showProjectColumn ? (
                     <th style={{ padding: "0.65rem 0.85rem", textAlign: "left", fontSize: "0.68rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.06em" }}>
-                      PROJECT
+                      {t("colProject")}
                     </th>
                   ) : null}
                   <th style={{ padding: "0.65rem 0.85rem", textAlign: "left", fontSize: "0.68rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.06em" }}>
-                    PLAN
+                    {t("colPlan")}
                   </th>
                   <th style={{ padding: "0.65rem 0.85rem", textAlign: "left", fontSize: "0.68rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.06em" }}>
-                    UPLOADED
+                    {t("colUploaded")}
                   </th>
                   <th style={{ padding: "0.65rem 0.85rem", textAlign: "left", fontSize: "0.68rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.06em" }}>
-                    ACTIONS
+                    {t("colActions")}
                   </th>
                 </tr>
               </thead>
@@ -257,7 +263,7 @@ export function TechnicalPlansSection({
                               {plan.projectName}
                             </Link>
                           ) : (
-                            "—"
+                            tCommon("emDash")
                           )}
                         </td>
                       ) : null}
@@ -266,7 +272,7 @@ export function TechnicalPlansSection({
                         <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>{plan.fileOriginalName}</div>
                       </td>
                       <td style={{ padding: "0.65rem 0.85rem", color: "#64748b", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-                        {formatWhen(plan.createdAt)}
+                        {formatWhen(plan.createdAt, intlLocale)}
                       </td>
                       <td style={{ padding: "0.65rem 0.85rem", whiteSpace: "nowrap" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center" }}>
@@ -277,7 +283,7 @@ export function TechnicalPlansSection({
                               rel="noopener noreferrer"
                               style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.82rem" }}
                             >
-                              Open
+                              {tCommon("open")}
                             </a>
                           ) : null}
                           <a
@@ -285,7 +291,7 @@ export function TechnicalPlansSection({
                             download={plan.fileOriginalName}
                             style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.82rem" }}
                           >
-                            Download
+                            {tCommon("download")}
                           </a>
                           <button
                             type="button"
@@ -302,7 +308,7 @@ export function TechnicalPlansSection({
                               cursor: busyId !== null ? "wait" : "pointer",
                             }}
                           >
-                            {busyId === plan.id ? "…" : "Delete"}
+                            {busyId === plan.id ? tCommon("emDash") : tCommon("delete")}
                           </button>
                         </div>
                       </td>

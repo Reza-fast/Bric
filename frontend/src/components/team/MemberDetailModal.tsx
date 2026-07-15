@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { ProjectPortfolioCard } from "@/lib/api/projects";
 import type { UserRole } from "@/lib/api/roles";
@@ -15,21 +16,9 @@ import {
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 /** Roles for staff inside the architect firm (directory edit). */
-const FIRM_ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
-  { value: "hr", label: "Human Resources (HR)" },
-  { value: "architect", label: "Architect" },
-];
+const FIRM_ROLE_VALUES: UserRole[] = ["hr", "architect"];
 
 const FIRM_ROLES = new Set<UserRole>(["hr", "architect"]);
-
-function roleLabel(role: UserRole): string {
-  if (role === "hr") return "Human Resources (HR)";
-  if (role === "architect") return "Architect";
-  if (role === "contractor") return "Contractor";
-  if (role === "subcontractor") return "Subcontractor";
-  if (role === "client") return "Client";
-  return role;
-}
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -106,7 +95,15 @@ function IconSave() {
 }
 
 export function MemberDetailModal({ member, allProjects, currentUserId, onClose, onMembershipsChanged }: Props) {
+  const t = useTranslations("MemberModal");
+  const tTeam = useTranslations("Team");
+  const tCommon = useTranslations("Common");
   const isMobile = useIsMobile(640);
+
+  function roleLabel(role: UserRole): string {
+    if (role === "hr") return tTeam("roles.hrFull");
+    return tTeam(`roles.${role}`);
+  }
   const sectionGrid: CSSProperties = {
     display: "grid",
     gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 220px) minmax(0, 1fr)",
@@ -157,7 +154,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
     const ok = await assignTeamMemberToProject(member.userId, projectId);
     setBusyProjectId(null);
     if (!ok) {
-      setActionError("Could not add this project (check access and try again).");
+      setActionError(t("addProjectFailed"));
       return;
     }
     setAssignSearch("");
@@ -175,20 +172,16 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
     const res = await updateTeamMemberRole(member.userId, roleDraft);
     setSavingRole(false);
     if (!res.ok) {
-      if (res.status === 404) setActionError("Could not update role (member may no longer be on any project).");
-      else setActionError("Could not update role. Try again.");
+      if (res.status === 404) setActionError(t("roleUpdateGone"));
+      else setActionError(t("roleUpdateFailed"));
       return;
     }
-    setRoleMsg("Role updated.");
+    setRoleMsg(t("roleUpdated"));
     onMembershipsChanged();
   }
 
   async function onDeleteMember() {
-    if (
-      !window.confirm(
-        `Permanently remove ${member.displayName} from the organization? Their logins, project access, and time entries tied to this account will be deleted.`,
-      )
-    ) {
+    if (!window.confirm(t("confirmDelete", { name: member.displayName }))) {
       return;
     }
     setActionError(null);
@@ -196,7 +189,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
     const ok = await deleteTeamMember(member.userId);
     setDeleting(false);
     if (!ok) {
-      setActionError("Could not remove this account.");
+      setActionError(t("removeAccountFailed"));
       return;
     }
     onMembershipsChanged();
@@ -204,7 +197,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
   }
 
   async function onRemoveProject(projectId: string, projectName: string) {
-    if (!window.confirm(`Remove ${member.displayName} from “${projectName}”? They will lose access unless re-assigned.`)) {
+    if (!window.confirm(t("confirmUnassign", { name: member.displayName, project: projectName }))) {
       return;
     }
     setActionError(null);
@@ -212,13 +205,14 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
     const ok = await removeTeamMemberFromProject(member.userId, projectId);
     setBusyProjectId(null);
     if (!ok) {
-      setActionError("Could not remove this assignment.");
+      setActionError(t("removeAssignmentFailed"));
       return;
     }
     onMembershipsChanged();
   }
 
-  const totalHoursDisplay = breakdown && !loadHours && !hoursError ? `${formatHours(breakdown.totalLoggedHours)}h` : "—";
+  const totalHoursDisplay =
+    breakdown && !loadHours && !hoursError ? `${formatHours(breakdown.totalLoggedHours)}h` : tCommon("emDash");
 
   return (
     <div
@@ -292,7 +286,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
           </div>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={tCommon("close")}
             onClick={onClose}
             style={{
               padding: "0.5rem",
@@ -317,15 +311,15 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
 
           {!FIRM_ROLES.has(member.role) ? (
             <p style={{ margin: "0 0 1rem", fontSize: "0.8rem", color: "#b45309", background: "#fffbeb", padding: "0.55rem 0.75rem", borderRadius: 8, border: "1px solid #fde68a" }}>
-              Current system role is <strong>{roleLabel(member.role)}</strong>. Choose a firm role (HR or Architect) and save to align access with the practice.
+              {t("firmRoleHint", { role: roleLabel(member.role) })}
             </p>
           ) : null}
 
           {/* Role management */}
           <div style={{ ...sectionGrid, marginBottom: "1.75rem" }}>
             <div>
-              <h3 style={sectionTitle}>ROLE MANAGEMENT</h3>
-              <p style={sectionDesc}>Update administrative permissions and platform access levels for the architect firm.</p>
+              <h3 style={sectionTitle}>{t("roleManagement")}</h3>
+              <p style={sectionDesc}>{t("roleDesc")}</p>
             </div>
             <div
               style={{
@@ -336,7 +330,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
               }}
             >
               <div style={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.12em", color: "#3b82f6", marginBottom: "0.5rem" }}>
-                CURRENT APP ROLE
+                {t("currentAppRole")}
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.65rem", alignItems: "center" }}>
                 <select
@@ -357,9 +351,9 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                     color: "#0f172a",
                   }}
                 >
-                  {FIRM_ROLE_OPTIONS.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
+                  {FIRM_ROLE_VALUES.map((value) => (
+                    <option key={value} value={value}>
+                      {value === "hr" ? tTeam("roles.hrFull") : tTeam(`roles.${value}`)}
                     </option>
                   ))}
                 </select>
@@ -383,7 +377,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                   }}
                 >
                   <IconSave />
-                  {savingRole ? "SAVING…" : "SAVE ROLE"}
+                  {savingRole ? t("savingRole") : t("saveRole")}
                 </button>
               </div>
               {roleMsg ? (
@@ -395,8 +389,8 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
           {/* Logged hours */}
           <div style={{ ...sectionGrid, marginBottom: "1.75rem" }}>
             <div>
-              <h3 style={sectionTitle}>LOGGED HOURS</h3>
-              <p style={sectionDesc}>Technical audit of time allocation across active project blueprints.</p>
+              <h3 style={sectionTitle}>{t("loggedHours")}</h3>
+              <p style={sectionDesc}>{t("hoursDesc")}</p>
               <div
                 style={{
                   marginTop: "1rem",
@@ -406,15 +400,15 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                   padding: "1rem 1.1rem",
                 }}
               >
-                <div style={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.1em", color: "#c2410c" }}>TOTAL LOGGED (ALL TIME)</div>
+                <div style={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.1em", color: "#c2410c" }}>{t("totalLogged")}</div>
                 <div style={{ fontSize: "1.85rem", fontWeight: 800, color: "#9a3412", marginTop: 4, fontVariantNumeric: "tabular-nums" }}>{totalHoursDisplay}</div>
               </div>
             </div>
             <div>
               {loadHours ? (
-                <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>Loading hours…</p>
+                <p style={{ margin: 0, color: "#64748b", fontSize: "0.9rem" }}>{t("hoursLoading")}</p>
               ) : hoursError ? (
-                <p style={{ margin: 0, color: "#b91c1c", fontSize: "0.9rem" }}>Could not load hour breakdown.</p>
+                <p style={{ margin: 0, color: "#b91c1c", fontSize: "0.9rem" }}>{t("hoursLoadError")}</p>
               ) : breakdown ? (
                 <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", background: "#fafbfc" }}>
                   <div
@@ -430,12 +424,12 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                       color: "#64748b",
                     }}
                   >
-                    <span>PROJECT NAME</span>
-                    <span style={{ textAlign: "right" }}>HOURS</span>
+                    <span>{t("projectName")}</span>
+                    <span style={{ textAlign: "right" }}>{t("hoursCol")}</span>
                   </div>
                   <div style={{ maxHeight: 220, overflow: "auto" }}>
                     {breakdown.byProject.length === 0 ? (
-                      <p style={{ margin: 0, padding: "1rem", color: "#94a3b8", fontSize: "0.88rem" }}>No project-specific time logged yet.</p>
+                      <p style={{ margin: 0, padding: "1rem", color: "#94a3b8", fontSize: "0.88rem" }}>{t("noHours")}</p>
                     ) : (
                       breakdown.byProject.map((row) => (
                         <div
@@ -472,7 +466,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                       >
                         <span style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
                           <span style={{ fontSize: "0.5rem" }}>●</span>
-                          Day registration (not yet assigned)
+                          {t("dayPool")}
                         </span>
                         <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{formatHours(breakdown.dayPoolHours)}</span>
                       </div>
@@ -486,13 +480,13 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
           {/* Project access */}
           <div style={{ ...sectionGrid, marginBottom: "1.75rem" }}>
             <div>
-              <h3 style={sectionTitle}>PROJECT ACCESS</h3>
-              <p style={sectionDesc}>Manage specific site assignments and documentation access.</p>
+              <h3 style={sectionTitle}>{t("projectAccess")}</h3>
+              <p style={sectionDesc}>{t("accessDesc")}</p>
             </div>
             <div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                 {member.projects.length === 0 ? (
-                  <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.88rem" }}>Not assigned to any project.</p>
+                  <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.88rem" }}>{t("notAssigned")}</p>
                 ) : (
                   member.projects.map((p) => (
                     <div
@@ -530,7 +524,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                           cursor: busyProjectId !== null ? "wait" : "pointer",
                         }}
                       >
-                        {busyProjectId === p.id ? "…" : "Remove"}
+                        {busyProjectId === p.id ? "…" : t("remove")}
                       </button>
                     </div>
                   ))
@@ -559,7 +553,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                         type="search"
                         value={assignSearch}
                         onChange={(e) => setAssignSearch(e.target.value)}
-                        placeholder="Assign to new project…"
+                        placeholder={t("searchProjects")}
                         style={{
                           flex: 1,
                           minWidth: 0,
@@ -573,7 +567,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                   </div>
                   <div style={{ marginTop: "0.65rem", display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflow: "auto" }}>
                     {filteredCanAdd.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8" }}>No projects match your search.</p>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8" }}>{t("noSearchMatch")}</p>
                     ) : (
                       filteredCanAdd.map((p) => (
                         <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -594,7 +588,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                               cursor: busyProjectId !== null ? "wait" : "pointer",
                             }}
                           >
-                            {busyProjectId === p.id ? "…" : "ADD"}
+                            {busyProjectId === p.id ? "…" : t("assign")}
                           </button>
                         </div>
                       ))
@@ -603,7 +597,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                 </div>
               ) : (
                 <p style={{ margin: "1rem 0 0", fontSize: "0.8rem", color: "#94a3b8" }}>
-                  {allProjects.length === 0 ? "No projects available in your portfolio to assign." : "Member is already on every project you can assign."}
+                  {allProjects.length === 0 ? t("noProjects") : t("allAssigned")}
                 </p>
               )}
             </div>
@@ -621,10 +615,8 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
             }}
           >
             <div>
-              <h3 style={{ ...sectionTitle, color: "#dc2626" }}>DANGER ZONE</h3>
-              <p style={{ ...sectionDesc, color: "#991b1b" }}>
-                Removing this user from the organization will immediately revoke all dashboard access, historical reporting, and project permissions. This action cannot be undone.
-              </p>
+              <h3 style={{ ...sectionTitle, color: "#dc2626" }}>{t("dangerZone")}</h3>
+              <p style={{ ...sectionDesc, color: "#991b1b" }}>{t("dangerDesc")}</p>
             </div>
             <div>
               {!isSelf ? (
@@ -644,10 +636,10 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                     cursor: deleting || busyProjectId !== null ? "wait" : "pointer",
                   }}
                 >
-                  {deleting ? "REMOVING…" : "REMOVE FROM ORGANIZATION"}
+                  {deleting ? t("removing") : t("removeOrg")}
                 </button>
               ) : (
-                <p style={{ margin: 0, fontSize: "0.82rem", color: "#94a3b8" }}>You cannot delete your own account here.</p>
+                <p style={{ margin: 0, fontSize: "0.82rem", color: "#94a3b8" }}>{t("cannotDeleteSelf")}</p>
               )}
             </div>
           </div>
@@ -670,8 +662,8 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
             letterSpacing: "0.04em",
           }}
         >
-          <span style={{ fontVariantNumeric: "tabular-nums" }}>UID: {footerUid(member)}</span>
-          <span style={{ opacity: 0.85 }}>© AUTHENTICATED SYSTEM DETAIL</span>
+          <span style={{ fontVariantNumeric: "tabular-nums" }}>{t("uid", { id: footerUid(member) })}</span>
+          <span style={{ opacity: 0.85 }}>{t("authFooter")}</span>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import type { ProjectDetail, ProjectStatus } from "@/lib/api/projects";
 import {
   deleteProjectLogo,
@@ -14,15 +15,16 @@ import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 import {
   computeLaborBudget,
   formatLaborBudget,
+  getStatusOptions,
   hintStyle,
   inputStyle,
   labelStyle,
   sectionHeading,
   sectionStyle,
   sectionTitle,
-  statusOptions,
-} from "@/app/projects/projectFormShared";
+} from "@/lib/projectFormShared";
 import { useIsMobile } from "@/lib/useMediaQuery";
+import { intlLocaleTags, type AppLocale } from "@/i18n/routing";
 
 type Props = {
   open: boolean;
@@ -50,7 +52,14 @@ const budgetMetricValue: React.CSSProperties = {
 };
 
 export function EditProjectModal({ open, projectId, project, onClose, onSaved }: Props) {
+  const t = useTranslations("ProjectForm");
+  const tStatus = useTranslations("Status");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale() as AppLocale;
+  const intlLocale = intlLocaleTags[locale];
+  const statusOptions = useMemo(() => getStatusOptions(tStatus), [tStatus]);
   const isMobile = useIsMobile(640);
+
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -114,11 +123,11 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
   const parsedHours = Number(budgetedHours);
   const parsedWage = hourlyWage.trim() === "" ? null : Number(hourlyWage);
   const laborBudgetLabel = useMemo(() => {
-    if (hourlyWage.trim() === "") return "—";
-    if (!Number.isFinite(parsedWage) || parsedWage! < 0) return "—";
-    if (!Number.isFinite(parsedHours) || parsedHours < 0) return "—";
-    return formatLaborBudget(parsedHours, parsedWage) ?? "—";
-  }, [hourlyWage, parsedHours, parsedWage]);
+    if (hourlyWage.trim() === "") return tCommon("emDash");
+    if (!Number.isFinite(parsedWage) || parsedWage! < 0) return tCommon("emDash");
+    if (!Number.isFinite(parsedHours) || parsedHours < 0) return tCommon("emDash");
+    return formatLaborBudget(parsedHours, parsedWage, intlLocale) ?? tCommon("emDash");
+  }, [hourlyWage, parsedHours, parsedWage, intlLocale, tCommon]);
 
   if (!open) return null;
 
@@ -127,7 +136,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     setError(null);
     const hours = Number(budgetedHours);
     if (!Number.isFinite(hours) || hours < 0) {
-      setError("Enter a valid total planned hours value (0 or greater).");
+      setError(t("invalidHours"));
       return;
     }
     const wageRaw = hourlyWage.trim();
@@ -135,13 +144,13 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
     if (wageRaw !== "") {
       wage = Number(wageRaw);
       if (!Number.isFinite(wage) || wage < 0) {
-        setError("Enter a valid hourly wage (0 or greater), or leave it empty.");
+        setError(t("invalidWage"));
         return;
       }
     }
     const completion = Number(completionPercent);
     if (!Number.isFinite(completion) || completion < 0 || completion > 100) {
-      setError("Completion must be between 0 and 100.");
+      setError(t("invalidCompletion"));
       return;
     }
 
@@ -159,11 +168,11 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
       });
       if (!result.ok) {
         if (result.status === 400 && result.body?.error === "VALIDATION_ERROR") {
-          setError("Please check the form fields and try again.");
+          setError(t("validationError"));
         } else if (result.status === 404) {
-          setError("This project was not found or you no longer have access.");
+          setError(t("notFound"));
         } else {
-          setError("Could not save changes. Try again.");
+          setError(t("saveFailed"));
         }
         return;
       }
@@ -175,10 +184,10 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         if (!up.ok) {
           setError(
             up.status === 413
-              ? "Project saved, but the logo exceeds 10 MB."
+              ? t("logoTooLarge")
               : up.status === 400
-                ? "Project saved, but that image type is not allowed."
-                : "Project saved, but the logo could not be uploaded.",
+                ? t("logoTypeInvalid")
+                : t("logoUploadFailed"),
           );
           onSaved(saved);
           return;
@@ -187,7 +196,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
       } else if (removeLogo && project && projectHasLogo(project)) {
         const del = await deleteProjectLogo(projectId);
         if (!del.ok) {
-          setError("Project saved, but the logo could not be removed.");
+          setError(t("logoRemoveFailed"));
           onSaved(saved);
           return;
         }
@@ -241,12 +250,12 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", marginBottom: "1.25rem" }}>
           <div>
-            <div style={{ ...sectionTitle, marginBottom: "0.35rem" }}>PROJECT SETTINGS</div>
+            <div style={{ ...sectionTitle, marginBottom: "0.35rem" }}>{t("settingsEyebrow")}</div>
             <h2 id="edit-project-modal-title" style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
-              Edit project
+              {t("editTitle")}
             </h2>
             <p style={{ margin: "0.45rem 0 0", color: "var(--muted)", fontSize: "0.82rem", lineHeight: 1.45 }}>
-              The URL slug stays fixed so existing links remain valid.
+              {t("slugImmutable")}
             </p>
           </div>
           <button
@@ -264,27 +273,27 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               cursor: saving ? "wait" : "pointer",
             }}
           >
-            Close
+            {tCommon("close")}
           </button>
         </div>
 
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>OVERVIEW</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Identity & narrative</h3>
+          <div style={sectionTitle}>{t("overview")}</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>{t("identityNarrative")}</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <label style={labelStyle}>
-              Project name <span style={{ color: "#b91c1c" }}>*</span>
-              <span style={hintStyle}>Official name across dashboards and exports.</span>
+              {t("projectName")} <span style={{ color: "#b91c1c" }}>*</span>
+              <span style={hintStyle}>{t("projectNameHint")}</span>
               <input required value={name} onChange={(e) => setName(e.target.value)} maxLength={200} style={inputStyle} />
             </label>
             <label style={labelStyle}>
-              URL slug
-              <span style={hintStyle}>Immutable identifier.</span>
+              {t("urlSlug")}
+              <span style={hintStyle}>{t("urlSlugHint")}</span>
               <input value={slug} readOnly style={{ ...inputStyle, opacity: 0.85, cursor: "default" }} />
             </label>
             <label style={labelStyle}>
-              Description
-              <span style={hintStyle}>Optional scope summary or notes.</span>
+              {t("description")}
+              <span style={hintStyle}>{t("descriptionHint")}</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -297,8 +306,8 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         </div>
 
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>BRANDING</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Project logo / cover</h3>
+          <div style={sectionTitle}>{t("branding")}</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>{t("logoCover")}</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-start" }}>
             {logoPreviewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -315,7 +324,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
                 }}
               />
             ) : removeLogo || !project || !projectHasLogo(project) ? (
-              <ProjectLogoThumb projectId={projectId} name={name || "Project"} size={88} />
+              <ProjectLogoThumb projectId={projectId} name={name || t("projectName")} size={88} />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -332,7 +341,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               />
             )}
             <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <span style={hintStyle}>PNG, JPEG, WebP, or other common image formats. Max 10 MB.</span>
+              <span style={hintStyle}>{t("logoHint")}</span>
               <input
                 type="file"
                 accept={LOGO_INPUT_ACCEPT}
@@ -365,7 +374,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
                     cursor: saving ? "wait" : "pointer",
                   }}
                 >
-                  Remove logo
+                  {t("removeLogo")}
                 </button>
               ) : null}
             </div>
@@ -373,16 +382,16 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         </div>
 
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>SITE & LIFECYCLE</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Location and status</h3>
+          <div style={sectionTitle}>{t("siteLifecycle")}</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>{t("locationStatus")}</h3>
           <div style={fieldGrid}>
             <label style={labelStyle}>
-              Site / region
-              <span style={hintStyle}>Address or site label.</span>
+              {t("siteRegion")}
+              <span style={hintStyle}>{t("siteRegionHint")}</span>
               <input value={location} onChange={(e) => setLocation(e.target.value)} maxLength={500} style={inputStyle} />
             </label>
             <label style={labelStyle}>
-              Project status <span style={{ color: "#b91c1c" }}>*</span>
+              {t("projectStatus")} <span style={{ color: "#b91c1c" }}>*</span>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
@@ -399,12 +408,12 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         </div>
 
         <div style={{ ...sectionStyle, marginBottom: "1rem" }}>
-          <div style={sectionTitle}>LABOR BUDGET</div>
-          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>Planned hours, rate & total</h3>
+          <div style={sectionTitle}>{t("laborBudget")}</div>
+          <h3 style={{ ...sectionHeading, fontSize: "1rem" }}>{t("hoursRateTotal")}</h3>
           <div style={fieldGrid}>
             <label style={labelStyle}>
-              Total planned hours <span style={{ color: "#b91c1c" }}>*</span>
-              <span style={hintStyle}>All labor hours planned for this project.</span>
+              {t("totalPlannedHours")} <span style={{ color: "#b91c1c" }}>*</span>
+              <span style={hintStyle}>{t("totalPlannedHoursHint")}</span>
               <input
                 required
                 type="number"
@@ -417,8 +426,8 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               />
             </label>
             <label style={labelStyle}>
-              Hourly wage
-              <span style={hintStyle}>Blended labor rate (optional).</span>
+              {t("hourlyWage")}
+              <span style={hintStyle}>{t("hourlyWageHint")}</span>
               <div style={{ display: "flex", alignItems: "stretch" }}>
                 <span
                   style={{
@@ -451,21 +460,23 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
           </div>
           <div style={budgetSummaryStyle} aria-live="polite">
             <div>
-              <span style={budgetMetricLabel}>Planned hours</span>
+              <span style={budgetMetricLabel}>{t("plannedHours")}</span>
               <span style={budgetMetricValue}>
-                {Number.isFinite(parsedHours) && parsedHours >= 0 ? `${parsedHours.toLocaleString()} h` : "—"}
+                {Number.isFinite(parsedHours) && parsedHours >= 0
+                  ? `${parsedHours.toLocaleString(intlLocale)} h`
+                  : tCommon("emDash")}
               </span>
             </div>
             <div>
-              <span style={budgetMetricLabel}>Hourly rate</span>
+              <span style={budgetMetricLabel}>{t("hourlyRate")}</span>
               <span style={budgetMetricValue}>
                 {parsedWage != null && Number.isFinite(parsedWage) && parsedWage >= 0
-                  ? new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(parsedWage)
-                  : "—"}
+                  ? new Intl.NumberFormat(intlLocale, { style: "currency", currency: "EUR" }).format(parsedWage)
+                  : tCommon("emDash")}
               </span>
             </div>
             <div>
-              <span style={budgetMetricLabel}>Total labor budget</span>
+              <span style={budgetMetricLabel}>{t("totalLaborBudget")}</span>
               <span style={{ ...budgetMetricValue, fontSize: "1.2rem", color: computeLaborBudget(parsedHours, parsedWage) != null ? "var(--text)" : "var(--muted)" }}>
                 {laborBudgetLabel}
               </span>
@@ -473,8 +484,8 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
           </div>
           <div style={{ ...fieldGrid, marginTop: "1rem" }}>
             <label style={labelStyle}>
-              Completion %
-              <span style={hintStyle}>0–100 progress estimate.</span>
+              {t("completionPct")}
+              <span style={hintStyle}>{t("completionHint")}</span>
               <input
                 type="number"
                 min={0}
@@ -486,8 +497,8 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               />
             </label>
             <label style={labelStyle}>
-              Lead / architect display name
-              <span style={hintStyle}>Shown on project cards.</span>
+              {t("leadName")}
+              <span style={hintStyle}>{t("leadNameHint")}</span>
               <input
                 value={portfolioLeadName}
                 onChange={(e) => setPortfolioLeadName(e.target.value)}
@@ -531,7 +542,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               flex: isMobile ? "1 1 auto" : undefined,
             }}
           >
-            Cancel
+            {tCommon("cancel")}
           </button>
           <button
             type="submit"
@@ -548,7 +559,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               flex: isMobile ? "1 1 auto" : undefined,
             }}
           >
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? tCommon("saving") : t("saveChanges")}
           </button>
         </div>
       </form>

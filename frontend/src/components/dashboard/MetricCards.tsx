@@ -1,21 +1,23 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { DashboardMetrics } from "@/lib/api/dashboard";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 export function MetricCards({ metrics }: { metrics: DashboardMetrics }) {
+  const t = useTranslations("Dashboard");
   const isMobile = useIsMobile(640);
   const cards = [
-    { label: "Active projects", value: String(metrics.activeProjects), hint: "This week (UTC)" },
+    { label: t("activeProjects"), value: String(metrics.activeProjects), hint: t("thisWeek") },
     {
-      label: "Total hours",
+      label: t("totalHours"),
       value: String(metrics.totalHoursThisWeek),
       hint: metrics.weekLabel,
     },
     {
-      label: "Pending reports",
+      label: t("pendingReports"),
       value: String(metrics.pendingReportsActionRequired).padStart(2, "0"),
-      hint: "Action required",
+      hint: t("actionRequired"),
     },
   ];
 

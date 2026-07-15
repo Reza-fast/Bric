@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { uploadReportFile } from "@/lib/api/reports";
 
@@ -11,6 +12,8 @@ type Props = {
 };
 
 export function UploadReportModal({ open, projectId, onClose, onUploaded }: Props) {
+  const t = useTranslations("UploadReport");
+  const tCommon = useTranslations("Common");
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError("Choose a file to upload.");
+      setError(t("chooseFile"));
       return;
     }
     setSaving(true);
@@ -36,11 +39,11 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
     setSaving(false);
     if (!res.ok) {
       if (res.status === 400) {
-        setError("Missing or unsupported file. Use PDF, Office, images, or other allowed types.");
+        setError(t("badFile"));
       } else if (res.status === 404) {
-        setError("Project not found or you no longer have access.");
+        setError(t("notFound"));
       } else {
-        setError("Upload failed. Try again.");
+        setError(t("uploadFailed"));
       }
       return;
     }
@@ -97,13 +100,13 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
                 marginBottom: "0.35rem",
               }}
             >
-              Library
+              {t("library")}
             </div>
             <h2 id="upload-report-title" style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
-              Upload document
+              {t("title")}
             </h2>
             <p style={{ margin: "0.45rem 0 0", fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.45 }}>
-              Adds a file-backed report for this project (same as Reporting file upload).
+              {t("subtitle")}
             </p>
           </div>
           <button
@@ -121,18 +124,19 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
               cursor: saving ? "wait" : "pointer",
             }}
           >
-            Close
+            {tCommon("close")}
           </button>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.8rem", fontWeight: 600 }}>
-            Title <span style={{ fontWeight: 400, color: "var(--muted)" }}>Optional — defaults to the file name.</span>
+            {t("titleLabel")}{" "}
+            <span style={{ fontWeight: 400, color: "var(--muted)" }}>{t("titleOptional")}</span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               maxLength={500}
-              placeholder="e.g. Structural submittal"
+              placeholder={t("titlePlaceholder")}
               style={{
                 padding: "0.6rem 0.75rem",
                 borderRadius: 10,
@@ -142,7 +146,7 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
             />
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.8rem", fontWeight: 600 }}>
-            File <span style={{ color: "#b91c1c" }}>*</span>
+            {t("fileLabel")} <span style={{ color: "#b91c1c" }}>*</span>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
@@ -183,7 +187,7 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
               cursor: saving ? "wait" : "pointer",
             }}
           >
-            Cancel
+            {tCommon("cancel")}
           </button>
           <button
             type="submit"
@@ -199,7 +203,7 @@ export function UploadReportModal({ open, projectId, onClose, onUploaded }: Prop
               cursor: saving ? "wait" : "pointer",
             }}
           >
-            {saving ? "Uploading…" : "Upload"}
+            {saving ? t("uploading") : t("upload")}
           </button>
         </div>
       </form>

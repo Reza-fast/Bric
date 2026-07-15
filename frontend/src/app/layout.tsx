@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BRIC | Project dashboard",
-  description: "Construction project dashboard for architects, contractors, and clients",
+  title: "BRIC | Projectdashboard",
+  description: "Bouwprojectdashboard voor architecten, aannemers en opdrachtgevers",
 };
 
-export default function RootLayout(props: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{props.children}</body>
-    </html>
-  );
+/** Root layout — locale-specific html lang is set in [locale]/layout. */
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return children;
 }

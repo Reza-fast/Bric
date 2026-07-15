@@ -1,9 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import type { ProjectHoursSummary } from "@/lib/api/dashboard";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
+  const t = useTranslations("Dashboard");
   const isMobile = useIsMobile(640);
 
   return (
@@ -16,7 +18,7 @@ export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
         marginBottom: "1.5rem",
       }}
     >
-      <h2 style={{ margin: "0 0 1rem", fontSize: "1rem" }}>Hours vs budget</h2>
+      <h2 style={{ margin: "0 0 1rem", fontSize: "1rem" }}>{t("hoursVsBudget")}</h2>
       <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "0.85rem" }}>
         {rows.map((p) => {
           const width = Math.min(p.percentUsed, 100);
@@ -36,7 +38,7 @@ export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
                 <span style={{ overflowWrap: "anywhere" }}>{p.name}</span>
                 <span style={{ color: over ? "#c2410c" : "var(--muted)", flexShrink: 0 }}>
                   {p.actualHours} / {p.budgetedHours} h
-                  {over ? " · Over budget" : ""}
+                  {over ? ` · ${t("overBudget")}` : ""}
                 </span>
               </div>
               <div
