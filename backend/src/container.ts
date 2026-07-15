@@ -4,6 +4,7 @@ import { PlannedTasksController } from "./controllers/plannedTasks.controller.js
 import { ProjectsController } from "./controllers/projects.controller.js";
 import { ReportsController } from "./controllers/reports.controller.js";
 import { TeamController } from "./controllers/team.controller.js";
+import { TechnicalPlansController } from "./controllers/technicalPlans.controller.js";
 import { TimeLogsController } from "./controllers/timeLogs.controller.js";
 import { getPool } from "./infrastructure/database.js";
 import { ActivitiesRepository } from "./repositories/activities.repository.js";
@@ -12,6 +13,7 @@ import { ProjectMembersRepository } from "./repositories/projectMembers.reposito
 import { ProjectsRepository } from "./repositories/projects.repository.js";
 import { ReportPhotosRepository } from "./repositories/report-photos.repository.js";
 import { ReportsRepository } from "./repositories/reports.repository.js";
+import { TechnicalPlansRepository } from "./repositories/technical-plans.repository.js";
 import { TimeLogsRepository } from "./repositories/timeLogs.repository.js";
 import { UsersRepository } from "./repositories/users.repository.js";
 import { ActivityService } from "./services/activity.service.js";
@@ -21,6 +23,7 @@ import { DashboardService } from "./services/dashboard.service.js";
 import { PlannedTaskService } from "./services/plannedTask.service.js";
 import { ProjectService } from "./services/project.service.js";
 import { ReportService } from "./services/report.service.js";
+import { TechnicalPlanService } from "./services/technicalPlan.service.js";
 import { TeamService } from "./services/team.service.js";
 import { TimeLogService } from "./services/timeLog.service.js";
 import { UserService } from "./services/user.service.js";
@@ -32,6 +35,7 @@ export function createAppContainer() {
   const activitiesRepo = new ActivitiesRepository(pool);
   const reportsRepo = new ReportsRepository(pool);
   const reportPhotosRepo = new ReportPhotosRepository(pool);
+  const technicalPlansRepo = new TechnicalPlansRepository(pool);
   const plannedTasksRepo = new PlannedTasksRepository(pool);
   const usersRepo = new UsersRepository(pool);
   const membersRepo = new ProjectMembersRepository(pool);
@@ -52,6 +56,7 @@ export function createAppContainer() {
     membersRepo,
   );
   const reportService = new ReportService(reportsRepo, projectsRepo, reportPhotosRepo);
+  const technicalPlanService = new TechnicalPlanService(technicalPlansRepo, projectsRepo);
   const teamService = new TeamService(membersRepo, usersRepo, projectsRepo, timeLogsRepo);
 
   return {
@@ -66,6 +71,7 @@ export function createAppContainer() {
       authService,
       profileService,
       reportService,
+      technicalPlanService,
       teamService,
     },
     controllers: {
@@ -75,6 +81,7 @@ export function createAppContainer() {
       timeLogs: new TimeLogsController(timeLogService),
       auth: new AuthController(authService, profileService),
       reports: new ReportsController(reportService),
+      technicalPlans: new TechnicalPlansController(technicalPlanService),
       team: new TeamController(teamService),
     },
   };

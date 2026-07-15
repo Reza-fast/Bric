@@ -6,3 +6,4 @@ export * from "./Activity.js";
 export * from "./Report.js";
 export * from "./ReportPhoto.js";
 export * from "./PlannedTask.js";
+export * from "./TechnicalPlan.js";

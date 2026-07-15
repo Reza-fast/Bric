@@ -6,6 +6,7 @@ import { ProjectsController } from "../controllers/projects.controller.js";
 import type { PlannedTasksController } from "../controllers/plannedTasks.controller.js";
 import { ReportsController } from "../controllers/reports.controller.js";
 import type { TeamController } from "../controllers/team.controller.js";
+import { TechnicalPlansController } from "../controllers/technicalPlans.controller.js";
 import type { TimeLogsController } from "../controllers/timeLogs.controller.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { requireHr } from "../middleware/requireHr.js";
@@ -25,6 +26,7 @@ export function createApiRouter(deps: {
   plannedTasks: PlannedTasksController;
   timeLogs: TimeLogsController;
   reports: ReportsController;
+  technicalPlans: TechnicalPlansController;
   team: TeamController;
 }): Router {
   const r = Router();
@@ -85,6 +87,16 @@ export function createApiRouter(deps: {
   r.get("/projects/:projectId/reports/:reportId/photos/:photoId/file", deps.reports.downloadPhoto);
   r.get("/projects/:projectId/reports/:reportId/file", deps.reports.downloadFile);
   r.get("/projects/:projectId/reports/:reportId/pdf", deps.reports.downloadFile);
+
+  r.get("/technical-plans", deps.technicalPlans.listAll);
+  r.get("/projects/:projectId/technical-plans", deps.technicalPlans.listByProject);
+  r.post(
+    "/projects/:projectId/technical-plans/upload",
+    TechnicalPlansController.uploadMiddleware,
+    deps.technicalPlans.upload,
+  );
+  r.delete("/projects/:projectId/technical-plans/:planId", deps.technicalPlans.delete);
+  r.get("/projects/:projectId/technical-plans/:planId/file", deps.technicalPlans.download);
 
   return r;
 }

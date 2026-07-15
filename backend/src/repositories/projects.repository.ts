@@ -14,6 +14,7 @@ interface ProjectRow {
   slug: string;
   status: string;
   budgeted_hours: string;
+  hourly_wage?: string | null;
   description: string | null;
   location?: string | null;
   completion_percent?: string | null;
@@ -35,6 +36,8 @@ function mapProject(row: ProjectRow): Project {
     slug: row.slug,
     status: row.status as ProjectStatus,
     budgetedHours: Number(row.budgeted_hours),
+    hourlyWage:
+      row.hourly_wage != null && row.hourly_wage !== "" ? Number(row.hourly_wage) : null,
     description: row.description,
     location: row.location ?? null,
     completionPercent,
@@ -89,16 +92,17 @@ export class ProjectsRepository {
   async create(input: ProjectCreateInput): Promise<Project> {
     const { rows } = await this.pool.query<ProjectRow>(
       `INSERT INTO projects (
-        name, slug, status, budgeted_hours, description,
+        name, slug, status, budgeted_hours, hourly_wage, description,
         location, completion_percent, portfolio_lead_name
       )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         input.name,
         input.slug,
         input.status,
         input.budgetedHours,
+        input.hourlyWage ?? null,
         input.description ?? null,
         input.location ?? null,
         input.completionPercent ?? 0,
@@ -115,6 +119,7 @@ export class ProjectsRepository {
       name: input.name ?? existing.name,
       status: input.status ?? existing.status,
       budgetedHours: input.budgetedHours ?? existing.budgetedHours,
+      hourlyWage: input.hourlyWage !== undefined ? input.hourlyWage : existing.hourlyWage,
       description: input.description !== undefined ? input.description : existing.description,
       location: input.location !== undefined ? input.location : existing.location,
       completionPercent:
@@ -124,8 +129,8 @@ export class ProjectsRepository {
     };
     const { rows } = await this.pool.query<ProjectRow>(
       `UPDATE projects SET
-        name = $2, status = $3, budgeted_hours = $4, description = $5,
-        location = $6, completion_percent = $7, portfolio_lead_name = $8, updated_at = now()
+        name = $2, status = $3, budgeted_hours = $4, hourly_wage = $5, description = $6,
+        location = $7, completion_percent = $8, portfolio_lead_name = $9, updated_at = now()
        WHERE id = $1
        RETURNING *`,
       [
@@ -133,6 +138,7 @@ export class ProjectsRepository {
         next.name,
         next.status,
         next.budgetedHours,
+        next.hourlyWage,
         next.description,
         next.location,
         next.completionPercent,

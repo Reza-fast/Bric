@@ -33,6 +33,7 @@ export function createApp() {
       plannedTasks: controllers.plannedTasks,
       timeLogs: controllers.timeLogs,
       reports: controllers.reports,
+      technicalPlans: controllers.technicalPlans,
       team: controllers.team,
     }),
   );

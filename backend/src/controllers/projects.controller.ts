@@ -58,6 +58,7 @@ function serializeProject(project: {
   slug: string;
   status: string;
   budgetedHours: number;
+  hourlyWage: number | null;
   description: string | null;
   location: string | null;
   completionPercent: number;
@@ -87,6 +88,7 @@ const createSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, and hyphens only"),
   status: z.nativeEnum(ProjectStatus).optional(),
   budgetedHours: z.coerce.number().finite().nonnegative().max(1_000_000),
+  hourlyWage: z.union([z.coerce.number().finite().nonnegative().max(1_000_000), z.null()]).optional(),
   description: z.string().max(8000).nullable().optional(),
   location: z.string().max(500).nullable().optional(),
   completionPercent: z.coerce.number().finite().min(0).max(100).optional(),
@@ -161,6 +163,7 @@ export class ProjectsController {
           slug: body.slug,
           status: body.status ?? ProjectStatus.Active,
           budgetedHours: body.budgetedHours,
+          hourlyWage: body.hourlyWage ?? null,
           description: emptyToNull(body.description ?? undefined),
           location: emptyToNull(body.location ?? undefined),
           completionPercent: body.completionPercent ?? 0,
@@ -202,6 +205,7 @@ export class ProjectsController {
     if (body.name !== undefined) patch.name = body.name.trim();
     if (body.status !== undefined) patch.status = body.status;
     if (body.budgetedHours !== undefined) patch.budgetedHours = body.budgetedHours;
+    if (body.hourlyWage !== undefined) patch.hourlyWage = body.hourlyWage;
     if (body.description !== undefined) patch.description = emptyToNull(body.description ?? undefined);
     if (body.location !== undefined) patch.location = emptyToNull(body.location ?? undefined);
     if (body.completionPercent !== undefined) patch.completionPercent = body.completionPercent;

@@ -6,6 +6,8 @@ export interface Project {
   slug: string;
   status: ProjectStatus;
   budgetedHours: number;
+  /** Hourly labor rate; null when not set. */
+  hourlyWage: number | null;
   description: string | null;
   /** Set after portfolio migration; null/0 when absent. */
   location: string | null;
@@ -26,6 +28,7 @@ export type ProjectCreateInput = Pick<
   location?: string | null;
   completionPercent?: number;
   portfolioLeadName?: string | null;
+  hourlyWage?: number | null;
 };
 
 export type ProjectUpdateInput = Partial<
@@ -38,6 +41,7 @@ export type ProjectUpdateInput = Partial<
     | "location"
     | "completionPercent"
     | "portfolioLeadName"
+    | "hourlyWage"
     | "logoOriginalName"
     | "logoStorageKey"
     | "logoMimeType"
