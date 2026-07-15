@@ -9,8 +9,10 @@ import type { DashboardPayload } from "@/lib/api/dashboard";
 import { fetchDashboard } from "@/lib/api/dashboard";
 import { meRequest } from "@/lib/api/auth";
 import type { AuthUser } from "@/lib/api/auth";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 export default function DashboardPage() {
+  const isMobile = useIsMobile(768);
   const [data, setData] = useState<DashboardPayload | null | undefined>(undefined);
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -29,7 +31,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardShell user={user}>
-      <h1 style={{ margin: "0 0 1rem", fontSize: "1.35rem" }}>Technical dashboard</h1>
+      <h1 style={{ margin: "0 0 1rem", fontSize: isMobile ? "1.2rem" : "1.35rem" }}>Technical dashboard</h1>
       {data === undefined ? (
         <p style={{ color: "var(--muted)" }}>Loading…</p>
       ) : !data ? (
@@ -42,8 +44,8 @@ export default function DashboardPage() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-              gap: "1.5rem",
+              gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)",
+              gap: isMobile ? "1rem" : "1.5rem",
               alignItems: "start",
             }}
           >

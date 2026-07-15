@@ -225,7 +225,7 @@ export function TechnicalPlansSection({
       ) : (
         <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ width: "100%", overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem", minWidth: showProjectColumn ? 640 : 480 }}>
               <thead>
                 <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
                   {showProjectColumn ? (

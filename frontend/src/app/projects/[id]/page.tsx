@@ -21,6 +21,7 @@ import { fetchProjectReports, reportFileUrl, reportPhotoUrl } from "@/lib/api/re
 import type { TeamMember } from "@/lib/api/team";
 import { fetchTeamDirectory } from "@/lib/api/team";
 import { formatLaborBudget } from "@/app/projects/projectFormShared";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 const CANVAS_BG = "#e8eef7";
 const NAVY = "#0f172a";
@@ -215,7 +216,7 @@ function BurnBars({ pct }: { pct: number }) {
   );
 }
 
-function DetailRows({ rows }: { rows: { label: string; value: ReactNode }[] }) {
+function DetailRows({ rows, stacked }: { rows: { label: string; value: ReactNode }[]; stacked?: boolean }) {
   return (
     <div>
       {rows.map((row, i) => (
@@ -223,8 +224,8 @@ function DetailRows({ rows }: { rows: { label: string; value: ReactNode }[] }) {
           key={row.label}
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 100px) minmax(0, 1fr)",
-            gap: "0.65rem 1rem",
+            gridTemplateColumns: stacked ? "1fr" : "minmax(0, 100px) minmax(0, 1fr)",
+            gap: stacked ? "0.2rem 0" : "0.65rem 1rem",
             padding: "0.65rem 0",
             borderTop: i === 0 ? "none" : "1px solid #e8eef7",
             alignItems: "baseline",
@@ -234,7 +235,7 @@ function DetailRows({ rows }: { rows: { label: string; value: ReactNode }[] }) {
           <span style={{ fontWeight: 700, color: SLATE_HEADER, fontSize: "0.72rem", letterSpacing: "0.06em" }}>
             {row.label}
           </span>
-          <div style={{ color: NAVY, lineHeight: 1.45 }}>{row.value}</div>
+          <div style={{ color: NAVY, lineHeight: 1.45, overflowWrap: "anywhere" }}>{row.value}</div>
         </div>
       ))}
     </div>
@@ -245,6 +246,7 @@ export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = typeof params.id === "string" ? params.id : "";
+  const isMobile = useIsMobile(768);
 
   const [user, setUser] = useState<AuthUser | null>(null);
   const [project, setProject] = useState<ProjectDetail | null>(null);
@@ -450,8 +452,8 @@ export default function ProjectDetailPage() {
 
   const gridMain: CSSProperties = {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "1.15rem",
+    gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(260px, 1fr))",
+    gap: isMobile ? "0.85rem" : "1.15rem",
     alignItems: "stretch",
   };
 
@@ -463,8 +465,26 @@ export default function ProjectDetailPage() {
 
   return (
     <DashboardShell user={user} fullBleed headerTabs={headerTabs}>
-      <div style={{ background: CANVAS_BG, minHeight: "100%", flex: 1, padding: "1.35rem 1.75rem 2.25rem", width: "100%" }}>
-        <nav style={{ fontSize: "0.88rem", color: "#64748b", marginBottom: "1rem" }}>
+      <div
+        style={{
+          background: CANVAS_BG,
+          minHeight: "100%",
+          flex: 1,
+          padding: isMobile ? "1rem 0.85rem 1.75rem" : "1.35rem 1.75rem 2.25rem",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+      >
+        <nav
+          style={{
+            fontSize: "0.88rem",
+            color: "#64748b",
+            marginBottom: "1rem",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           <Link href="/projects" style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>
             Projects
           </Link>
@@ -473,7 +493,7 @@ export default function ProjectDetailPage() {
         </nav>
 
         {/* Hero */}
-        <header style={{ marginBottom: "1.35rem" }}>
+        <header style={{ marginBottom: isMobile ? "1rem" : "1.35rem" }}>
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
             <span
               style={{
@@ -504,35 +524,61 @@ export default function ProjectDetailPage() {
               {project.slug}
             </span>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "1.25rem", alignItems: "flex-start" }}>
-            <div style={{ display: "flex", gap: "1.15rem", alignItems: "flex-start", flex: "1 1 280px", minWidth: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+              gap: isMobile ? "1rem" : "1.25rem",
+              alignItems: isMobile ? "stretch" : "flex-start",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: isMobile ? "0.85rem" : "1.15rem",
+                alignItems: "flex-start",
+                flex: "1 1 280px",
+                minWidth: 0,
+              }}
+            >
               <ProjectLogoThumb
                 projectId={projectId}
                 name={project.name}
                 logoStorageKey={project.logoStorageKey}
                 updatedAt={project.updatedAt}
-                size={96}
-                borderRadius={16}
+                size={isMobile ? 64 : 96}
+                borderRadius={isMobile ? 12 : 16}
               />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: "clamp(1.65rem, 2.8vw, 2.05rem)",
-                  fontWeight: 800,
-                  letterSpacing: "-0.038em",
-                  lineHeight: 1.12,
-                  color: NAVY,
-                }}
-              >
-                {project.name}
-              </h1>
-              <p style={{ margin: "0.75rem 0 0", color: "#475569", fontSize: "0.95rem", maxWidth: 560, lineHeight: 1.55 }}>
-                {project.description?.trim()
-                  ? project.description
-                  : "Construction registry overview — milestones, labor hours, and documents for stakeholders assigned to this project."}
-              </p>
-            </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: isMobile ? "1.45rem" : "clamp(1.65rem, 2.8vw, 2.05rem)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.038em",
+                    lineHeight: 1.12,
+                    color: NAVY,
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {project.name}
+                </h1>
+                <p
+                  style={{
+                    margin: "0.75rem 0 0",
+                    color: "#475569",
+                    fontSize: isMobile ? "0.88rem" : "0.95rem",
+                    maxWidth: 560,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {project.description?.trim()
+                    ? project.description
+                    : "Construction registry overview — milestones, labor hours, and documents for stakeholders assigned to this project."}
+                </p>
+              </div>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.55rem", flexShrink: 0 }}>
               <button
@@ -547,6 +593,7 @@ export default function ProjectDetailPage() {
                   fontWeight: 700,
                   fontSize: "0.88rem",
                   cursor: "pointer",
+                  width: isMobile ? "100%" : undefined,
                 }}
               >
                 Edit project
@@ -559,27 +606,27 @@ export default function ProjectDetailPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "1.15rem",
-            marginBottom: "1.35rem",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
+            gap: isMobile ? "0.85rem" : "1.15rem",
+            marginBottom: isMobile ? "1rem" : "1.35rem",
           }}
         >
-          <section style={whiteCard}>
+          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
             <p style={eyebrow}>Delivery</p>
             <p style={{ ...cardTitle, marginTop: "0.25rem" }}>Total completion</p>
-            <p style={{ margin: "0.85rem 0 0.5rem", fontSize: "1.85rem", fontWeight: 800, color: NAVY }}>{completionPct}%</p>
+            <p style={{ margin: "0.85rem 0 0.5rem", fontSize: isMobile ? "1.55rem" : "1.85rem", fontWeight: 800, color: NAVY }}>{completionPct}%</p>
             <ProgressTrack pct={completionPct} tone="blue" />
             <p style={{ margin: "0.65rem 0 0", fontSize: "0.78rem", color: SLATE_HEADER }}>Portfolio completion target</p>
           </section>
-          <section style={whiteCard}>
+          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
             <p style={eyebrow}>Labor budget</p>
             <p style={{ ...cardTitle, marginTop: "0.25rem" }}>Hours health</p>
             {hoursMeta.laborBudget ? (
               <>
-                <p style={{ margin: "0.85rem 0 0.15rem", fontSize: "1.85rem", fontWeight: 800, color: NAVY }}>
+                <p style={{ margin: "0.85rem 0 0.15rem", fontSize: isMobile ? "1.55rem" : "1.85rem", fontWeight: 800, color: NAVY }}>
                   {hoursMeta.laborBudget}
                 </p>
-                <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", color: SLATE_HEADER, fontWeight: 600 }}>
+                <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", color: SLATE_HEADER, fontWeight: 600, lineHeight: 1.4 }}>
                   {hoursMeta.hourlyWage != null
                     ? `Total budget · ${hoursMeta.budget.toLocaleString()} hrs @ ${new Intl.NumberFormat(undefined, { style: "currency", currency: "EUR" }).format(hoursMeta.hourlyWage)}/hr`
                     : "Total labor budget"}
@@ -594,10 +641,10 @@ export default function ProjectDetailPage() {
               {hoursMeta.budget > 0 ? `${hoursMeta.pctUsed}% of budgeted hours logged` : "Set planned hours in project settings"}
             </p>
           </section>
-          <section style={whiteCard}>
+          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
             <p style={eyebrow}>Schedule</p>
             <p style={{ ...cardTitle, marginTop: "0.25rem" }}>Timeline</p>
-            <p style={{ margin: "0.85rem 0 0.35rem", fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>
+            <p style={{ margin: "0.85rem 0 0.35rem", fontSize: isMobile ? "0.98rem" : "1.05rem", fontWeight: 700, color: NAVY }}>
               {daysLeft !== null ? `${daysLeft} days to last milestone` : "No milestones yet"}
             </p>
             <ProgressTrack pct={scheduleEnd ? Math.min(100, completionPct) : 0} tone="blue" />
@@ -612,7 +659,7 @@ export default function ProjectDetailPage() {
           <section style={{ ...whiteCard, marginBottom: 0 }}>
             <p style={eyebrow}>Site</p>
             <h2 style={cardTitle}>Identity & location</h2>
-            <DetailRows rows={siteRegionRows} />
+            <DetailRows rows={siteRegionRows} stacked={isMobile} />
             <div
               style={{
                 marginTop: "1rem",

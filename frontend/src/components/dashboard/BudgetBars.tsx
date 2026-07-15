@@ -1,12 +1,17 @@
+"use client";
+
 import type { ProjectHoursSummary } from "@/lib/api/dashboard";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
+  const isMobile = useIsMobile(640);
+
   return (
     <section
       style={{
         background: "var(--surface)",
         borderRadius: 12,
-        padding: "1.25rem",
+        padding: isMobile ? "1rem" : "1.25rem",
         border: "1px solid var(--border)",
         marginBottom: "1.5rem",
       }}
@@ -18,9 +23,18 @@ export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
           const over = p.isOverBudget;
           return (
             <li key={p.projectId}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
-                <span>{p.name}</span>
-                <span style={{ color: over ? "#c2410c" : "var(--muted)" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: isMobile ? "column" : "row",
+                  justifyContent: "space-between",
+                  alignItems: isMobile ? "flex-start" : "baseline",
+                  gap: isMobile ? 2 : 8,
+                  fontSize: "0.85rem",
+                }}
+              >
+                <span style={{ overflowWrap: "anywhere" }}>{p.name}</span>
+                <span style={{ color: over ? "#c2410c" : "var(--muted)", flexShrink: 0 }}>
                   {p.actualHours} / {p.budgetedHours} h
                   {over ? " · Over budget" : ""}
                 </span>

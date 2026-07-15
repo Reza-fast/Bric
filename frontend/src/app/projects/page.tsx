@@ -8,6 +8,7 @@ import { meRequest } from "@/lib/api/auth";
 import type { ProjectPortfolioCard, ProjectStatus } from "@/lib/api/projects";
 import { fetchProjectPortfolio } from "@/lib/api/projects";
 import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 type FilterTab = "all" | "active" | "planning" | "completed";
 
@@ -75,18 +76,20 @@ function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
         background: "var(--surface)",
         borderRadius: 18,
         border: "1px solid var(--border)",
-        padding: "1.5rem 1.6rem",
+        padding: "1.25rem 1.25rem",
         display: "flex",
         flexDirection: "column",
-        gap: "1.25rem",
-        minHeight: 300,
+        gap: "1.1rem",
+        minHeight: 260,
         boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         height: "100%",
         cursor: "pointer",
         transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+        boxSizing: "border-box",
+        minWidth: 0,
       }}
     >
-      <div style={{ display: "flex", gap: "1.1rem", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: "0.9rem", alignItems: "flex-start", minWidth: 0 }}>
         <ProjectLogoThumb
           projectId={card.id}
           name={card.name}
@@ -94,14 +97,15 @@ function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
           updatedAt={card.updatedAt}
         />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
             <h2
               style={{
                 margin: 0,
-                fontSize: "1.28rem",
+                fontSize: "1.15rem",
                 fontWeight: 700,
                 letterSpacing: "-0.02em",
                 lineHeight: 1.2,
+                overflowWrap: "anywhere",
               }}
             >
               {card.name}
@@ -121,7 +125,7 @@ function ProjectCard({ card }: { card: ProjectPortfolioCard }) {
               {statusLabel(card.status)}
             </span>
           </div>
-          <p style={{ margin: "0.5rem 0 0", fontSize: "0.98rem", color: "var(--muted)", lineHeight: 1.45 }}>
+          <p style={{ margin: "0.5rem 0 0", fontSize: "0.92rem", color: "var(--muted)", lineHeight: 1.45 }}>
             {card.location ?? "—"}
           </p>
         </div>
@@ -208,6 +212,7 @@ const tabs: { id: FilterTab; label: string }[] = [
 ];
 
 export default function ProjectsPage() {
+  const isMobile = useIsMobile(768);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [data, setData] = useState<ProjectPortfolioCard[] | null | undefined>(undefined);
   const [tab, setTab] = useState<FilterTab>("all");
@@ -331,6 +336,9 @@ export default function ProjectsPage() {
             cursor: "pointer",
             whiteSpace: "nowrap",
             textDecoration: "none",
+            width: isMobile ? "100%" : undefined,
+            textAlign: "center",
+            boxSizing: "border-box",
           }}
         >
           + New project
@@ -365,7 +373,7 @@ export default function ProjectsPage() {
             {t.label}
           </button>
         ))}
-        <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "var(--muted)" }}>
+        <span style={{ marginLeft: isMobile ? 0 : "auto", width: isMobile ? "100%" : undefined, fontSize: "0.8rem", color: "var(--muted)" }}>
           {data === undefined ? "…" : `${filtered.length} match filter · ${PAGE_SIZE} per page`}
         </span>
       </div>
@@ -381,17 +389,15 @@ export default function ProjectsPage() {
         </p>
       ) : (
         <>
-          <div style={{ width: "100%", overflowX: "auto", paddingBottom: 4 }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(280px, 1fr))",
-                gridTemplateRows: "repeat(2, minmax(300px, auto))",
-                gap: "1.5rem",
-                minWidth: 920,
-                minHeight: "calc(2 * 300px + 1.5rem)",
-              }}
-            >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobile
+                ? "1fr"
+                : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+              gap: isMobile ? "1rem" : "1.5rem",
+            }}
+          >
             {pageSlice.map((card) => (
               <Link
                 key={card.id}
@@ -402,12 +408,12 @@ export default function ProjectsPage() {
                   color: "inherit",
                   display: "block",
                   borderRadius: 18,
+                  minWidth: 0,
                 }}
               >
                 <ProjectCard card={card} />
               </Link>
             ))}
-            </div>
           </div>
           <div
             style={{

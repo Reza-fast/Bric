@@ -14,6 +14,7 @@ import {
   type TaskPriority,
 } from "@/lib/api/plannedTasks";
 import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/projects";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 type ViewMode = "daily" | "weekly" | "monthly";
 
@@ -103,6 +104,8 @@ function PlanningPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get("project");
+  const isMobile = useIsMobile(768);
+  const labelCol = isMobile ? 112 : 180;
 
   const [user, setUser] = useState<AuthUser | null>(null);
   const [portfolio, setPortfolio] = useState<ProjectPortfolioCard[] | null>(null);
@@ -351,8 +354,19 @@ function PlanningPageContent() {
               )}
             </p>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
-            <label style={{ fontSize: "0.85rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center", width: isMobile ? "100%" : undefined }}>
+            <label
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--muted)",
+                display: "flex",
+                alignItems: isMobile ? "stretch" : "center",
+                flexDirection: isMobile ? "column" : "row",
+                gap: 8,
+                flex: isMobile ? "1 1 100%" : undefined,
+                minWidth: 0,
+              }}
+            >
               Project
               <select
                 value={projectId ?? ""}
@@ -362,7 +376,8 @@ function PlanningPageContent() {
                   borderRadius: 8,
                   border: "1px solid var(--border)",
                   fontSize: "0.9rem",
-                  minWidth: 220,
+                  minWidth: isMobile ? 0 : 220,
+                  width: isMobile ? "100%" : undefined,
                 }}
               >
                 {(portfolio ?? []).map((p) => (
@@ -456,9 +471,11 @@ function PlanningPageContent() {
             <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "1rem 1.15rem",
+                gap: "0.65rem",
+                padding: isMobile ? "0.85rem 0.9rem" : "1rem 1.15rem",
                 borderBottom: "1px solid var(--border)",
               }}
             >
@@ -484,7 +501,7 @@ function PlanningPageContent() {
                         position: "absolute",
                         top: 0,
                         bottom: 0,
-                        left: `calc(180px + (100% - 180px) * ${nowPercent / 100})`,
+                        left: `calc(${labelCol}px + (100% - ${labelCol}px) * ${nowPercent / 100})`,
                         width: 2,
                         marginLeft: -1,
                         zIndex: 3,
@@ -497,9 +514,9 @@ function PlanningPageContent() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: `180px repeat(${Math.max(weekColumns.length, 1)}, minmax(0, 1fr))`,
+                      gridTemplateColumns: `${labelCol}px repeat(${Math.max(weekColumns.length, 1)}, minmax(${isMobile ? 72 : 0}px, 1fr))`,
                       width: "100%",
-                      minWidth: weekColumns.length === 0 ? undefined : "100%",
+                      minWidth: weekColumns.length === 0 ? undefined : isMobile ? labelCol + weekColumns.length * 72 : "100%",
                       position: "relative",
                       zIndex: 2,
                     }}
@@ -550,20 +567,22 @@ function PlanningPageContent() {
                           type="button"
                           onClick={() => openEditTask(task)}
                           style={{
-                            padding: "0.65rem 0.75rem",
+                            padding: isMobile ? "0.55rem 0.5rem" : "0.65rem 0.75rem",
                             borderBottom: "1px solid var(--border)",
                             borderRight: "1px solid var(--border)",
-                            fontSize: "0.82rem",
+                            fontSize: isMobile ? "0.72rem" : "0.82rem",
                             background: "var(--surface)",
                             textAlign: "left",
                             cursor: "pointer",
                             font: "inherit",
                             borderLeft: "none",
                             borderTop: "none",
+                            minWidth: 0,
+                            overflow: "hidden",
                           }}
                         >
-                          <div style={{ fontWeight: 700 }}>{phase}</div>
-                          <div style={{ color: "var(--muted)", marginTop: 4 }}>{task.title}</div>
+                          <div style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{phase}</div>
+                          <div style={{ color: "var(--muted)", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{task.title}</div>
                         </button>
                         <button
                           type="button"
@@ -932,7 +951,7 @@ function PlanningPageContent() {
                   style={{ padding: "0.55rem", borderRadius: 8, border: "1px solid var(--border)" }}
                 />
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "0.65rem" }}>
                 <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.82rem", fontWeight: 600 }}>
                   Start *
                   <input
@@ -954,7 +973,7 @@ function PlanningPageContent() {
                   />
                 </label>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "0.65rem" }}>
                 <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.82rem", fontWeight: 600 }}>
                   Status
                   <select

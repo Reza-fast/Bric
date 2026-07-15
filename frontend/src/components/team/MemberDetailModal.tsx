@@ -12,6 +12,7 @@ import {
   updateTeamMemberRole,
   type MemberHoursBreakdown,
 } from "@/lib/api/team";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 /** Roles for staff inside the architect firm (directory edit). */
 const FIRM_ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
@@ -54,13 +55,6 @@ function formatHours(h: number): string {
   if (!Number.isFinite(h)) return "0";
   return h >= 10 ? h.toFixed(1) : h.toFixed(2);
 }
-
-const sectionGrid: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 220px) minmax(0, 1fr)",
-  gap: "1rem 1.75rem",
-  alignItems: "start",
-};
 
 const sectionTitle: CSSProperties = {
   margin: 0,
@@ -112,6 +106,13 @@ function IconSave() {
 }
 
 export function MemberDetailModal({ member, allProjects, currentUserId, onClose, onMembershipsChanged }: Props) {
+  const isMobile = useIsMobile(640);
+  const sectionGrid: CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 220px) minmax(0, 1fr)",
+    gap: isMobile ? "0.65rem" : "1rem 1.75rem",
+    alignItems: "start",
+  };
   const [breakdown, setBreakdown] = useState<MemberHoursBreakdown | null>(null);
   const [loadHours, setLoadHours] = useState(true);
   const [hoursError, setHoursError] = useState(false);
@@ -232,7 +233,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "center",
-        padding: "1.25rem",
+        padding: isMobile ? "0.75rem" : "1.25rem",
         overflow: "auto",
       }}
       onClick={(e) => {
@@ -243,20 +244,21 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
         style={{
           width: "100%",
           maxWidth: 820,
-          marginTop: "1rem",
-          marginBottom: "2rem",
+          marginTop: isMobile ? "0.35rem" : "1rem",
+          marginBottom: isMobile ? "1rem" : "2rem",
           borderRadius: 12,
           border: "1px solid #e2e8f0",
           background: "#fff",
           boxShadow: "0 24px 60px rgba(15, 23, 42, 0.18)",
           overflow: "hidden",
+          boxSizing: "border-box",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
           style={{
-            padding: "1.35rem 1.5rem",
+            padding: isMobile ? "1.1rem 1rem" : "1.35rem 1.5rem",
             borderBottom: "1px solid #e8eef5",
             display: "flex",
             justifyContent: "space-between",
@@ -306,7 +308,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
           </button>
         </div>
 
-        <div style={{ padding: "1.5rem 1.5rem 0" }}>
+        <div style={{ padding: isMobile ? "1.1rem 1rem 0" : "1.5rem 1.5rem 0" }}>
           {actionError ? (
             <p style={{ margin: "0 0 1rem", padding: "0.65rem 0.85rem", borderRadius: 10, background: "#fef2f2", color: "#991b1b", fontSize: "0.85rem" }}>
               {actionError}
@@ -611,8 +613,8 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "minmax(0, 220px) minmax(0, 1fr)",
-              gap: "1rem 1.75rem",
+              gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 220px) minmax(0, 1fr)",
+              gap: isMobile ? "0.65rem" : "1rem 1.75rem",
               alignItems: "start",
               paddingBottom: "1.5rem",
               borderBottom: "1px solid #e8eef5",

@@ -21,6 +21,7 @@ import {
 } from "@/lib/api/reports";
 import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/projects";
 import { htmlToPlainPreview, isEffectivelyEmptyHtml, RichTextEditor } from "@/components/reporting/RichTextEditor";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 const FILE_INPUT_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.svg,.heic,.heif,.txt,.csv,.zip,.rar,.7z,.dwg,.dxf";
@@ -67,6 +68,7 @@ function ReportingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get("project");
+  const isMobile = useIsMobile(768);
 
   const [user, setUser] = useState<AuthUser | null>(null);
   const [portfolio, setPortfolio] = useState<ProjectPortfolioCard[] | null>(null);
@@ -319,7 +321,7 @@ function ReportingPageContent() {
     setReports((prev) => prev.map((x) => (x.id === res.report.id ? res.report : x)));
   }
 
-  const pagePad = "clamp(1rem, 3vw, 2rem)";
+  const pagePad = isMobile ? "0.85rem" : "clamp(1rem, 3vw, 2rem)";
 
   return (
     <DashboardShell user={user} fullBleed>
@@ -431,9 +433,12 @@ function ReportingPageContent() {
                 fontSize: "0.8rem",
                 color: "#64748b",
                 display: "flex",
-                alignItems: "center",
+                alignItems: isMobile ? "stretch" : "center",
+                flexDirection: isMobile ? "column" : "row",
                 gap: 8,
                 fontWeight: 600,
+                width: isMobile ? "100%" : undefined,
+                minWidth: 0,
               }}
             >
               Project
@@ -445,7 +450,8 @@ function ReportingPageContent() {
                   borderRadius: 8,
                   border: "1px solid #cbd5e1",
                   fontSize: "0.88rem",
-                  minWidth: 200,
+                  minWidth: isMobile ? 0 : 200,
+                  width: isMobile ? "100%" : undefined,
                   background: "#fff",
                   color: "#0f172a",
                 }}

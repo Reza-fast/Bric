@@ -18,9 +18,11 @@ import {
   slugifyName,
   statusOptions,
 } from "../projectFormShared";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 export default function NewProjectPage() {
   const router = useRouter();
+  const isMobile = useIsMobile(640);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -222,7 +224,7 @@ export default function NewProjectPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)",
                 gap: "1.15rem 1.5rem",
               }}
             >
@@ -260,7 +262,7 @@ export default function NewProjectPage() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) minmax(0, 1fr)",
                 gap: "1.15rem 1.5rem",
               }}
             >

@@ -10,6 +10,7 @@ import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/proj
 import { type TeamMember, fetchTeamDirectory, inviteTeamMember } from "@/lib/api/team";
 import type { UserRole } from "@/lib/api/roles";
 import { canAccessTeam } from "@/lib/api/roles";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
   { value: "architect", label: "Architect" },
@@ -37,6 +38,7 @@ function statusPillColor(status: string): { bg: string; fg: string } {
 }
 
 export default function TeamPage() {
+  const isMobile = useIsMobile(768);
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -133,16 +135,23 @@ export default function TeamPage() {
 
   return (
     <DashboardShell user={user} fullBleed>
-      <div style={{ padding: "1.25rem clamp(1rem, 3vw, 2rem)", width: "100%" }}>
+      <div style={{ padding: isMobile ? "1rem 0.85rem" : "1.25rem clamp(1rem, 3vw, 2rem)", width: "100%", boxSizing: "border-box" }}>
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ fontSize: "0.72rem", color: "#64748b", letterSpacing: "0.12em", fontWeight: 700 }}>TEAM DIRECTORY</div>
-          <h1 style={{ margin: "0.35rem 0 0", fontSize: "1.8rem", fontWeight: 800 }}>Manage Team Members</h1>
-          <p style={{ margin: "0.4rem 0 0", color: "#64748b", maxWidth: 720 }}>
+          <h1 style={{ margin: "0.35rem 0 0", fontSize: isMobile ? "1.45rem" : "1.8rem", fontWeight: 800 }}>Manage Team Members</h1>
+          <p style={{ margin: "0.4rem 0 0", color: "#64748b", maxWidth: 720, fontSize: isMobile ? "0.88rem" : undefined }}>
             Invite new members, assign their function, and see which projects they are currently on. Select someone in the table to view hours by project and manage assignments.
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
+            gap: "0.75rem",
+            marginBottom: "1rem",
+          }}
+        >
           <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", padding: "0.85rem 1rem" }}>
             <div style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 700 }}>TOTAL PERSONNEL</div>
             <div style={{ fontSize: "1.65rem", fontWeight: 800, marginTop: 2 }}>{metrics.total}</div>
@@ -157,8 +166,15 @@ export default function TeamPage() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 340px", gap: "1rem", alignItems: "start" }}>
-          <section style={{ border: "1px solid #e2e8f0", borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) 340px",
+            gap: "1rem",
+            alignItems: "start",
+          }}
+        >
+          <section style={{ border: "1px solid #e2e8f0", borderRadius: 14, background: "#fff", overflow: "hidden", minWidth: 0 }}>
             {loading ? (
               <p style={{ margin: 0, padding: "1rem", color: "#64748b" }}>Loading team…</p>
             ) : error ? (
@@ -166,7 +182,8 @@ export default function TeamPage() {
             ) : members.length === 0 ? (
               <p style={{ margin: 0, padding: "1rem", color: "#64748b" }}>No team members yet.</p>
             ) : (
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem", minWidth: isMobile ? 560 : undefined }}>
                 <thead>
                   <tr style={{ background: "#f8fafc", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
                     <th style={{ padding: "0.75rem 0.9rem", color: "#64748b" }}>Member</th>
@@ -250,6 +267,7 @@ export default function TeamPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </section>
 

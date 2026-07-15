@@ -1,6 +1,10 @@
+"use client";
+
 import type { DashboardMetrics } from "@/lib/api/dashboard";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 export function MetricCards({ metrics }: { metrics: DashboardMetrics }) {
+  const isMobile = useIsMobile(640);
   const cards = [
     { label: "Active projects", value: String(metrics.activeProjects), hint: "This week (UTC)" },
     {
@@ -19,7 +23,7 @@ export function MetricCards({ metrics }: { metrics: DashboardMetrics }) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+        gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(min(100%, 200px), 1fr))",
         gap: "1rem",
         marginBottom: "1.5rem",
       }}

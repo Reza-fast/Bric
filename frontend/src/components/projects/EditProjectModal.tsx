@@ -22,6 +22,7 @@ import {
   sectionTitle,
   statusOptions,
 } from "@/app/projects/projectFormShared";
+import { useIsMobile } from "@/lib/useMediaQuery";
 
 type Props = {
   open: boolean;
@@ -29,24 +30,6 @@ type Props = {
   project: ProjectDetail | null;
   onClose: () => void;
   onSaved: (project: ProjectDetail) => void;
-};
-
-const fieldGrid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: "1rem",
-};
-
-const budgetSummaryStyle: React.CSSProperties = {
-  marginTop: "1rem",
-  padding: "1rem 1.1rem",
-  borderRadius: 12,
-  border: "1px solid var(--border)",
-  background: "var(--bg, #f8fafc)",
-  display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: "0.75rem 1rem",
-  alignItems: "end",
 };
 
 const budgetMetricLabel: React.CSSProperties = {
@@ -67,6 +50,7 @@ const budgetMetricValue: React.CSSProperties = {
 };
 
 export function EditProjectModal({ open, projectId, project, onClose, onSaved }: Props) {
+  const isMobile = useIsMobile(640);
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -81,6 +65,24 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [removeLogo, setRemoveLogo] = useState(false);
+
+  const fieldGrid: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+    gap: "1rem",
+  };
+
+  const budgetSummaryStyle: React.CSSProperties = {
+    marginTop: "1rem",
+    padding: isMobile ? "0.85rem 0.95rem" : "1rem 1.1rem",
+    borderRadius: 12,
+    border: "1px solid var(--border)",
+    background: "var(--bg, #f8fafc)",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
+    gap: isMobile ? "0.85rem" : "0.75rem 1rem",
+    alignItems: "end",
+  };
 
   useEffect(() => {
     if (!open || !project) return;
@@ -212,7 +214,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "center",
-        padding: "1.5rem",
+        padding: isMobile ? "0.75rem" : "1.5rem",
         overflow: "auto",
       }}
       onClick={(e) => {
@@ -224,15 +226,16 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
         style={{
           width: "100%",
           maxWidth: 640,
-          marginTop: "1.5rem",
-          marginBottom: "2rem",
-          borderRadius: 14,
+          marginTop: isMobile ? "0.5rem" : "1.5rem",
+          marginBottom: isMobile ? "1rem" : "2rem",
+          borderRadius: isMobile ? 12 : 14,
           border: "1px solid var(--border)",
           background: "var(--surface)",
-          padding: "1.35rem 1.5rem",
+          padding: isMobile ? "1.1rem 1rem" : "1.35rem 1.5rem",
           boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
-          maxHeight: "calc(100vh - 3rem)",
+          maxHeight: isMobile ? "calc(100vh - 1.5rem)" : "calc(100vh - 3rem)",
           overflow: "auto",
+          boxSizing: "border-box",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -512,7 +515,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
           </p>
         ) : null}
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.65rem", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.65rem", justifyContent: isMobile ? "stretch" : "flex-end" }}>
           <button
             type="button"
             disabled={saving}
@@ -525,6 +528,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               fontWeight: 600,
               fontSize: "0.88rem",
               cursor: saving ? "wait" : "pointer",
+              flex: isMobile ? "1 1 auto" : undefined,
             }}
           >
             Cancel
@@ -541,6 +545,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
               fontWeight: 700,
               fontSize: "0.88rem",
               cursor: saving ? "wait" : "pointer",
+              flex: isMobile ? "1 1 auto" : undefined,
             }}
           >
             {saving ? "Saving…" : "Save changes"}
