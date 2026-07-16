@@ -26,6 +26,7 @@
     "emDash": "—"
   },
   "Nav": {
+    "tagline": "Plan architectural",
     "dashboard": "Tableau de bord",
     "projects": "Projets",
     "time": "Temps",

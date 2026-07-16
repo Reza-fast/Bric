@@ -10,6 +10,12 @@ import { logoutRequest } from "@/lib/api/auth";
 import { canAccessTeam } from "@/lib/api/roles";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
+const SIDEBAR_BG = "#F0F7FF";
+const NAVY = "#1A232E";
+const ACTIVE = "#C45C26";
+const MUTED = "#64748b";
+const INACTIVE = "#1e293b";
+
 const navAll = [
   { key: "dashboard" as const, href: "/dashboard" },
   { key: "projects" as const, href: "/projects" },
@@ -19,6 +25,8 @@ const navAll = [
   { key: "reporting" as const, href: "/reporting" },
   { key: "documents" as const, href: "/documents" },
 ] as const;
+
+type NavKey = (typeof navAll)[number]["key"];
 
 function roleLabel(role: string): string {
   return role.replace(/_/g, " ");
@@ -31,16 +39,77 @@ function initialsFromName(name: string | undefined): string {
   return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase() || "?";
 }
 
-function UserGlyph() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-        fill="currentColor"
-        opacity={0.85}
-      />
-    </svg>
-  );
+function NavIcon({ name, active }: { name: NavKey; active: boolean }) {
+  const stroke = active ? ACTIVE : INACTIVE;
+  const common = {
+    width: 20,
+    height: 20,
+    viewBox: "0 0 24 24",
+    fill: "none" as const,
+    stroke,
+    strokeWidth: 1.75,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true as const,
+  };
+
+  switch (name) {
+    case "dashboard":
+      return (
+        <svg {...common}>
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+      );
+    case "projects":
+      return (
+        <svg {...common}>
+          <path d="M4 20V9.5L12 4l8 5.5V20" />
+          <path d="M9.5 20v-6.5h5V20" />
+          <path d="M4 20h16" />
+        </svg>
+      );
+    case "time":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3.5 2" />
+        </svg>
+      );
+    case "team":
+      return (
+        <svg {...common}>
+          <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+          <circle cx="9" cy="7" r="3.5" />
+          <path d="M22 21v-2a3.5 3.5 0 00-2.5-3.35M16.5 3.7a3.5 3.5 0 010 6.6" />
+        </svg>
+      );
+    case "planning":
+      return (
+        <svg {...common}>
+          <rect x="3.5" y="5" width="17" height="15" rx="2" />
+          <path d="M8 3v4M16 3v4M3.5 10h17" />
+        </svg>
+      );
+    case "reporting":
+      return (
+        <svg {...common}>
+          <rect x="3.5" y="3.5" width="17" height="17" rx="2" />
+          <path d="M8 16V11M12 16V8M16 16v-3" />
+        </svg>
+      );
+    case "documents":
+      return (
+        <svg {...common}>
+          <path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V9l-5-6z" />
+          <path d="M14 3v6h6M9 13h6M9 17h4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -55,31 +124,28 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-function ProfileNavAvatar({ user }: { user: AuthUser | null }) {
-  const t = useTranslations("Nav");
+function ProfileAvatar({ user, size = 40 }: { user: AuthUser | null; size?: number }) {
   const [imgFailed, setImgFailed] = useState(false);
   const onImgError = useCallback(() => setImgFailed(true), []);
   const url = user?.avatarUrl?.trim();
   const showPhoto = Boolean(url && !imgFailed);
 
   return (
-    <Link
-      href="/profile"
-      title={t("profile")}
-      aria-label={t("profile")}
+    <div
       style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        overflow: "hidden",
+        background: NAVY,
+        color: "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 44,
-        height: 44,
-        borderRadius: "50%",
-        overflow: "hidden",
-        background: showPhoto ? "#e4e4e7" : "var(--accent)",
-        color: showPhoto ? "inherit" : "#ffffff",
-        textDecoration: "none",
-        border: "2px solid var(--border)",
         flexShrink: 0,
+        fontSize: size > 36 ? "0.78rem" : "0.72rem",
+        fontWeight: 700,
+        letterSpacing: "0.02em",
       }}
     >
       {showPhoto ? (
@@ -87,28 +153,17 @@ function ProfileNavAvatar({ user }: { user: AuthUser | null }) {
         <img
           src={url!}
           alt=""
-          width={44}
-          height={44}
+          width={size}
+          height={size}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           onError={onImgError}
         />
+      ) : user?.displayName ? (
+        initialsFromName(user.displayName)
       ) : (
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100%",
-            fontSize: "0.8rem",
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-          }}
-        >
-          {user?.displayName ? initialsFromName(user.displayName) : <UserGlyph />}
-        </span>
+        "?"
       )}
-    </Link>
+    </div>
   );
 }
 
@@ -120,9 +175,7 @@ export function DashboardShell({
 }: {
   children: ReactNode;
   user: AuthUser | null;
-  /** When true, main content has no max padding so pages can span full width. */
   fullBleed?: boolean;
-  /** Optional row shown in the top bar (e.g. project sub-navigation). */
   headerTabs?: ReactNode;
 }) {
   const t = useTranslations("Nav");
@@ -155,6 +208,7 @@ export function DashboardShell({
   }
 
   const showSidebar = !isMobile || navOpen;
+  const profileName = user?.displayName?.trim() || (user ? roleLabel(user.role) : "…");
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
@@ -177,13 +231,12 @@ export function DashboardShell({
 
       <aside
         style={{
-          width: 240,
-          background: "var(--sidebar)",
-          borderRight: "1px solid var(--border)",
-          padding: "1.25rem 1rem",
+          width: 260,
+          background: SIDEBAR_BG,
+          borderRight: "1px solid #e2eaf4",
+          padding: "1.5rem 0 1.15rem",
           display: showSidebar ? "flex" : "none",
           flexDirection: "column",
-          gap: "0.5rem",
           flexShrink: 0,
           ...(isMobile
             ? {
@@ -199,13 +252,38 @@ export function DashboardShell({
       >
         <div
           style={{
+            padding: "0 1.25rem",
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
             gap: "0.5rem",
+            marginBottom: "1.75rem",
           }}
         >
-          <div style={{ fontWeight: 700, fontSize: "1.25rem", letterSpacing: "0.04em" }}>BRIC</div>
+          <div>
+            <div
+              style={{
+                fontWeight: 800,
+                fontSize: "1.55rem",
+                letterSpacing: "0.06em",
+                color: NAVY,
+                lineHeight: 1,
+              }}
+            >
+              BRIC
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: "0.82rem",
+                color: MUTED,
+                fontWeight: 500,
+                lineHeight: 1.3,
+              }}
+            >
+              {t("tagline")}
+            </div>
+          </div>
           {isMobile ? (
             <button
               type="button"
@@ -215,20 +293,22 @@ export function DashboardShell({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 borderRadius: 8,
-                border: "1px solid var(--border)",
-                background: "var(--surface)",
-                color: "var(--text)",
+                border: "1px solid #dbe4f0",
+                background: "#fff",
+                color: NAVY,
                 cursor: "pointer",
+                flexShrink: 0,
               }}
             >
               <MenuIcon open />
             </button>
           ) : null}
         </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.25rem", marginTop: "1rem" }}>
+
+        <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
           {navAll
             .filter((item) => !("requiresHr" in item && item.requiresHr) || canAccessTeam(user?.role))
             .map((item) => {
@@ -238,73 +318,122 @@ export function DashboardShell({
                   key={item.href}
                   href={item.href}
                   onClick={() => setNavOpen(false)}
-                  style={{ textDecoration: "none", color: "inherit" }}
+                  style={{ textDecoration: "none", color: "inherit", position: "relative" }}
                 >
+                  {active ? (
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 6,
+                        bottom: 6,
+                        width: 4,
+                        borderRadius: "0 4px 4px 0",
+                        background: ACTIVE,
+                      }}
+                    />
+                  ) : null}
                   <span
                     style={{
-                      padding: "0.5rem 0.75rem",
-                      borderRadius: 8,
-                      color: active ? "var(--accent)" : "var(--text)",
-                      fontWeight: active ? 600 : 400,
-                      fontSize: "0.9rem",
-                      display: "block",
+                      marginLeft: 8,
+                      marginRight: 12,
+                      padding: "0.7rem 0.9rem",
+                      borderRadius: "0 14px 14px 0",
+                      background: active ? "#fff" : "transparent",
+                      color: active ? ACTIVE : INACTIVE,
+                      fontWeight: active ? 700 : 500,
+                      fontSize: "0.95rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                      boxShadow: active ? "0 1px 2px rgba(15, 23, 42, 0.04)" : undefined,
                     }}
                   >
+                    <NavIcon name={item.key} active={active} />
                     {t(item.key)}
                   </span>
                 </Link>
               );
             })}
         </nav>
-        <Link
-          href="/projects/new"
-          onClick={() => setNavOpen(false)}
-          style={{
-            marginTop: "1rem",
-            display: "block",
-            textAlign: "center",
-            padding: "0.65rem 1rem",
-            borderRadius: 10,
-            border: "none",
-            background: "var(--text)",
-            color: "#fff",
-            fontWeight: 600,
-            cursor: "pointer",
-            textDecoration: "none",
-          }}
-        >
-          {t("newProject")}
-        </Link>
-        <div
-          style={{
-            marginTop: "auto",
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "0.85rem",
-            paddingTop: "1rem",
-            borderTop: "1px solid var(--border)",
-          }}
-        >
-          <ProfileNavAvatar user={user} />
-          <div style={{ fontSize: "0.85rem", color: "var(--muted)", textAlign: "center", width: "100%" }}>
-            <button
-              type="button"
-              onClick={() => void onLogout()}
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                color: "var(--muted)",
-                cursor: "pointer",
-                textDecoration: "underline",
-                font: "inherit",
-              }}
-            >
-              {t("signOut")}
-            </button>
-            <span> · {t("settings")}</span>
+
+        <div style={{ padding: "1rem 1.25rem 0", display: "flex", flexDirection: "column", gap: "1.15rem" }}>
+          <Link
+            href="/projects/new"
+            onClick={() => setNavOpen(false)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              textAlign: "center",
+              padding: "0.8rem 1rem",
+              borderRadius: 12,
+              border: "none",
+              background: NAVY,
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.92rem",
+              cursor: "pointer",
+              textDecoration: "none",
+            }}
+          >
+            <span aria-hidden style={{ fontSize: "1.1rem", lineHeight: 1, fontWeight: 600 }}>
+              +
+            </span>
+            {t("newProject")}
+          </Link>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              paddingTop: "0.15rem",
+            }}
+          >
+            <Link href="/profile" onClick={() => setNavOpen(false)} style={{ textDecoration: "none", flexShrink: 0 }}>
+              <ProfileAvatar user={user} />
+            </Link>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <Link
+                href="/profile"
+                onClick={() => setNavOpen(false)}
+                style={{
+                  display: "block",
+                  fontWeight: 700,
+                  fontSize: "0.92rem",
+                  color: NAVY,
+                  textDecoration: "none",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {profileName}
+              </Link>
+              <div style={{ marginTop: 2, fontSize: "0.78rem", color: MUTED }}>
+                <button
+                  type="button"
+                  onClick={() => void onLogout()}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    color: MUTED,
+                    cursor: "pointer",
+                    font: "inherit",
+                  }}
+                >
+                  {t("signOut")}
+                </button>
+                <span> · </span>
+                <Link href="/profile" onClick={() => setNavOpen(false)} style={{ color: MUTED, textDecoration: "none" }}>
+                  {t("settings")}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </aside>
