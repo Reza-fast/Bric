@@ -221,6 +221,7 @@
   border-radius: 16px;
   background: var(--lp-soft);
   min-height: 200px;
+  height: 100%;
 }
 
 .lp-media-tall {
@@ -232,16 +233,14 @@
   padding: clamp(3.5rem, 8vw, 6rem) clamp(1.25rem, 5vw, 4rem);
 }
 
+.lp-section-tint {
+  background: #f4f7f2;
+}
+
 .lp-section-head {
   text-align: center;
   max-width: 640px;
   margin: 0 auto 2.75rem;
-}
-
-.lp-section-head-left {
-  text-align: left;
-  margin-left: 0;
-  max-width: 560px;
 }
 
 .lp-eyebrow {
@@ -307,24 +306,84 @@
   background: var(--lp-card);
   border: 1px solid var(--lp-line);
   border-radius: 20px;
-  padding: 1.4rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0;
   min-width: 0;
   overflow: hidden;
+  height: 100%;
 }
 
-.lp-feature-grid {
+.lp-card-copy {
+  padding: 1.35rem 1.4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 0 0 auto;
+}
+
+.lp-card-copy .lp-text-link {
+  margin-top: 0.35rem;
+}
+
+.lp-card-media {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+.lp-card-media .lp-media {
+  border-radius: 0;
+  width: 100%;
+  min-height: 180px;
+}
+
+.lp-card-media .lp-photo {
+  border-radius: 0;
+}
+
+.lp-feature-grid,
+.lp-benefit-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr;
+  grid-template-columns: 1.4fr 0.95fr 0.95fr;
   gap: 1.1rem;
   align-items: stretch;
 }
 
-.lp-feature-main .lp-media {
-  margin-top: 1.15rem;
-  min-height: 240px;
+/* Wide left card: text left + vertical photo right */
+.lp-feature-main,
+.lp-benefit-wide {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  grid-template-rows: 1fr;
+  align-items: stretch;
+  min-height: 420px;
+}
+
+.lp-feature-main .lp-card-copy,
+.lp-benefit-wide .lp-card-copy {
+  padding: 1.6rem 1.5rem;
+  justify-content: center;
+}
+
+.lp-feature-main .lp-card-media,
+.lp-benefit-wide .lp-card-media {
+  min-height: 100%;
+}
+
+.lp-feature-main .lp-card-media .lp-media,
+.lp-benefit-wide .lp-card-media .lp-media {
+  min-height: 100%;
+}
+
+/* Narrow cards: text top + landscape photo bottom */
+.lp-feature-side {
+  min-height: 420px;
+}
+
+.lp-feature-side .lp-card-media .lp-media {
+  min-height: 200px;
 }
 
 .lp-logos {
@@ -354,35 +413,6 @@
   letter-spacing: -0.03em;
 }
 
-.lp-benefit-grid {
-  display: grid;
-  grid-template-columns: 1.45fr 1fr 1fr;
-  gap: 1.1rem;
-}
-
-.lp-benefit-wide {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  gap: 1rem;
-  align-items: stretch;
-  padding: 0;
-}
-
-.lp-benefit-wide > div:first-child {
-  padding: 1.5rem;
-}
-
-.lp-benefit-wide .lp-media {
-  min-height: 100%;
-  border-radius: 0;
-  margin: 0;
-}
-
-.lp-benefit-wide .lp-photo {
-  border-radius: 0;
-  min-height: 280px;
-}
-
 .lp-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -390,17 +420,21 @@
 }
 
 .lp-step .lp-media {
-  min-height: 220px;
+  min-height: 160px;
+  max-height: 180px;
   margin-bottom: 1rem;
+  border-radius: 14px;
 }
 
-.lp-step-num {
-  margin: 0 0 0.4rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--lp-muted);
-  letter-spacing: 0.06em;
+.lp-step .lp-photo {
+  border-radius: 14px;
+  min-height: 160px;
+  max-height: 180px;
+}
+
+.lp-step .lp-h3 {
+  margin-bottom: 0.45rem;
+  font-size: 1.1rem;
 }
 
 .lp-about {
@@ -452,6 +486,12 @@
 
 .lp-price-card {
   padding: 1.6rem;
+  gap: 0.25rem;
+}
+
+.lp-quote-card {
+  padding: 1.4rem;
+  gap: 0.25rem;
 }
 
 .lp-plan-icon {
@@ -674,8 +714,20 @@
     grid-template-columns: 1fr;
   }
 
+  .lp-feature-main,
   .lp-benefit-wide {
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .lp-feature-main .lp-card-media .lp-media,
+  .lp-benefit-wide .lp-card-media .lp-media,
+  .lp-feature-side .lp-card-media .lp-media {
+    min-height: 220px;
+  }
+
+  .lp-feature-side {
+    min-height: 0;
   }
 
   .lp-footer-grid {

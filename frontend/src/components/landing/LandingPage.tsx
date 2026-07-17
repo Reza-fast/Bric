@@ -225,31 +225,43 @@ export function LandingPage() {
         </div>
         <div className="lp-feature-grid">
           <article className="lp-card lp-feature-main">
-            <p className="lp-label">{t("feature1Label")}</p>
-            <h3 className="lp-h3">{t("feature1Title")}</h3>
-            <p className="lp-body">{t("feature1Body")}</p>
-            <a href="#pricing" className="lp-text-link">
-              {t("feature1Link")} →
-            </a>
-            <Photo src={IMG.manage} alt={t("feature1Title")} />
+            <div className="lp-card-copy">
+              <p className="lp-label">{t("feature1Label")}</p>
+              <h3 className="lp-h3">{t("feature1Title")}</h3>
+              <p className="lp-body">{t("feature1Body")}</p>
+              <a href="#pricing" className="lp-text-link">
+                {t("feature1Link")} →
+              </a>
+            </div>
+            <div className="lp-card-media">
+              <Photo src={IMG.manage} alt={t("feature1Title")} />
+            </div>
           </article>
           <article className="lp-card lp-feature-side">
-            <p className="lp-label">{t("feature2Label")}</p>
-            <h3 className="lp-h3">{t("feature2Title")}</h3>
-            <p className="lp-body">{t("feature2Body")}</p>
-            <a href="#pricing" className="lp-text-link">
-              {t("feature2Link")} →
-            </a>
-            <Photo src={IMG.track} alt={t("feature2Title")} tall />
+            <div className="lp-card-copy">
+              <p className="lp-label">{t("feature2Label")}</p>
+              <h3 className="lp-h3">{t("feature2Title")}</h3>
+              <p className="lp-body">{t("feature2Body")}</p>
+              <a href="#pricing" className="lp-text-link">
+                {t("feature2Link")} →
+              </a>
+            </div>
+            <div className="lp-card-media">
+              <Photo src={IMG.track} alt={t("feature2Title")} />
+            </div>
           </article>
           <article className="lp-card lp-feature-side">
-            <p className="lp-label">{t("feature3Label")}</p>
-            <h3 className="lp-h3">{t("feature3Title")}</h3>
-            <p className="lp-body">{t("feature3Body")}</p>
-            <a href="#pricing" className="lp-text-link">
-              {t("feature3Link")} →
-            </a>
-            <Photo src={IMG.report} alt={t("feature3Title")} tall />
+            <div className="lp-card-copy">
+              <p className="lp-label">{t("feature3Label")}</p>
+              <h3 className="lp-h3">{t("feature3Title")}</h3>
+              <p className="lp-body">{t("feature3Body")}</p>
+              <a href="#pricing" className="lp-text-link">
+                {t("feature3Link")} →
+              </a>
+            </div>
+            <div className="lp-card-media">
+              <Photo src={IMG.report} alt={t("feature3Title")} />
+            </div>
           </article>
         </div>
       </section>
@@ -265,15 +277,15 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="lp-section">
-        <div className="lp-section-head lp-section-head-left">
+      <section className="lp-section lp-section-tint">
+        <div className="lp-section-head">
           <p className="lp-eyebrow">{t("benefitsEyebrow")}</p>
           <h2 className="lp-h2">{t("benefitsTitle")}</h2>
           <p className="lp-lead">{t("benefitsSub")}</p>
         </div>
         <div className="lp-benefit-grid">
           <article className="lp-card lp-benefit-wide">
-            <div>
+            <div className="lp-card-copy">
               <p className="lp-label">{t("benefit1Label")}</p>
               <h3 className="lp-h3">{t("benefit1Title")}</h3>
               <p className="lp-body">{t("benefit1Body")}</p>
@@ -281,23 +293,35 @@ export function LandingPage() {
                 {t("benefit1Link")} →
               </a>
             </div>
-            <Photo src={IMG.benefit} alt={t("benefit1Title")} />
+            <div className="lp-card-media">
+              <Photo src={IMG.benefit} alt={t("benefit1Title")} />
+            </div>
           </article>
-          <article className="lp-card">
-            <h3 className="lp-h3">{t("benefit2Title")}</h3>
-            <p className="lp-body">{t("benefit2Body")}</p>
-            <a href="#process" className="lp-text-link">
-              {t("benefit2Link")} →
-            </a>
-            <Photo src={IMG.approve} alt={t("benefit2Title")} tall />
+          <article className="lp-card lp-feature-side">
+            <div className="lp-card-copy">
+              <p className="lp-label">{t("benefit2Label")}</p>
+              <h3 className="lp-h3">{t("benefit2Title")}</h3>
+              <p className="lp-body">{t("benefit2Body")}</p>
+              <a href="#process" className="lp-text-link">
+                {t("benefit2Link")} →
+              </a>
+            </div>
+            <div className="lp-card-media">
+              <Photo src={IMG.approve} alt={t("benefit2Title")} />
+            </div>
           </article>
-          <article className="lp-card">
-            <h3 className="lp-h3">{t("benefit3Title")}</h3>
-            <p className="lp-body">{t("benefit3Body")}</p>
-            <a href="#process" className="lp-text-link">
-              {t("benefit3Link")} →
-            </a>
-            <Photo src={IMG.finish} alt={t("benefit3Title")} tall />
+          <article className="lp-card lp-feature-side">
+            <div className="lp-card-copy">
+              <p className="lp-label">{t("benefit3Label")}</p>
+              <h3 className="lp-h3">{t("benefit3Title")}</h3>
+              <p className="lp-body">{t("benefit3Body")}</p>
+              <a href="#process" className="lp-text-link">
+                {t("benefit3Link")} →
+              </a>
+            </div>
+            <div className="lp-card-media">
+              <Photo src={IMG.finish} alt={t("benefit3Title")} />
+            </div>
           </article>
         </div>
       </section>
@@ -313,17 +337,16 @@ export function LandingPage() {
             { title: t("step1Title"), body: t("step1Body"), img: IMG.step1 },
             { title: t("step2Title"), body: t("step2Body"), img: IMG.step2 },
             { title: t("step3Title"), body: t("step3Body"), img: IMG.step3 },
-          ].map((step, i) => (
+          ].map((step) => (
             <article key={step.title} className="lp-step">
               <Photo src={step.img} alt={step.title} />
-              <p className="lp-step-num">{String(i + 1).padStart(2, "0")}</p>
               <h3 className="lp-h3">{step.title}</h3>
               <p className="lp-body">{step.body}</p>
             </article>
           ))}
         </div>
         <div className="lp-cta-row lp-cta-center">
-          <PrimaryBtn href="/register">{t("ctaStart")}</PrimaryBtn>
+          <GhostBtn href="/register">{t("ctaStart")}</GhostBtn>
           <a href="#contact" className="lp-text-link">
             {t("ctaDemo")} →
           </a>
