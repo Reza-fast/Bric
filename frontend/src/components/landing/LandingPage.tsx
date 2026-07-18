@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { BricLogo, BricWordmark } from "@/components/brand/BricLogo";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useIsMobile } from "@/lib/useMediaQuery";
 import "./landing.css";
@@ -145,7 +146,7 @@ export function LandingPage() {
     <div className="lp-root">
       <header className="lp-nav">
         <a href="#home" className="lp-brand">
-          {t("brand")}
+          <BricWordmark markSize={isMobile ? 18 : 20} />
         </a>
 
         {!isMobile ? (
@@ -201,7 +202,10 @@ export function LandingPage() {
 
       <section id="home" className="lp-hero">
         <div className="lp-hero-copy">
-          <p className="lp-brand-mark">{t("brand")}</p>
+          <div className="lp-hero-brand">
+            <BricLogo size={isMobile ? 36 : 44} animate className="lp-hero-mark" />
+            <p className="lp-brand-mark">{t("brand")}</p>
+          </div>
           <h1 className="lp-hero-title">{t("heroTitle")}</h1>
         </div>
         <div className="lp-hero-side">
@@ -457,6 +461,7 @@ export function LandingPage() {
       </section>
 
       <section className="lp-final-cta">
+        <BricLogo size={28} className="lp-final-mark" />
         <h2 className="lp-h2">{t("ctaTitle")}</h2>
         <p className="lp-lead">{t("ctaSub")}</p>
         <div className="lp-cta-row lp-cta-center">
@@ -490,7 +495,9 @@ export function LandingPage() {
         </div>
 
         <div className="lp-footer-grid">
-          <div className="lp-footer-brand">{t("brand")}</div>
+          <div className="lp-footer-brand">
+            <BricWordmark markSize={20} />
+          </div>
           {footerCols.map((col) => (
             <div key={col.title}>
               <div className="lp-footer-col-title">{col.title}</div>

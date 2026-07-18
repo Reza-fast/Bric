@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { BricLogo } from "@/components/brand/BricLogo";
 import { Link, useRouter } from "@/i18n/navigation";
 import { registerRequest } from "@/lib/api/auth";
 import type { UserRole } from "@/lib/api/roles";
@@ -55,7 +56,10 @@ export default function RegisterPage() {
           padding: "1.75rem",
         }}
       >
-        <h1 style={{ margin: "0 0 1.25rem", fontSize: "1.35rem" }}>{t("registerTitle")}</h1>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
+          <BricLogo size={36} animate />
+        </div>
+        <h1 style={{ margin: "0 0 1.25rem", fontSize: "1.35rem", textAlign: "center" }}>{t("registerTitle")}</h1>
         <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.85rem" }}>
             {t("displayName")}

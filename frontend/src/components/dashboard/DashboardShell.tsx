@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
+import { BricWordmark } from "@/components/brand/BricLogo";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { AuthUser } from "@/lib/api/auth";
@@ -261,17 +262,16 @@ export function DashboardShell({
           }}
         >
           <div>
-            <div
+            <Link
+              href="/dashboard"
               style={{
-                fontWeight: 800,
-                fontSize: "1.55rem",
-                letterSpacing: "0.06em",
+                display: "inline-flex",
+                textDecoration: "none",
                 color: NAVY,
-                lineHeight: 1,
               }}
             >
-              BRIC
-            </div>
+              <BricWordmark markSize={22} />
+            </Link>
             <div
               style={{
                 marginTop: 8,
