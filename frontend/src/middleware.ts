@@ -33,6 +33,8 @@ function isProtected(path: string): boolean {
     path.startsWith("/team/") ||
     path === "/time" ||
     path.startsWith("/time/") ||
+    path === "/hours" ||
+    path.startsWith("/hours/") ||
     path === "/reporting" ||
     path.startsWith("/reporting/")
   );

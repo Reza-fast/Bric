@@ -11,9 +11,11 @@ import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/proj
 import { type TeamMember, fetchTeamDirectory, inviteTeamMember } from "@/lib/api/team";
 import type { UserRole } from "@/lib/api/roles";
 import { canAccessTeam } from "@/lib/api/roles";
-import { useIsMobile } from "@/lib/useMediaQuery";
+import "@/components/team/team.css";
 
 const ROLE_VALUES: UserRole[] = ["architect", "contractor", "subcontractor", "client"];
+const FILTER_ROLES = ["all", "architect", "contractor", "subcontractor", "client", "hr"] as const;
+type RoleFilter = (typeof FILTER_ROLES)[number];
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -21,24 +23,23 @@ function initials(name: string): string {
   return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase();
 }
 
-function statusPillColor(status: string): { bg: string; fg: string } {
-  if (status === "active") return { bg: "#dcfce7", fg: "#166534" };
-  if (status === "critical") return { bg: "#ffedd5", fg: "#c2410c" };
-  if (status === "planning") return { bg: "#e0f2fe", fg: "#0369a1" };
-  if (status === "completed") return { bg: "#e4e4e7", fg: "#3f3f46" };
-  return { bg: "#f1f5f9", fg: "#334155" };
+function pillClass(status: string, index: number): string {
+  if (status === "critical") return "team-pill team-pill--peach";
+  if (status === "completed" || status === "inactive") return "team-pill team-pill--muted";
+  if (index % 5 === 2) return "team-pill team-pill--peach";
+  return "team-pill team-pill--blue";
 }
 
 export default function TeamPage() {
   const t = useTranslations("Team");
   const tCommon = useTranslations("Common");
-  const isMobile = useIsMobile(768);
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [projects, setProjects] = useState<ProjectPortfolioCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -76,10 +77,16 @@ export default function TeamPage() {
 
   const metrics = useMemo(() => {
     const total = members.length;
-    const activeToday = members.filter((m) => m.activeProjectCount > 0).length;
+    const activeOnProjects = members.filter((m) => m.activeProjectCount > 0).length;
     const projectCount = new Set(members.flatMap((m) => m.projects.map((p) => p.id))).size;
-    return { total, activeToday, projectCount };
+    const utilization = total === 0 ? 0 : Math.round((activeOnProjects / total) * 100);
+    return { total, activeOnProjects, projectCount, utilization };
   }, [members]);
+
+  const filteredMembers = useMemo(() => {
+    if (roleFilter === "all") return members;
+    return members.filter((m) => m.role === roleFilter);
+  }, [members, roleFilter]);
 
   async function refreshTeamDirectory(): Promise<void> {
     const team = await fetchTeamDirectory();
@@ -132,214 +139,199 @@ export default function TeamPage() {
 
   return (
     <DashboardShell user={user} fullBleed>
-      <div style={{ padding: isMobile ? "1rem 0.85rem" : "1.25rem clamp(1rem, 3vw, 2rem)", width: "100%", boxSizing: "border-box" }}>
-        <div style={{ marginBottom: "1rem" }}>
-          <div style={{ fontSize: "0.72rem", color: "#64748b", letterSpacing: "0.12em", fontWeight: 700 }}>{t("eyebrow")}</div>
-          <h1 style={{ margin: "0.35rem 0 0", fontSize: isMobile ? "1.45rem" : "1.8rem", fontWeight: 800 }}>{t("title")}</h1>
-          <p style={{ margin: "0.4rem 0 0", color: "#64748b", maxWidth: 720, fontSize: isMobile ? "0.88rem" : undefined }}>
-            {t("subtitle")}
-          </p>
-        </div>
+      <div className="team-page">
+        <div className="team-page-inner">
+          <header>
+            <p className="team-eyebrow">{t("eyebrow")}</p>
+            <h1 className="team-title">{t("title")}</h1>
+            <p className="team-subtitle">{t("subtitle")}</p>
+          </header>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
-            gap: "0.75rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", padding: "0.85rem 1rem" }}>
-            <div style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 700 }}>{t("totalPersonnel")}</div>
-            <div style={{ fontSize: "1.65rem", fontWeight: 800, marginTop: 2 }}>{metrics.total}</div>
+          <div className="team-metrics">
+            <div className="team-metric-card">
+              <div className="team-metric-label">{t("totalPersonnel")}</div>
+              <div className="team-metric-value">{metrics.total}</div>
+              <div className="team-metric-hint">{t("metricInDirectory")}</div>
+            </div>
+            <div className="team-metric-card">
+              <div className="team-metric-label">{t("onProjectsNow")}</div>
+              <div className="team-metric-value">{metrics.activeOnProjects}</div>
+              <div className="team-metric-hint">{t("metricUtilization", { pct: metrics.utilization })}</div>
+            </div>
+            <div className="team-metric-card">
+              <div className="team-metric-label">{t("projectCoverage")}</div>
+              <div className="team-metric-value">{metrics.projectCount}</div>
+              <div className="team-metric-hint">{t("metricActiveSites")}</div>
+            </div>
           </div>
-          <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", padding: "0.85rem 1rem" }}>
-            <div style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 700 }}>{t("onProjectsNow")}</div>
-            <div style={{ fontSize: "1.65rem", fontWeight: 800, marginTop: 2 }}>{metrics.activeToday}</div>
-          </div>
-          <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, background: "#fff", padding: "0.85rem 1rem" }}>
-            <div style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 700 }}>{t("projectCoverage")}</div>
-            <div style={{ fontSize: "1.65rem", fontWeight: 800, marginTop: 2 }}>{metrics.projectCount}</div>
-          </div>
-        </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1fr) 340px",
-            gap: "1rem",
-            alignItems: "start",
-          }}
-        >
-          <section style={{ border: "1px solid #e2e8f0", borderRadius: 14, background: "#fff", overflow: "hidden", minWidth: 0 }}>
-            {loading ? (
-              <p style={{ margin: 0, padding: "1rem", color: "#64748b" }}>{t("loading")}</p>
-            ) : error ? (
-              <p style={{ margin: 0, padding: "1rem", color: "#b91c1c" }}>{error}</p>
-            ) : members.length === 0 ? (
-              <p style={{ margin: 0, padding: "1rem", color: "#64748b" }}>{t("empty")}</p>
-            ) : (
-              <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem", minWidth: isMobile ? 560 : undefined }}>
-                <thead>
-                  <tr style={{ background: "#f8fafc", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
-                    <th style={{ padding: "0.75rem 0.9rem", color: "#64748b" }}>{t("colMember")}</th>
-                    <th style={{ padding: "0.75rem 0.9rem", color: "#64748b" }}>{t("colFunction")}</th>
-                    <th style={{ padding: "0.75rem 0.9rem", color: "#64748b" }}>{t("colProjects")}</th>
-                    <th style={{ padding: "0.75rem 0.9rem", color: "#64748b" }}>{t("colRole")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {members.map((m, idx) => (
-                    <tr
-                      key={m.userId}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={t("openDetails", { name: m.displayName })}
-                      onClick={() => setDetailMember(m)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setDetailMember(m);
-                        }
-                      }}
-                      style={{
-                        borderBottom: idx < members.length - 1 ? "1px solid #f1f5f9" : undefined,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <td style={{ padding: "0.75rem 0.9rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                          <div
-                            style={{
-                              width: 30,
-                              height: 30,
-                              borderRadius: "50%",
-                              background: "#e2e8f0",
-                              display: "grid",
-                              placeItems: "center",
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              color: "#334155",
-                              flexShrink: 0,
-                            }}
-                          >
-                            {initials(m.displayName)}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: "var(--text)" }}>{m.displayName}</div>
-                            <div style={{ color: "#64748b", fontSize: "0.8rem" }}>{m.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ padding: "0.75rem 0.9rem", color: "#334155" }}>{m.functionTitle ?? tCommon("emDash")}</td>
-                      <td style={{ padding: "0.75rem 0.9rem" }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
-                          {m.projects.length === 0 ? (
-                            <span style={{ color: "#94a3b8" }}>{tCommon("emDash")}</span>
-                          ) : (
-                            m.projects.map((p) => {
-                              const c = statusPillColor(p.status);
-                              return (
-                                <span
-                                  key={`${m.userId}-${p.id}`}
-                                  style={{
-                                    fontSize: "0.72rem",
-                                    fontWeight: 700,
-                                    padding: "0.2rem 0.45rem",
-                                    borderRadius: 999,
-                                    background: c.bg,
-                                    color: c.fg,
-                                  }}
-                                >
-                                  {p.name}
-                                </span>
-                              );
-                            })
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: "0.75rem 0.9rem", color: "#475569" }}>{t(`roles.${m.role}`)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </div>
-            )}
-          </section>
-
-          <aside style={{ border: "1px solid #e2e8f0", borderRadius: 14, background: "#fff", padding: "1rem" }}>
-            <h2 style={{ margin: "0 0 0.75rem", fontSize: "1.05rem", fontWeight: 800 }}>{t("quickInvite")}</h2>
-            <form onSubmit={(e) => void onInvite(e)} style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-                {t("fullName")}
-                <input value={inviteName} onChange={(e) => setInviteName(e.target.value)} required style={{ padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1" }} />
-              </label>
-              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-                {t("email")}
-                <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required style={{ padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1" }} />
-              </label>
-              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-                {t("role")}
-                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as UserRole)} style={{ padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1" }}>
-                  {ROLE_VALUES.map((value) => (
-                    <option key={value} value={value}>
-                      {t(`roles.${value}`)}
+          <div className="team-layout">
+            <section className="team-ledger">
+              <div className="team-ledger-head">
+                <h2 className="team-ledger-title">{t("personnelLedger")}</h2>
+                <select
+                  className="team-role-filter"
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
+                  aria-label={t("allRoles")}
+                >
+                  {FILTER_ROLES.map((role) => (
+                    <option key={role} value={role}>
+                      {role === "all" ? t("allRoles") : t(`roles.${role}`)}
                     </option>
                   ))}
                 </select>
-              </label>
-              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.82rem", fontWeight: 600 }}>
-                {t("functionTitle")}
-                <input
-                  value={inviteFunction}
-                  onChange={(e) => setInviteFunction(e.target.value)}
-                  placeholder={t("functionPlaceholder")}
-                  style={{ padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                />
-              </label>
-              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>{t("assignProjects")}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflow: "auto", paddingRight: 4 }}>
-                {projects.length === 0 ? (
-                  <div style={{ fontSize: "0.8rem", color: "#94a3b8" }}>{t("noProjectsFound")}</div>
-                ) : (
-                  projects.map((p) => (
-                    <label key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.82rem", color: "#334155" }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedProjectIds.includes(p.id)}
-                        onChange={(e) => {
-                          setSelectedProjectIds((prev) =>
-                            e.target.checked ? [...prev, p.id] : prev.filter((id) => id !== p.id),
-                          );
-                        }}
-                      />
-                      {p.name}
-                    </label>
-                  ))
-                )}
               </div>
-              {inviteMsg ? (
-                <p style={{ margin: 0, fontSize: "0.82rem", color: inviteOk ? "#047857" : "#b91c1c" }}>{inviteMsg}</p>
-              ) : null}
-              <button
-                type="submit"
-                disabled={inviting}
-                style={{
-                  marginTop: "0.35rem",
-                  border: "none",
-                  borderRadius: 10,
-                  background: "var(--text)",
-                  color: "#fff",
-                  fontWeight: 700,
-                  padding: "0.62rem 0.9rem",
-                  cursor: inviting ? "wait" : "pointer",
-                }}
-              >
-                {inviting ? t("sendingInvite") : t("inviteMember")}
-              </button>
-            </form>
-          </aside>
+
+              {loading ? (
+                <p className="team-empty">{t("loading")}</p>
+              ) : error ? (
+                <p className="team-empty" style={{ color: "#b91c1c" }}>
+                  {error}
+                </p>
+              ) : filteredMembers.length === 0 ? (
+                <p className="team-empty">{t("empty")}</p>
+              ) : (
+                <div className="team-table-scroll">
+                  <table className="team-table">
+                    <thead>
+                      <tr>
+                        <th>{t("colMember")}</th>
+                        <th>{t("colRoleTitle")}</th>
+                        <th>{t("colAllocations")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMembers.map((m) => (
+                        <tr
+                          key={m.userId}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={t("openDetails", { name: m.displayName })}
+                          onClick={() => setDetailMember(m)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setDetailMember(m);
+                            }
+                          }}
+                        >
+                          <td>
+                            <div className="team-member-cell">
+                              <div className="team-avatar">{initials(m.displayName)}</div>
+                              <div style={{ minWidth: 0 }}>
+                                <div className="team-member-name">{m.displayName}</div>
+                                <div className="team-member-email">{m.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="team-role-primary">{t(`roles.${m.role}`)}</div>
+                            <div className="team-role-secondary">{m.functionTitle ?? tCommon("emDash")}</div>
+                          </td>
+                          <td>
+                            <div className="team-pills">
+                              {m.projects.length === 0 ? (
+                                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{tCommon("emDash")}</span>
+                              ) : (
+                                m.projects.map((p, i) => (
+                                  <span key={`${m.userId}-${p.id}`} className={pillClass(p.status, i)} title={p.name}>
+                                    {p.name}
+                                  </span>
+                                ))
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+
+            <aside className="team-invite">
+              <h2 className="team-invite-title">{t("quickInvite")}</h2>
+              <form className="team-invite-form" onSubmit={(e) => void onInvite(e)}>
+                <label className="team-invite-label">
+                  {t("fullName")}
+                  <input
+                    className="team-invite-input"
+                    value={inviteName}
+                    onChange={(e) => setInviteName(e.target.value)}
+                    placeholder={t("namePlaceholder")}
+                    required
+                  />
+                </label>
+                <label className="team-invite-label">
+                  {t("email")}
+                  <input
+                    className="team-invite-input"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t("emailPlaceholder")}
+                    required
+                  />
+                </label>
+                <label className="team-invite-label">
+                  {t("role")}
+                  <select
+                    className="team-invite-select"
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as UserRole)}
+                  >
+                    {ROLE_VALUES.map((value) => (
+                      <option key={value} value={value}>
+                        {t(`roles.${value}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="team-invite-label">
+                  {t("functionTitle")}
+                  <input
+                    className="team-invite-input"
+                    value={inviteFunction}
+                    onChange={(e) => setInviteFunction(e.target.value)}
+                    placeholder={t("functionPlaceholder")}
+                  />
+                </label>
+
+                <div className="team-assign-label">{t("assignProjects")}</div>
+                <div className="team-project-list">
+                  {projects.length === 0 ? (
+                    <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{t("noProjectsFound")}</div>
+                  ) : (
+                    projects.map((p) => (
+                      <label key={p.id} className="team-project-option">
+                        <input
+                          type="checkbox"
+                          checked={selectedProjectIds.includes(p.id)}
+                          onChange={(e) => {
+                            setSelectedProjectIds((prev) =>
+                              e.target.checked ? [...prev, p.id] : prev.filter((id) => id !== p.id),
+                            );
+                          }}
+                        />
+                        <span>{p.name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+
+                {inviteMsg ? (
+                  <p className={`team-invite-msg ${inviteOk ? "team-invite-msg--ok" : "team-invite-msg--err"}`}>
+                    {inviteMsg}
+                  </p>
+                ) : null}
+
+                <button type="submit" className="app-btn app-btn-primary team-invite-submit" disabled={inviting}>
+                  {inviting ? t("sendingInvite") : t("inviteMember")}
+                </button>
+              </form>
+            </aside>
+          </div>
         </div>
       </div>
 

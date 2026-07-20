@@ -1,0 +1,366 @@
+.team-page {
+  flex: 1;
+  min-height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg);
+}
+
+.team-page-inner {
+  padding: clamp(1rem, 2vw, 1.75rem) clamp(1.25rem, 2.5vw, 2rem) 2.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.team-eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.team-title {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.team-subtitle {
+  margin: 0.5rem 0 0;
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.team-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  margin: 1.35rem 0 1.15rem;
+}
+
+@media (min-width: 720px) {
+  .team-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.team-metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.1rem 1.2rem;
+  box-shadow: 0 1px 2px rgba(15, 15, 15, 0.03);
+}
+
+.team-metric-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.team-metric-value {
+  margin-top: 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.team-metric-hint {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.team-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .team-layout {
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, 360px);
+  }
+}
+
+.team-ledger {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  min-width: 0;
+  box-shadow: 0 1px 2px rgba(15, 15, 15, 0.03);
+}
+
+.team-ledger-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-ledger-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.team-role-filter {
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.team-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 640px;
+}
+
+.team-table th {
+  padding: 0.7rem 1rem;
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--soft);
+  border-bottom: 1px solid var(--border);
+}
+
+.team-table td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-table tr:last-child td {
+  border-bottom: none;
+}
+
+.team-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.team-table tbody tr:hover {
+  background: var(--ghost);
+}
+
+.team-member-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.team-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--text);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.team-member-name {
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-member-email {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-role-primary {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.team-role-secondary {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.team-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.team-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-pill--blue {
+  background: #e8f1fb;
+  color: #1e4b7a;
+}
+
+.team-pill--peach {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.team-pill--muted {
+  background: var(--ghost);
+  color: var(--muted);
+}
+
+.team-invite {
+  background: #f0f5fa;
+  border: 1px solid #d7e3ef;
+  border-radius: 16px;
+  padding: 1.15rem 1.2rem;
+  box-shadow: 0 1px 2px rgba(15, 15, 15, 0.03);
+}
+
+.team-invite-title {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.team-invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.team-invite-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.team-invite-input,
+.team-invite-select {
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.team-invite-input:focus,
+.team-invite-select:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+.team-assign-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.team-project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 200px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.team-project-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.84rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.team-project-option input {
+  margin-top: 2px;
+  accent-color: var(--text);
+}
+
+.team-invite-msg {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.team-invite-msg--ok {
+  color: #047857;
+}
+
+.team-invite-msg--err {
+  color: #b91c1c;
+}
+
+.team-invite-submit {
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+.team-empty {
+  margin: 0;
+  padding: 1.25rem 1.15rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

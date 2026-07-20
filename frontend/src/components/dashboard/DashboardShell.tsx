@@ -15,6 +15,7 @@ const navAll = [
   { key: "dashboard" as const, href: "/dashboard" },
   { key: "projects" as const, href: "/projects" },
   { key: "time" as const, href: "/time" },
+  { key: "hours" as const, href: "/hours", requiresHr: true },
   { key: "team" as const, href: "/team", requiresHr: true },
   { key: "planning" as const, href: "/planning" },
   { key: "reporting" as const, href: "/reporting" },
@@ -71,6 +72,16 @@ function NavIcon({ name, active }: { name: NavKey; active: boolean }) {
         <svg {...common}>
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v5l3.5 2" />
+        </svg>
+      );
+    case "hours":
+      return (
+        <svg {...common}>
+          <path d="M4 19V5" />
+          <path d="M4 19h16" />
+          <path d="M8 16v-5" />
+          <path d="M12 16V8" />
+          <path d="M16 16v-3" />
         </svg>
       );
     case "team":
