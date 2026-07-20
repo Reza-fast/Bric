@@ -10,6 +10,7 @@ import type { ProjectPortfolioCard, ProjectStatus } from "@/lib/api/projects";
 import { fetchProjectPortfolio } from "@/lib/api/projects";
 import { ProjectLogoThumb } from "@/components/projects/ProjectLogoThumb";
 import { useIsMobile } from "@/lib/useMediaQuery";
+import "@/components/projects/projects.css";
 
 type FilterTab = "all" | "active" | "planning" | "completed";
 
@@ -30,13 +31,6 @@ function statusPillStyle(status: ProjectStatus): { bg: string; color: string } {
   }
 }
 
-function budgetDotColor(card: ProjectPortfolioCard): string {
-  if (card.status === "completed") return "#71717a";
-  if (card.status === "planning") return "#a1a1aa";
-  if (card.status === "critical" || card.isOverBudget) return "#dc2626";
-  return "#22c55e";
-}
-
 function filterProjects(list: ProjectPortfolioCard[], tab: FilterTab): ProjectPortfolioCard[] {
   if (tab === "all") return list;
   if (tab === "active") return list.filter((p) => p.status === "active" || p.status === "critical");
@@ -45,158 +39,11 @@ function filterProjects(list: ProjectPortfolioCard[], tab: FilterTab): ProjectPo
   return list;
 }
 
-function ProjectCard({
-  card,
-  completionLabel,
-  budgetStatusLabel,
-  architectLabel,
-  statusLabel,
-  budgetLabel,
-  emDash,
-}: {
-  card: ProjectPortfolioCard;
-  completionLabel: string;
-  budgetStatusLabel: string;
-  architectLabel: string;
-  statusLabel: string;
-  budgetLabel: string;
-  emDash: string;
-}) {
-  const pill = statusPillStyle(card.status);
-  const pct = Math.min(100, Math.max(0, Math.round(card.completionPercent)));
-
-  return (
-    <article
-      style={{
-        background: "var(--surface)",
-        borderRadius: 18,
-        border: "1px solid var(--border)",
-        padding: "1.25rem 1.25rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.1rem",
-        minHeight: 260,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-        height: "100%",
-        cursor: "pointer",
-        transition: "box-shadow 0.15s ease, border-color 0.15s ease",
-        boxSizing: "border-box",
-        minWidth: 0,
-      }}
-    >
-      <div style={{ display: "flex", gap: "0.9rem", alignItems: "flex-start", minWidth: 0 }}>
-        <ProjectLogoThumb
-          projectId={card.id}
-          name={card.name}
-          logoStorageKey={card.logoStorageKey}
-          updatedAt={card.updatedAt}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: "1.15rem",
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                lineHeight: 1.2,
-                overflowWrap: "anywhere",
-              }}
-            >
-              {card.name}
-            </h2>
-            <span
-              style={{
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "0.07em",
-                padding: "0.35rem 0.55rem",
-                borderRadius: 8,
-                background: pill.bg,
-                color: pill.color,
-                flexShrink: 0,
-              }}
-            >
-              {statusLabel}
-            </span>
-          </div>
-          <p style={{ margin: "0.5rem 0 0", fontSize: "0.92rem", color: "var(--muted)", lineHeight: 1.45 }}>
-            {card.location ?? emDash}
-          </p>
-        </div>
-      </div>
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 10,
-            fontSize: "0.78rem",
-            fontWeight: 600,
-            letterSpacing: "0.06em",
-            color: "var(--muted)",
-          }}
-        >
-          <span>{completionLabel}</span>
-          <span style={{ color: "var(--text)", fontSize: "0.95rem", fontWeight: 700 }}>{pct}%</span>
-        </div>
-        <div
-          style={{
-            height: 14,
-            borderRadius: 999,
-            background: "#e4e4e7",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              width: `${pct}%`,
-              borderRadius: 999,
-              background: "linear-gradient(90deg, #2563eb, #3b82f6)",
-            }}
-          />
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "1rem",
-          paddingTop: "0.35rem",
-          borderTop: "1px solid var(--border)",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.07em", color: "var(--muted)" }}>
-            {budgetStatusLabel}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginTop: 10,
-              fontSize: "1rem",
-              fontWeight: 600,
-            }}
-          >
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: budgetDotColor(card) }} />
-            {budgetLabel}
-          </div>
-        </div>
-        <div>
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.07em", color: "var(--muted)" }}>
-            {architectLabel}
-          </div>
-          <div style={{ marginTop: 10, fontSize: "1rem", fontWeight: 600 }}>{card.portfolioLeadName ?? emDash}</div>
-        </div>
-      </div>
-    </article>
-  );
+function leadInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase();
 }
 
 export default function ProjectsPage() {
@@ -281,6 +128,75 @@ export default function ProjectsPage() {
     return t("onTrack");
   }
 
+  function budgetValue(card: ProjectPortfolioCard): string {
+    const actual = card.actualHours;
+    const budget = card.budgetedHours;
+    if (budget <= 0 && actual <= 0) return tCommon("emDash");
+    if (card.hourlyWage != null && card.hourlyWage > 0) {
+      const money = new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: "EUR",
+        notation: "compact",
+        maximumFractionDigits: 1,
+      });
+      return `${money.format(actual * card.hourlyWage)} / ${money.format(budget * card.hourlyWage)}`;
+    }
+    return `${actual.toLocaleString()} / ${budget.toLocaleString()} h`;
+  }
+
+  function renderProgress(card: ProjectPortfolioCard) {
+    const pct = Math.min(100, Math.max(0, Math.round(card.completionPercent)));
+    return (
+      <>
+        <div className="projects-progress-label">{tStatus(card.status)}</div>
+        <div className="projects-progress-track">
+          <div className="projects-progress-bar">
+            <div className="projects-progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <span style={{ fontSize: "0.74rem", color: "#64748b", fontWeight: 700 }}>{pct}%</span>
+        </div>
+      </>
+    );
+  }
+
+  function renderBudget(card: ProjectPortfolioCard) {
+    const pill = statusPillStyle(card.status);
+    return (
+      <>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "0.18rem 0.42rem",
+            borderRadius: 999,
+            background: pill.bg,
+            color: pill.color,
+            fontSize: "0.64rem",
+            fontWeight: 800,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+          }}
+        >
+          {cardBudgetLabel(card)}
+        </span>
+        <div className={`projects-budget-value${card.isOverBudget ? " over" : ""}`}>{budgetValue(card)}</div>
+      </>
+    );
+  }
+
+  function renderLead(card: ProjectPortfolioCard) {
+    const name = card.portfolioLeadName ?? tCommon("emDash");
+    return (
+      <div className="projects-lead">
+        <div className="projects-lead-avatar">{leadInitials(name)}</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "#0f172a", overflowWrap: "anywhere" }}>{name}</div>
+          <div style={{ marginTop: 2, fontSize: "0.72rem", color: "#64748b" }}>{t("leadRole")}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <DashboardShell user={user}>
       {createdFlash ? (
@@ -350,148 +266,193 @@ export default function ProjectsPage() {
         </Link>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "1.25rem",
-        }}
-      >
-        {tabs.map((tabItem) => (
-          <button
-            key={tabItem.id}
-            type="button"
-            onClick={() => setTab(tabItem.id)}
-            style={{
-              padding: "0.45rem 0.85rem",
-              borderRadius: 999,
-              border: tab === tabItem.id ? "1px solid var(--text)" : "1px solid var(--border)",
-              background: tab === tabItem.id ? "var(--text)" : "var(--surface)",
-              color: tab === tabItem.id ? "#fff" : "var(--text)",
-              fontSize: "0.82rem",
-              fontWeight: tab === tabItem.id ? 600 : 500,
-              cursor: "pointer",
-            }}
-          >
-            {tabItem.label}
-          </button>
-        ))}
-        <span style={{ marginLeft: isMobile ? 0 : "auto", width: isMobile ? "100%" : undefined, fontSize: "0.8rem", color: "var(--muted)" }}>
-          {data === undefined
-            ? tCommon("emDash")
-            : t("filterCount", { count: filtered.length, pageSize: PAGE_SIZE })}
-        </span>
-      </div>
-
-      {data === undefined ? (
-        <p style={{ color: "var(--muted)" }}>{t("loading")}</p>
-      ) : !data ? (
-        <p style={{ color: "var(--muted)" }}>{t("loadError")}</p>
-      ) : data.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>{t("empty")}</p>
-      ) : (
-        <>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile
-                ? "1fr"
-                : "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
-              gap: isMobile ? "1rem" : "1.5rem",
-            }}
-          >
-            {pageSlice.map((card) => (
-              <Link
-                key={card.id}
-                href={`/projects/${card.id}`}
-                aria-label={t("viewProject", { name: card.name })}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                  borderRadius: 18,
-                  minWidth: 0,
-                }}
-              >
-                <ProjectCard
-                  card={card}
-                  completionLabel={t("completion")}
-                  budgetStatusLabel={t("budgetStatus")}
-                  architectLabel={t("primaryArchitect")}
-                  statusLabel={tStatus(card.status).toUpperCase()}
-                  budgetLabel={cardBudgetLabel(card)}
-                  emDash={tCommon("emDash")}
-                />
-              </Link>
-            ))}
-          </div>
-          <div
-            style={{
-              marginTop: "1.75rem",
-              paddingTop: "1.25rem",
-              borderTop: "1px solid var(--border)",
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "1rem",
-              fontSize: "0.88rem",
-              color: "var(--muted)",
-            }}
-          >
-            <span>
-              {t("totalRegistered", { count: data.length })}
-              {filtered.length > 0
-                ? t("showingRange", {
-                    start: rangeStart,
-                    end: rangeEnd,
-                    total: filtered.length,
-                    page: safePage + 1,
-                    pages: totalPages,
-                  })
-                : null}
+      <section className="projects-sheet">
+        <div className="projects-toolbar">
+          {tabs.map((tabItem) => (
+            <button
+              key={tabItem.id}
+              type="button"
+              onClick={() => setTab(tabItem.id)}
+              style={{
+                padding: "0.55rem 0.8rem",
+                borderRadius: 10,
+                border: tab === tabItem.id ? "1px solid #0f172a" : "1px solid #dbe4f0",
+                background: tab === tabItem.id ? "#0f172a" : "#f8fbff",
+                color: tab === tabItem.id ? "#fff" : "#475569",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              {tabItem.label}
+            </button>
+          ))}
+          <div className="projects-toolbar-meta">
+            <span style={{ fontSize: "0.78rem", color: "#64748b", fontWeight: 600 }}>
+              {data === undefined ? tCommon("emDash") : t("showingProjects", { count: filtered.length })}
             </span>
-            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <button
-                type="button"
-                disabled={safePage <= 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: safePage <= 0 ? "var(--muted)" : "var(--text)",
-                  cursor: safePage <= 0 ? "not-allowed" : "pointer",
-                  fontSize: "0.88rem",
-                  fontWeight: 500,
-                }}
-              >
-                {tCommon("previous")}
-              </button>
-              <button
-                type="button"
-                disabled={safePage >= totalPages - 1}
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "var(--surface)",
-                  color: safePage >= totalPages - 1 ? "var(--muted)" : "var(--text)",
-                  cursor: safePage >= totalPages - 1 ? "not-allowed" : "pointer",
-                  fontSize: "0.88rem",
-                  fontWeight: 500,
-                }}
-              >
-                {tCommon("next")}
-              </button>
-            </div>
           </div>
-        </>
-      )}
+        </div>
+
+        {data === undefined ? (
+          <p style={{ color: "var(--muted)" }}>{t("loading")}</p>
+        ) : !data ? (
+          <p style={{ color: "var(--muted)" }}>{t("loadError")}</p>
+        ) : data.length === 0 ? (
+          <p style={{ color: "var(--muted)" }}>{t("empty")}</p>
+        ) : (
+          <>
+            <div className="projects-table-wrap">
+              {isMobile ? (
+                <div className="projects-mobile-list">
+                  {pageSlice.map((card) => (
+                    <Link
+                      key={card.id}
+                      href={`/projects/${card.id}`}
+                      aria-label={t("viewProject", { name: card.name })}
+                      className="projects-mobile-card"
+                    >
+                      <div className="projects-identity">
+                        <ProjectLogoThumb
+                          projectId={card.id}
+                          name={card.name}
+                          logoStorageKey={card.logoStorageKey}
+                          updatedAt={card.updatedAt}
+                          size={48}
+                          borderRadius={12}
+                        />
+                        <div style={{ minWidth: 0 }}>
+                          <div className="projects-name">{card.name}</div>
+                          <div className="projects-location">{card.location ?? tCommon("emDash")}</div>
+                        </div>
+                      </div>
+                      <div className="projects-mobile-grid">
+                        <div>
+                          <div className="projects-mobile-field-label">{t("thProgress")}</div>
+                          {renderProgress(card)}
+                        </div>
+                        <div>
+                          <div className="projects-mobile-field-label">{t("thBudget")}</div>
+                          {renderBudget(card)}
+                        </div>
+                        <div>
+                          <div className="projects-mobile-field-label">{t("thLead")}</div>
+                          {renderLead(card)}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="projects-table-scroll">
+                  <div className="projects-table">
+                    <div className="projects-table-head">
+                      <div>{t("thProject")}</div>
+                      <div>{t("thProgress")}</div>
+                      <div>{t("thBudget")}</div>
+                      <div>{t("thLead")}</div>
+                      <div aria-hidden>→</div>
+                    </div>
+                    {pageSlice.map((card) => (
+                      <Link
+                        key={card.id}
+                        href={`/projects/${card.id}`}
+                        aria-label={t("viewProject", { name: card.name })}
+                        className="projects-table-row"
+                      >
+                        <div className="projects-identity">
+                          <ProjectLogoThumb
+                            projectId={card.id}
+                            name={card.name}
+                            logoStorageKey={card.logoStorageKey}
+                            updatedAt={card.updatedAt}
+                            size={48}
+                            borderRadius={12}
+                          />
+                          <div style={{ minWidth: 0 }}>
+                            <div className="projects-name">{card.name}</div>
+                            <div className="projects-location">{card.location ?? tCommon("emDash")}</div>
+                          </div>
+                        </div>
+                        <div>{renderProgress(card)}</div>
+                        <div>{renderBudget(card)}</div>
+                        <div>{renderLead(card)}</div>
+                        <div className="projects-action" aria-hidden>
+                          →
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                marginTop: "1.75rem",
+                paddingTop: "1.25rem",
+                borderTop: "1px solid var(--border)",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "1rem",
+                fontSize: "0.88rem",
+                color: "var(--muted)",
+              }}
+            >
+              <span>
+                {t("totalRegistered", { count: data.length })}
+                {filtered.length > 0
+                  ? t("showingRange", {
+                      start: rangeStart,
+                      end: rangeEnd,
+                      total: filtered.length,
+                      page: safePage + 1,
+                      pages: totalPages,
+                    })
+                  : null}
+              </span>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <button
+                  type="button"
+                  disabled={safePage <= 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface)",
+                    color: safePage <= 0 ? "var(--muted)" : "var(--text)",
+                    cursor: safePage <= 0 ? "not-allowed" : "pointer",
+                    fontSize: "0.88rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  {tCommon("previous")}
+                </button>
+                <button
+                  type="button"
+                  disabled={safePage >= totalPages - 1}
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: 8,
+                    border: "1px solid var(--border)",
+                    background: "var(--surface)",
+                    color: safePage >= totalPages - 1 ? "var(--muted)" : "var(--text)",
+                    cursor: safePage >= totalPages - 1 ? "not-allowed" : "pointer",
+                    fontSize: "0.88rem",
+                    fontWeight: 500,
+                  }}
+                >
+                  {tCommon("next")}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </section>
     </DashboardShell>
   );
 }

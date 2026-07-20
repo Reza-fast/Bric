@@ -199,6 +199,7 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = typeof params.id === "string" ? params.id : "";
   const isMobile = useIsMobile(768);
+  const isCompactDesktop = useIsMobile(1280);
   const t = useTranslations("ProjectDetail");
   const tStatus = useTranslations("Status");
   const tNav = useTranslations("Nav");
@@ -381,14 +382,15 @@ export default function ProjectDetailPage() {
   }
 
   const tabStyle = (active: boolean): CSSProperties => ({
-    padding: "0.45rem 0.85rem",
-    borderRadius: 8,
-    fontSize: "0.82rem",
+    padding: "0.55rem 0.15rem",
+    marginRight: "1.15rem",
+    fontSize: "0.88rem",
     fontWeight: active ? 700 : 500,
     color: active ? NAVY : "#64748b",
-    background: active ? "#eff6ff" : "transparent",
+    background: "transparent",
     textDecoration: "none",
-    border: active ? "1px solid #bfdbfe" : "1px solid transparent",
+    borderBottom: active ? "2px solid #C45C26" : "2px solid transparent",
+    whiteSpace: "nowrap",
   });
 
   const headerTabs =
@@ -445,13 +447,6 @@ export default function ProjectDetailPage() {
   }
 
   const { site, region } = splitSiteRegion(project.location, tCommon("emDash"));
-
-  const gridMain: CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: isMobile ? "0.85rem" : "1.15rem",
-    alignItems: "stretch",
-  };
 
   const siteRegionRows = [
     { label: t("slugLabel"), value: <span style={{ fontFamily: "ui-monospace, monospace", fontSize: "0.82rem" }}>{project.slug}</span> },
@@ -589,385 +584,402 @@ export default function ProjectDetailPage() {
                   width: isMobile ? "100%" : undefined,
                 }}
               >
-                {t("editProject")}
+                {t("projectSettings")}
               </button>
             </div>
           </div>
         </header>
 
+        <section style={{ ...whiteCard, padding: 0, overflow: "hidden", marginBottom: "1.15rem" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isCompactDesktop ? "1fr" : "repeat(3, minmax(0, 1fr))",
+            }}
+          >
+            {[
+              {
+                eyebrowLabel: t("delivery"),
+                title: t("totalCompletion"),
+                value: `${completionPct}%`,
+                hint: t("portfolioTarget"),
+                tone: "blue" as const,
+                progress: completionPct,
+              },
+              {
+                eyebrowLabel: t("laborBudget"),
+                title: t("hoursHealth"),
+                value: hoursMeta.laborBudget || t("hoursLogged", { actual: hoursMeta.actual.toLocaleString(intlLocale), budget: hoursMeta.budget.toLocaleString(intlLocale) }),
+                hint: hoursMeta.hourlyWage != null
+                  ? t("totalBudgetLine", {
+                      hours: hoursMeta.budget.toLocaleString(intlLocale),
+                      rate: new Intl.NumberFormat(intlLocale, { style: "currency", currency: "EUR" }).format(hoursMeta.hourlyWage),
+                    })
+                  : hoursMeta.budget > 0
+                    ? t("pctOfBudget", { pct: hoursMeta.pctUsed })
+                    : t("setPlannedHours"),
+                tone: "amber" as const,
+                progress: hoursMeta.pctUsed,
+              },
+              {
+                eyebrowLabel: t("schedule"),
+                title: t("timeline"),
+                value: daysLeft !== null ? `${daysLeft}` : "—",
+                hint: scheduleEnd ? t("targetWrap", { date: formatDateShort(new Date(scheduleEnd).toISOString(), intlLocale) }) : t("addTasks"),
+                suffix: daysLeft !== null ? t("daysLeftShort") : "",
+                tone: "blue" as const,
+                progress: scheduleEnd ? Math.min(100, completionPct) : 0,
+              },
+            ].map((metric, index) => (
+              <div
+                key={metric.title}
+                style={{
+                  padding: isMobile ? "1rem" : "1.25rem 1.35rem",
+                  borderRight: !isCompactDesktop && index < 2 ? "1px solid #e8eef7" : undefined,
+                  borderTop: isCompactDesktop && index > 0 ? "1px solid #e8eef7" : undefined,
+                }}
+              >
+                <p style={eyebrow}>{metric.eyebrowLabel}</p>
+                <p style={{ ...cardTitle, marginTop: "0.25rem" }}>{metric.title}</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem", margin: "0.85rem 0 0.45rem" }}>
+                  <span style={{ fontSize: isMobile ? "1.9rem" : "2rem", fontWeight: 800, color: NAVY, lineHeight: 1 }}>{metric.value}</span>
+                  {metric.suffix ? <span style={{ fontSize: "0.78rem", color: SLATE_HEADER, fontWeight: 700 }}>{metric.suffix}</span> : null}
+                </div>
+                <ProgressTrack pct={metric.progress} tone={metric.tone} />
+                <p style={{ margin: "0.65rem 0 0", fontSize: "0.76rem", color: SLATE_HEADER }}>{metric.hint}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
-            gap: isMobile ? "0.85rem" : "1.15rem",
-            marginBottom: isMobile ? "1rem" : "1.35rem",
+            gridTemplateColumns: isCompactDesktop ? "1fr" : "minmax(0, 1.7fr) minmax(280px, 0.85fr)",
+            gap: "1.15rem",
+            alignItems: "start",
           }}
         >
-          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
-            <p style={eyebrow}>{t("delivery")}</p>
-            <p style={{ ...cardTitle, marginTop: "0.25rem" }}>{t("totalCompletion")}</p>
-            <p style={{ margin: "0.85rem 0 0.5rem", fontSize: isMobile ? "1.55rem" : "1.85rem", fontWeight: 800, color: NAVY }}>{completionPct}%</p>
-            <ProgressTrack pct={completionPct} tone="blue" />
-            <p style={{ margin: "0.65rem 0 0", fontSize: "0.78rem", color: SLATE_HEADER }}>{t("portfolioTarget")}</p>
-          </section>
-          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
-            <p style={eyebrow}>{t("laborBudget")}</p>
-            <p style={{ ...cardTitle, marginTop: "0.25rem" }}>{t("hoursHealth")}</p>
-            {hoursMeta.laborBudget ? (
-              <>
-                <p style={{ margin: "0.85rem 0 0.15rem", fontSize: isMobile ? "1.55rem" : "1.85rem", fontWeight: 800, color: NAVY }}>
-                  {hoursMeta.laborBudget}
-                </p>
-                <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", color: SLATE_HEADER, fontWeight: 600, lineHeight: 1.4 }}>
-                  {hoursMeta.hourlyWage != null
-                    ? t("totalBudgetLine", {
-                        hours: hoursMeta.budget.toLocaleString(intlLocale),
-                        rate: new Intl.NumberFormat(intlLocale, { style: "currency", currency: "EUR" }).format(hoursMeta.hourlyWage),
-                      })
-                    : t("totalBudget")}
-                </p>
-              </>
-            ) : null}
-            <p style={{ margin: hoursMeta.laborBudget ? "0 0 0.35rem" : "0.85rem 0 0.35rem", fontSize: "1.05rem", fontWeight: 700, color: NAVY }}>
-              {t("hoursLogged", {
-                actual: hoursMeta.actual.toLocaleString(intlLocale),
-                budget: hoursMeta.budget.toLocaleString(intlLocale),
-              })}
-            </p>
-            <ProgressTrack pct={hoursMeta.pctUsed} tone="amber" />
-            <p style={{ margin: "0.65rem 0 0", fontSize: "0.78rem", color: SLATE_HEADER }}>
-              {hoursMeta.budget > 0 ? t("pctOfBudget", { pct: hoursMeta.pctUsed }) : t("setPlannedHours")}
-            </p>
-          </section>
-          <section style={isMobile ? { ...whiteCard, padding: "1.1rem 1rem" } : whiteCard}>
-            <p style={eyebrow}>{t("schedule")}</p>
-            <p style={{ ...cardTitle, marginTop: "0.25rem" }}>{t("timeline")}</p>
-            <p style={{ margin: "0.85rem 0 0.35rem", fontSize: isMobile ? "0.98rem" : "1.05rem", fontWeight: 700, color: NAVY }}>
-              {daysLeft !== null ? t("daysToMilestone", { days: daysLeft }) : t("noMilestones")}
-            </p>
-            <ProgressTrack pct={scheduleEnd ? Math.min(100, completionPct) : 0} tone="blue" />
-            <p style={{ margin: "0.65rem 0 0", fontSize: "0.78rem", color: SLATE_HEADER }}>
-              {scheduleEnd
-                ? t("targetWrap", { date: formatDateShort(new Date(scheduleEnd).toISOString(), intlLocale) })
-                : t("addTasks")}
-            </p>
-          </section>
-        </div>
-
-        <div style={{ ...gridMain, marginBottom: "1.35rem" }}>
-          <section style={{ ...whiteCard, marginBottom: 0 }}>
-            <p style={eyebrow}>{t("site")}</p>
-            <h2 style={cardTitle}>{t("identityLocation")}</h2>
-            <DetailRows rows={siteRegionRows} stacked={isMobile} />
-            <div
-              style={{
-                marginTop: "1rem",
-                borderRadius: 12,
-                border: "1px dashed #cbd5e1",
-                background: "#f8fafc",
-                minHeight: 120,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#94a3b8",
-                fontSize: "0.82rem",
-                fontWeight: 600,
-              }}
-            >
-              {t("siteMapPreview")}
-            </div>
-          </section>
-
-          <section style={{ ...whiteCard, marginBottom: 0 }}>
-            <p style={eyebrow}>{t("financials")}</p>
-            <h2 style={cardTitle}>{t("hoursAndBurn")}</h2>
-            <p style={{ margin: "0.85rem 0 0.35rem", fontSize: "0.8rem", color: SLATE_HEADER, fontWeight: 600 }}>
-              {t("laborBurnRate")}
-            </p>
-            <p style={{ margin: "0 0 0.75rem", fontSize: "1.1rem", fontWeight: 800, color: NAVY }}>
-              {t("hoursLogged", {
-                actual: hoursMeta.actual.toLocaleString(intlLocale),
-                budget: hoursMeta.budget.toLocaleString(intlLocale),
-              })}
-            </p>
-            <BurnBars pct={hoursMeta.pctUsed} />
-            <div style={{ marginTop: "1rem", paddingTop: "0.85rem", borderTop: "1px solid #e8eef7", display: "grid", gap: "0.35rem" }}>
-              {hoursMeta.laborBudget ? (
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: SLATE_HEADER }}>
-                  <span style={{ fontWeight: 700, letterSpacing: "0.05em" }}>{t("totalBudgetCaps")}</span>
-                  <span style={{ fontWeight: 700, color: NAVY }}>{hoursMeta.laborBudget}</span>
-                </div>
-              ) : null}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: SLATE_HEADER }}>
-                <span style={{ fontWeight: 700, letterSpacing: "0.05em" }}>{t("utilization")}</span>
-                <span style={{ fontWeight: 700, color: NAVY }}>{hoursMeta.pctUsed}%</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: SLATE_HEADER }}>
-                <span style={{ fontWeight: 700, letterSpacing: "0.05em" }}>{t("recordUpdated")}</span>
-                <span>{formatDateShort(project.updatedAt, intlLocale)}</span>
-              </div>
-            </div>
-          </section>
-
-          <section style={{ ...whiteCard, marginBottom: 0 }}>
-            <p style={eyebrow}>{t("people")}</p>
-            <h2 style={cardTitle}>{t("teamOnRecord")}</h2>
-            <div style={{ marginTop: "0.85rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {teamOnProject.length > 0
-                ? teamOnProject.slice(0, 5).map((m) => {
-                    const assignment = m.projects.find((p) => p.id === projectId);
-                    const role = assignment?.functionTitle ?? m.role.replace(/_/g, " ");
-                    return (
-                      <div key={m.userId} style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-                        <div
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                            background: "#1e293b",
-                            color: "#fff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "0.75rem",
-                            fontWeight: 800,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {initials(m.displayName)}
-                        </div>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{m.displayName}</div>
-                          <div style={{ fontSize: "0.78rem", color: SLATE_HEADER, textTransform: "capitalize" }}>{role}</div>
-                          <div style={{ fontSize: "0.76rem", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis" }}>{m.email}</div>
-                        </div>
-                      </div>
-                    );
-                  })
-                : project.portfolioLeadName?.trim()
-                  ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-                        <div
-                          style={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                            background: "#1e293b",
-                            color: "#fff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "0.75rem",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {initials(project.portfolioLeadName)}
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{project.portfolioLeadName}</div>
-                          <div style={{ fontSize: "0.78rem", color: SLATE_HEADER }}>{t("leadOnRecord")}</div>
-                        </div>
-                      </div>
-                    )
-                  : (
-                      <p style={{ margin: 0, fontSize: "0.85rem", color: SLATE_HEADER }}>{t("noContacts")}</p>
-                    )}
-            </div>
-            {canAccessTeam(user?.role) ? (
-              <Link
-                href="/team"
+          <div style={{ display: "grid", gap: "1.15rem", minWidth: 0 }}>
+            <section style={{ ...whiteCard, padding: 0, overflow: "hidden" }}>
+              <div
                 style={{
-                  display: "block",
-                  marginTop: "1rem",
-                  textAlign: "center",
-                  padding: "0.55rem",
-                  borderRadius: 10,
-                  border: "1px solid #cbd5e1",
-                  fontWeight: 700,
-                  fontSize: "0.82rem",
-                  color: NAVY,
-                  textDecoration: "none",
-                  background: "#fff",
+                  display: "grid",
+                  gridTemplateColumns: isCompactDesktop ? "1fr" : "minmax(0, 0.9fr) minmax(0, 1.1fr)",
+                  minWidth: 0,
                 }}
               >
-                {t("viewStakeholders")}
-              </Link>
-            ) : null}
-          </section>
+                <div style={{ padding: "1.25rem 1.35rem", borderRight: !isCompactDesktop ? "1px solid #e8eef7" : undefined, minWidth: 0 }}>
+                  <p style={eyebrow}>{t("site")}</p>
+                  <h2 style={cardTitle}>{t("identityLocation")}</h2>
+                  <DetailRows rows={siteRegionRows} stacked={isMobile} />
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      borderRadius: 12,
+                      border: "1px solid #e2e8f0",
+                      background: "#f8fafc",
+                      minHeight: 130,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#94a3b8",
+                      fontSize: "0.82rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {t("siteMapPreview")}
+                  </div>
+                </div>
+                <div style={{ padding: "1.25rem 1.35rem", borderTop: isCompactDesktop ? "1px solid #e8eef7" : undefined, minWidth: 0 }}>
+                  <p style={eyebrow}>{t("financials")}</p>
+                  <h2 style={cardTitle}>{t("hoursAndBurn")}</h2>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", alignItems: "baseline", margin: "1rem 0 0.85rem" }}>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.06em", color: SLATE_HEADER }}>{t("laborBurnRate")}</span>
+                    <span style={{ fontSize: "1.45rem", fontWeight: 800, color: NAVY }}>
+                      {hoursMeta.actual.toLocaleString(intlLocale)}
+                      <span style={{ fontSize: "0.82rem", color: SLATE_HEADER, fontWeight: 700 }}> / {hoursMeta.budget.toLocaleString(intlLocale)} h</span>
+                    </span>
+                  </div>
+                  <BurnBars pct={hoursMeta.pctUsed} />
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                      gap: "0.7rem",
+                    }}
+                  >
+                    <div style={{ border: "1px solid #e8eef7", borderRadius: 12, padding: "0.85rem" }}>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.06em", color: SLATE_HEADER }}>{t("utilization")}</div>
+                      <div style={{ marginTop: 6, fontSize: "1.2rem", fontWeight: 800, color: NAVY }}>{hoursMeta.pctUsed}%</div>
+                    </div>
+                    <div style={{ border: "1px solid #e8eef7", borderRadius: 12, padding: "0.85rem" }}>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.06em", color: SLATE_HEADER }}>{t("totalBudgetCaps")}</div>
+                      <div style={{ marginTop: 6, fontSize: "1.2rem", fontWeight: 800, color: NAVY }}>{hoursMeta.laborBudget || tCommon("emDash")}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <section style={{ ...whiteCard, marginBottom: 0 }}>
-            <p style={eyebrow}>{t("plan")}</p>
-            <h2 style={cardTitle}>{t("upcomingMilestones")}</h2>
-            <div style={{ marginTop: "0.85rem", display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-              {upcomingMilestones.length === 0 ? (
-                <p style={{ margin: 0, fontSize: "0.85rem", color: SLATE_HEADER }}>
-                  {t("noOpenMilestones")}{" "}
-                  <Link href={`/planning?project=${encodeURIComponent(projectId)}`} style={{ color: "var(--accent)", fontWeight: 700 }}>
-                    {tNav("planning")}
+            <section style={{ ...whiteCard, marginBottom: 0, minWidth: 0 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
+                <div>
+                  <p style={eyebrow}>{t("drawingsSpecs")}</p>
+                  <h2 style={{ ...cardTitle, marginTop: "0.35rem" }}>{t("technicalPlans")}</h2>
+                </div>
+                <Link
+                  href={`/documents?project=${encodeURIComponent(projectId)}`}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: 10,
+                    border: "1px solid #dbe4f0",
+                    background: "#fff",
+                    color: NAVY,
+                    fontWeight: 700,
+                    fontSize: "0.82rem",
+                    textDecoration: "none",
+                  }}
+                >
+                  {t("allDocuments")}
+                </Link>
+              </div>
+              <p style={{ margin: "0.65rem 0 0", fontSize: "0.86rem", color: SLATE_HEADER, lineHeight: 1.55, maxWidth: 720 }}>
+                {t("plansIntro")}
+              </p>
+              <TechnicalPlansSection projectId={projectId} embedded />
+            </section>
+
+            <section style={{ ...whiteCard, marginBottom: 0, minWidth: 0 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
+                <div>
+                  <p style={eyebrow}>{t("library")}</p>
+                  <h2 style={{ ...cardTitle, marginTop: "0.35rem" }}>{t("filesAndReports")}</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setUploadOpen(true)}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    borderRadius: 10,
+                    border: "none",
+                    background: NAVY,
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("uploadFile")}
+                </button>
+              </div>
+              <p style={{ margin: "0.65rem 0 1rem", fontSize: "0.86rem", color: SLATE_HEADER, lineHeight: 1.55, maxWidth: 720 }}>
+                {t("filesIntro")}
+              </p>
+              {reportsError ? (
+                <p style={{ color: "#b91c1c", fontSize: "0.9rem", margin: 0 }}>{t("docsLoadError")}</p>
+              ) : docRows.length === 0 ? (
+                <p style={{ color: SLATE_HEADER, fontSize: "0.92rem", margin: 0 }}>
+                  {t("noFilesYet")}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setUploadOpen(true)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      color: "var(--accent)",
+                      fontWeight: 700,
+                      font: "inherit",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    {t("uploadAFile")}
+                  </button>
+                  {" · "}
+                  <Link href={`/reporting?project=${encodeURIComponent(projectId)}`} style={{ color: "var(--accent)", fontWeight: 700 }}>
+                    {t("fullReporting")}
                   </Link>
                 </p>
               ) : (
-                upcomingMilestones.map((task) => (
-                  <div key={task.id} style={{ borderLeft: "3px solid #ea580c", paddingLeft: "0.65rem" }}>
-                    <div style={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.06em", color: "#ea580c" }}>
-                      {milestoneStatusLabel(task.taskStatus)}
-                    </div>
-                    <div style={{ fontWeight: 700, fontSize: "0.88rem", color: NAVY, marginTop: 4 }}>{task.title}</div>
-                    {task.phaseLabel ? (
-                      <div style={{ fontSize: "0.78rem", color: SLATE_HEADER, marginTop: 2 }}>{task.phaseLabel}</div>
-                    ) : null}
-                    <div style={{ fontSize: "0.76rem", color: "#94a3b8", marginTop: 6 }}>
-                      {t("due", { date: formatDateShort(task.endsAt, intlLocale) })}
-                    </div>
+                <div style={{ border: "1px solid #dbe4f0", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
+                  <div style={{ width: "100%", overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+                      <thead>
+                        <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #dbe4f0" }}>
+                          {([t("colType"), t("colFileName"), t("colReport"), t("colUpdated"), t("colActions")] as const).map((col) => (
+                            <th
+                              key={col}
+                              style={{
+                                padding: "0.75rem 1rem",
+                                fontWeight: 700,
+                                color: SLATE_HEADER,
+                                textAlign: "left",
+                                fontSize: "0.68rem",
+                                letterSpacing: "0.07em",
+                                textTransform: "uppercase",
+                                whiteSpace: col === t("colUpdated") ? "nowrap" : undefined,
+                              }}
+                            >
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {docRows.map((row) => (
+                          <tr key={row.key} style={{ borderBottom: "1px solid #e8eef7" }}>
+                            <td style={{ padding: "0.8rem 1rem", color: "#475569", whiteSpace: "nowrap" }}>{kindLabel(row.kind)}</td>
+                            <td style={{ padding: "0.8rem 1rem", fontWeight: row.kind === "narrative" ? 600 : 500, color: NAVY }}>{row.label}</td>
+                            <td style={{ padding: "0.8rem 1rem", color: SLATE_HEADER }}>{row.reportTitle}</td>
+                            <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap", color: SLATE_HEADER }}>{formatWhen(row.sortAt, intlLocale)}</td>
+                            <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap" }}>
+                              {row.href ? (
+                                row.kind === "narrative" ? (
+                                  <Link href={row.href} style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}>
+                                    {tCommon("open")}
+                                  </Link>
+                                ) : (
+                                  <a
+                                    href={row.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}
+                                  >
+                                    {tCommon("download")}
+                                  </a>
+                                )
+                              ) : (
+                                <span style={{ color: "#cbd5e1" }}>{tCommon("emDash")}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))
+                </div>
               )}
-            </div>
-          </section>
-        </div>
-
-        <section style={{ ...whiteCard, marginBottom: "1.15rem" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
-            <div>
-              <p style={eyebrow}>{t("drawingsSpecs")}</p>
-              <h2 style={{ ...cardTitle, marginTop: "0.35rem" }}>{t("technicalPlans")}</h2>
-            </div>
-            <Link
-              href={`/documents?project=${encodeURIComponent(projectId)}`}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: 10,
-                border: "1px solid #dbe4f0",
-                background: "#fff",
-                color: NAVY,
-                fontWeight: 700,
-                fontSize: "0.82rem",
-                textDecoration: "none",
-              }}
-            >
-              {t("allDocuments")}
-            </Link>
+            </section>
           </div>
-          <p style={{ margin: "0.65rem 0 0", fontSize: "0.86rem", color: SLATE_HEADER, lineHeight: 1.55, maxWidth: 720 }}>
-            {t("plansIntro")}
-          </p>
-          <TechnicalPlansSection projectId={projectId} embedded />
-        </section>
 
-        <section style={{ ...whiteCard, marginBottom: 0 }}>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "0.75rem" }}>
-            <div>
-              <p style={eyebrow}>{t("library")}</p>
-              <h2 style={{ ...cardTitle, marginTop: "0.35rem" }}>{t("filesAndReports")}</h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setUploadOpen(true)}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: 10,
-                border: "none",
-                background: NAVY,
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "0.82rem",
-                cursor: "pointer",
-              }}
-            >
-              {t("uploadFile")}
-            </button>
-          </div>
-          <p style={{ margin: "0.65rem 0 1rem", fontSize: "0.86rem", color: SLATE_HEADER, lineHeight: 1.55, maxWidth: 720 }}>
-            {t("filesIntro")}
-          </p>
-          {reportsError ? (
-            <p style={{ color: "#b91c1c", fontSize: "0.9rem", margin: 0 }}>{t("docsLoadError")}</p>
-          ) : docRows.length === 0 ? (
-            <p style={{ color: SLATE_HEADER, fontSize: "0.92rem", margin: 0 }}>
-              {t("noFilesYet")}{" "}
-              <button
-                type="button"
-                onClick={() => setUploadOpen(true)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: 0,
-                  color: "var(--accent)",
-                  fontWeight: 700,
-                  font: "inherit",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                {t("uploadAFile")}
-              </button>
-              {" · "}
-              <Link href={`/reporting?project=${encodeURIComponent(projectId)}`} style={{ color: "var(--accent)", fontWeight: 700 }}>
-                {t("fullReporting")}
-              </Link>
-            </p>
-          ) : (
-            <div style={{ border: "1px solid #dbe4f0", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
-              <div style={{ width: "100%", overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
-                  <thead>
-                    <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #dbe4f0" }}>
-                      {([t("colType"), t("colFileName"), t("colReport"), t("colUpdated"), t("colActions")] as const).map((col) => (
-                        <th
-                          key={col}
-                          style={{
-                            padding: "0.75rem 1rem",
-                            fontWeight: 700,
-                            color: SLATE_HEADER,
-                            textAlign: "left",
-                            fontSize: "0.68rem",
-                            letterSpacing: "0.07em",
-                            textTransform: "uppercase",
-                            whiteSpace: col === t("colUpdated") ? "nowrap" : undefined,
-                          }}
-                        >
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {docRows.map((row) => (
-                      <tr key={row.key} style={{ borderBottom: "1px solid #e8eef7" }}>
-                        <td style={{ padding: "0.8rem 1rem", color: "#475569", whiteSpace: "nowrap" }}>{kindLabel(row.kind)}</td>
-                        <td style={{ padding: "0.8rem 1rem", fontWeight: row.kind === "narrative" ? 600 : 500, color: NAVY }}>
-                          {row.label}
-                        </td>
-                        <td style={{ padding: "0.8rem 1rem", color: SLATE_HEADER }}>{row.reportTitle}</td>
-                        <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap", color: SLATE_HEADER }}>{formatWhen(row.sortAt, intlLocale)}</td>
-                        <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap" }}>
-                          {row.href ? (
-                            row.kind === "narrative" ? (
-                              <Link href={row.href} style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}>
-                                {tCommon("open")}
-                              </Link>
-                            ) : (
-                              <a
-                                href={row.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}
-                              >
-                                {tCommon("download")}
-                              </a>
-                            )
-                          ) : (
-                            <span style={{ color: "#cbd5e1" }}>{tCommon("emDash")}</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <aside style={{ display: "grid", gap: "1.15rem", minWidth: 0 }}>
+            <section style={{ ...whiteCard, minWidth: 0 }}>
+              <p style={eyebrow}>{t("people")}</p>
+              <h2 style={cardTitle}>{t("teamOnRecord")}</h2>
+              <div style={{ marginTop: "0.95rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {teamOnProject.length > 0
+                  ? teamOnProject.slice(0, 4).map((m) => {
+                      const assignment = m.projects.find((p) => p.id === projectId);
+                      const role = assignment?.functionTitle ?? m.role.replace(/_/g, " ");
+                      return (
+                        <div key={m.userId} style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: "50%",
+                              background: "#1e293b",
+                              color: "#fff",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {initials(m.displayName)}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{m.displayName}</div>
+                            <div style={{ fontSize: "0.76rem", color: SLATE_HEADER, textTransform: "capitalize" }}>{role}</div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  : project.portfolioLeadName?.trim()
+                    ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+                          <div
+                            style={{
+                              width: 42,
+                              height: 42,
+                              borderRadius: "50%",
+                              background: "#1e293b",
+                              color: "#fff",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {initials(project.portfolioLeadName)}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{project.portfolioLeadName}</div>
+                            <div style={{ fontSize: "0.76rem", color: SLATE_HEADER }}>{t("leadOnRecord")}</div>
+                          </div>
+                        </div>
+                      )
+                    : (
+                        <p style={{ margin: 0, fontSize: "0.85rem", color: SLATE_HEADER }}>{t("noContacts")}</p>
+                      )}
               </div>
-            </div>
-          )}
-        </section>
+              {canAccessTeam(user?.role) ? (
+                <Link
+                  href="/team"
+                  style={{
+                    display: "block",
+                    marginTop: "1rem",
+                    textAlign: "center",
+                    padding: "0.6rem",
+                    borderRadius: 10,
+                    border: "1px solid #e2e8f0",
+                    fontWeight: 700,
+                    fontSize: "0.82rem",
+                    color: NAVY,
+                    textDecoration: "none",
+                    background: "#fff",
+                  }}
+                >
+                  {t("viewStakeholders")}
+                </Link>
+              ) : null}
+            </section>
+
+            <section style={{ ...whiteCard, minWidth: 0 }}>
+              <p style={eyebrow}>{t("plan")}</p>
+              <h2 style={cardTitle}>{t("upcomingMilestones")}</h2>
+              <div style={{ marginTop: "0.95rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {upcomingMilestones.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: SLATE_HEADER }}>
+                    {t("noOpenMilestones")}{" "}
+                    <Link href={`/planning?project=${encodeURIComponent(projectId)}`} style={{ color: "var(--accent)", fontWeight: 700 }}>
+                      {tNav("planning")}
+                    </Link>
+                  </p>
+                ) : (
+                  upcomingMilestones.slice(0, 4).map((task) => (
+                    <div key={task.id} style={{ borderLeft: "2px solid #f97316", paddingLeft: "0.7rem" }}>
+                      <div style={{ fontSize: "0.64rem", fontWeight: 800, letterSpacing: "0.08em", color: "#ea580c" }}>
+                        {milestoneStatusLabel(task.taskStatus)}
+                      </div>
+                      <div style={{ marginTop: 4, fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{task.title}</div>
+                      <div style={{ marginTop: 4, fontSize: "0.76rem", color: SLATE_HEADER }}>
+                        {task.phaseLabel || t("timeline")}
+                      </div>
+                      <div style={{ marginTop: 4, fontSize: "0.76rem", color: "#94a3b8" }}>{t("due", { date: formatDateShort(task.endsAt, intlLocale) })}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+          </aside>
+        </div>
       </div>
 
       <EditProjectModal open={editOpen} projectId={projectId} project={project} onClose={() => setEditOpen(false)} onSaved={onSaved} />
