@@ -136,7 +136,7 @@ function DocumentsPageContent() {
                   border: "1px solid #cbd5e1",
                   fontSize: "0.9rem",
                   fontWeight: 600,
-                  color: "#0f172a",
+                  color: "var(--text)",
                   background: "#fff",
                   width: "100%",
                 }}
@@ -185,7 +185,7 @@ function DocumentsPageContent() {
             {selectedProjectId && portfolio ? (
               <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", color: "#475569" }}>
                 {t("showingFor")}{" "}
-                <Link href={`/projects/${selectedProjectId}`} style={{ color: "#2563eb", fontWeight: 700 }}>
+                <Link href={`/projects/${selectedProjectId}`} style={{ color: "var(--text)", fontWeight: 700 }}>
                   {portfolio.find((p) => p.id === selectedProjectId)?.name ?? selectedProjectId}
                 </Link>
               </p>

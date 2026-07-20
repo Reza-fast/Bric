@@ -49,7 +49,7 @@ export function LoginForm() {
           maxWidth: 400,
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: 12,
+          borderRadius: 20,
           padding: "1.75rem",
         }}
       >
@@ -69,12 +69,8 @@ export function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={{
-                padding: "0.55rem 0.65rem",
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                fontSize: "1rem",
-              }}
+              className="app-input"
+              style={{ borderRadius: 999 }}
             />
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: "0.85rem" }}>
@@ -85,12 +81,8 @@ export function LoginForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{
-                padding: "0.55rem 0.65rem",
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                fontSize: "1rem",
-              }}
+              className="app-input"
+              style={{ borderRadius: 999 }}
             />
           </label>
           {error ? (
@@ -101,16 +93,8 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              marginTop: "0.25rem",
-              padding: "0.65rem 1rem",
-              borderRadius: 10,
-              border: "none",
-              background: "var(--text)",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: loading ? "wait" : "pointer",
-            }}
+            className="app-btn app-btn-primary"
+            style={{ marginTop: "0.25rem", cursor: loading ? "wait" : "pointer" }}
           >
             {loading ? t("signingIn") : t("signIn")}
           </button>

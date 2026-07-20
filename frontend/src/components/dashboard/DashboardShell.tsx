@@ -11,12 +11,6 @@ import { logoutRequest } from "@/lib/api/auth";
 import { canAccessTeam } from "@/lib/api/roles";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
-const SIDEBAR_BG = "#F0F7FF";
-const NAVY = "#1A232E";
-const ACTIVE = "#C45C26";
-const MUTED = "#64748b";
-const INACTIVE = "#1e293b";
-
 const navAll = [
   { key: "dashboard" as const, href: "/dashboard" },
   { key: "projects" as const, href: "/projects" },
@@ -41,7 +35,7 @@ function initialsFromName(name: string | undefined): string {
 }
 
 function NavIcon({ name, active }: { name: NavKey; active: boolean }) {
-  const stroke = active ? ACTIVE : INACTIVE;
+  const stroke = active ? "var(--text)" : "var(--muted)";
   const common = {
     width: 20,
     height: 20,
@@ -138,7 +132,7 @@ function ProfileAvatar({ user, size = 40 }: { user: AuthUser | null; size?: numb
         height: size,
         borderRadius: "50%",
         overflow: "hidden",
-        background: NAVY,
+        background: "var(--text)",
         color: "#fff",
         display: "flex",
         alignItems: "center",
@@ -223,7 +217,7 @@ export function DashboardShell({
             inset: 0,
             zIndex: 40,
             border: "none",
-            background: "rgba(15, 23, 42, 0.45)",
+            background: "rgba(15, 15, 15, 0.35)",
             cursor: "pointer",
             padding: 0,
           }}
@@ -233,8 +227,8 @@ export function DashboardShell({
       <aside
         style={{
           width: 260,
-          background: SIDEBAR_BG,
-          borderRight: "1px solid #e2eaf4",
+          background: "var(--sidebar)",
+          borderRight: "1px solid var(--border)",
           padding: "1.5rem 0 1.15rem",
           display: showSidebar ? "flex" : "none",
           flexDirection: "column",
@@ -246,7 +240,7 @@ export function DashboardShell({
                 left: 0,
                 bottom: 0,
                 zIndex: 50,
-                boxShadow: navOpen ? "8px 0 28px rgba(15, 23, 42, 0.18)" : undefined,
+                boxShadow: navOpen ? "8px 0 28px rgba(15, 15, 15, 0.12)" : undefined,
               }
             : {}),
         }}
@@ -267,7 +261,7 @@ export function DashboardShell({
               style={{
                 display: "inline-flex",
                 textDecoration: "none",
-                color: NAVY,
+                color: "var(--text)",
               }}
             >
               <BricWordmark markSize={22} />
@@ -276,7 +270,7 @@ export function DashboardShell({
               style={{
                 marginTop: 8,
                 fontSize: "0.82rem",
-                color: MUTED,
+                color: "var(--muted)",
                 fontWeight: 500,
                 lineHeight: 1.3,
               }}
@@ -293,12 +287,12 @@ export function DashboardShell({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                border: "1px solid #dbe4f0",
-                background: "#fff",
-                color: NAVY,
+                width: 42,
+                height: 42,
+                borderRadius: 999,
+                border: "1px solid var(--border)",
+                background: "var(--surface)",
+                color: "var(--text)",
                 cursor: "pointer",
                 flexShrink: 0,
               }}
@@ -330,7 +324,7 @@ export function DashboardShell({
                         bottom: 6,
                         width: 4,
                         borderRadius: "0 4px 4px 0",
-                        background: ACTIVE,
+                        background: "var(--accent-lime)",
                       }}
                     />
                   ) : null}
@@ -339,15 +333,15 @@ export function DashboardShell({
                       marginLeft: 8,
                       marginRight: 12,
                       padding: "0.7rem 0.9rem",
-                      borderRadius: "0 14px 14px 0",
-                      background: active ? "#fff" : "transparent",
-                      color: active ? ACTIVE : INACTIVE,
+                      borderRadius: "0 999px 999px 0",
+                      background: active ? "var(--surface)" : "transparent",
+                      color: active ? "var(--text)" : "var(--muted)",
                       fontWeight: active ? 700 : 500,
                       fontSize: "0.95rem",
                       display: "flex",
                       alignItems: "center",
                       gap: "0.75rem",
-                      boxShadow: active ? "0 1px 2px rgba(15, 23, 42, 0.04)" : undefined,
+                      boxShadow: active ? "0 1px 2px rgba(15, 15, 15, 0.04)" : undefined,
                     }}
                   >
                     <NavIcon name={item.key} active={active} />
@@ -362,22 +356,8 @@ export function DashboardShell({
           <Link
             href="/projects/new"
             onClick={() => setNavOpen(false)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              textAlign: "center",
-              padding: "0.8rem 1rem",
-              borderRadius: 12,
-              border: "none",
-              background: NAVY,
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: "0.92rem",
-              cursor: "pointer",
-              textDecoration: "none",
-            }}
+            className="app-btn app-btn-primary"
+            style={{ width: "100%" }}
           >
             <span aria-hidden style={{ fontSize: "1.1rem", lineHeight: 1, fontWeight: 600 }}>
               +
@@ -404,7 +384,7 @@ export function DashboardShell({
                   display: "block",
                   fontWeight: 700,
                   fontSize: "0.92rem",
-                  color: NAVY,
+                  color: "var(--text)",
                   textDecoration: "none",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -413,7 +393,7 @@ export function DashboardShell({
               >
                 {profileName}
               </Link>
-              <div style={{ marginTop: 2, fontSize: "0.78rem", color: MUTED }}>
+              <div style={{ marginTop: 2, fontSize: "0.78rem", color: "var(--muted)" }}>
                 <button
                   type="button"
                   onClick={() => void onLogout()}
@@ -421,7 +401,7 @@ export function DashboardShell({
                     background: "none",
                     border: "none",
                     padding: 0,
-                    color: MUTED,
+                    color: "var(--muted)",
                     cursor: "pointer",
                     font: "inherit",
                   }}
@@ -429,7 +409,7 @@ export function DashboardShell({
                   {t("signOut")}
                 </button>
                 <span> · </span>
-                <Link href="/profile" onClick={() => setNavOpen(false)} style={{ color: MUTED, textDecoration: "none" }}>
+                <Link href="/profile" onClick={() => setNavOpen(false)} style={{ color: "var(--muted)", textDecoration: "none" }}>
                   {t("settings")}
                 </Link>
               </div>
@@ -443,7 +423,8 @@ export function DashboardShell({
           style={{
             minHeight: 64,
             borderBottom: "1px solid var(--border)",
-            background: "var(--surface)",
+            background: "rgba(253, 253, 248, 0.92)",
+            backdropFilter: "blur(12px)",
             display: "flex",
             alignItems: "center",
             flexWrap: "wrap",
@@ -461,9 +442,9 @@ export function DashboardShell({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 40,
-                height: 40,
-                borderRadius: 8,
+                width: 42,
+                height: 42,
+                borderRadius: 999,
                 border: "1px solid var(--border)",
                 background: "var(--surface)",
                 color: "var(--text)",
@@ -492,14 +473,11 @@ export function DashboardShell({
           <input
             type="search"
             placeholder={t("quicksearch")}
+            className="app-input"
             style={{
               flex: "1 1 120px",
               minWidth: isMobile ? 0 : 120,
               maxWidth: fullBleed || isMobile ? "none" : 480,
-              padding: "0.5rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid var(--border)",
-              fontSize: "0.9rem",
             }}
           />
           <div

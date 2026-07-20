@@ -49,7 +49,7 @@ function priorityTone(priority?: string): { bg: string; fg: string } {
     case "high":
       return { bg: "#fee2e2", fg: "#b91c1c" };
     case "low":
-      return { bg: "#f8fafc", fg: "#64748b" };
+      return { bg: "var(--ghost)", fg: "var(--muted)" };
     default:
       return { bg: "#eef2ff", fg: "#4338ca" };
   }
@@ -88,9 +88,9 @@ function Surface({
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border)",
-        borderRadius: 18,
+        borderRadius: 20,
         padding: "1.2rem",
-        boxShadow: "0 1px 2px rgba(15, 23, 42, 0.03)",
+        boxShadow: "0 1px 2px rgba(15, 15, 15, 0.03)",
       }}
     >
       <div
@@ -108,7 +108,7 @@ function Surface({
               {eyebrow}
             </div>
           ) : null}
-          <h2 style={{ margin: eyebrow ? "0.3rem 0 0" : 0, fontSize: "1rem", color: "#0f172a" }}>{title}</h2>
+          <h2 style={{ margin: eyebrow ? "0.3rem 0 0" : 0, fontSize: "1rem", color: "var(--text)" }}>{title}</h2>
         </div>
         {aside}
       </div>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
           <div style={{ fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--muted)" }}>
             {t("eyebrow")}
           </div>
-          <h1 style={{ margin: "0.3rem 0 0.35rem", fontSize: isMobile ? "1.7rem" : "2rem", letterSpacing: "-0.03em", color: "#0f172a" }}>
+          <h1 style={{ margin: "0.3rem 0 0.35rem", fontSize: isMobile ? "1.7rem" : "2rem", letterSpacing: "-0.03em", color: "var(--text)" }}>
             {t("title")}
           </h1>
           <p style={{ margin: 0, color: "var(--muted)", maxWidth: 560 }}>{t("subtitle")}</p>
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                     <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--muted)", textTransform: "uppercase" }}>
                       {item.label}
                     </div>
-                    <div style={{ marginTop: "0.3rem", fontSize: isMobile ? "1.8rem" : "2.2rem", fontWeight: 800, color: "#0f172a" }}>{item.value}</div>
+                    <div style={{ marginTop: "0.3rem", fontSize: isMobile ? "1.8rem" : "2.2rem", fontWeight: 800, color: "var(--text)" }}>{item.value}</div>
                     <div style={{ marginTop: "0.2rem", fontSize: "0.78rem", color: "var(--muted)" }}>{item.hint}</div>
                   </div>
                 ))}
@@ -310,7 +310,7 @@ export default function DashboardPage() {
                           {new Date(task.startsAt).toLocaleDateString(intlLocale, { day: "2-digit" })}
                         </div>
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.92rem" }}>{task.title}</div>
+                          <div style={{ fontWeight: 700, color: "var(--text)", fontSize: "0.92rem" }}>{task.title}</div>
                           <div style={{ color: "var(--muted)", fontSize: "0.8rem", marginTop: 2 }}>
                             {task.location || t("siteWide")} · {formatDate(task.startsAt, intlLocale)}
                           </div>
@@ -340,7 +340,7 @@ export default function DashboardPage() {
                     );
                   })
                 )}
-                <Link href="/planning" style={{ color: "#0f172a", fontSize: "0.85rem", fontWeight: 700, textDecoration: "none" }}>
+                <Link href="/planning" style={{ color: "var(--text)", fontSize: "0.85rem", fontWeight: 700, textDecoration: "none" }}>
                   {t("viewFullSchedule")} →
                 </Link>
               </div>
@@ -362,7 +362,7 @@ export default function DashboardPage() {
                   return (
                     <div key={row.projectId}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", fontSize: "0.85rem", marginBottom: 6 }}>
-                        <span style={{ fontWeight: 600, color: "#0f172a" }}>{row.name}</span>
+                        <span style={{ fontWeight: 600, color: "var(--text)" }}>{row.name}</span>
                         <span style={{ color: row.isOverBudget ? "#c2410c" : "var(--muted)", whiteSpace: "nowrap" }}>
                           {row.actualHours} / {row.budgetedHours} h
                           {row.isOverBudget ? ` ${t("overBudgetShort")}` : ""}
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                             width: `${width}%`,
                             height: "100%",
                             borderRadius: 999,
-                            background: row.isOverBudget ? "#f97316" : "#0f172a",
+                            background: row.isOverBudget ? "#dc2626" : "var(--text)",
                           }}
                         />
                       </div>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                 ) : (
                   recentInsights.map((item) => (
                     <div key={item.id} style={{ paddingBottom: "0.75rem", borderBottom: "1px solid #e2e8f0" }}>
-                      <div style={{ fontWeight: 700, color: "#0f172a", fontSize: "0.88rem" }}>{item.title}</div>
+                      <div style={{ fontWeight: 700, color: "var(--text)", fontSize: "0.88rem" }}>{item.title}</div>
                       {item.body ? <div style={{ marginTop: 4, color: "var(--muted)", fontSize: "0.8rem" }}>{item.body}</div> : null}
                       <div style={{ marginTop: 6, color: "var(--muted)", fontSize: "0.75rem" }}>{formatDateTime(item.createdAt, intlLocale)}</div>
                     </div>
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                     {t("reportsWaiting")}
                   </div>
-                  <div style={{ marginTop: 6, fontSize: "1.8rem", fontWeight: 800, color: "#0f172a" }}>
+                  <div style={{ marginTop: 6, fontSize: "1.8rem", fontWeight: 800, color: "var(--text)" }}>
                     {data.metrics.pendingReportsActionRequired}
                   </div>
                   <div style={{ marginTop: 4, color: "var(--muted)", fontSize: "0.8rem" }}>{t("reportsWaitingHint")}</div>
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                     {t("budgetRisk")}
                   </div>
-                  <div style={{ marginTop: 6, fontWeight: 700, color: "#0f172a", fontSize: "0.96rem" }}>
+                  <div style={{ marginTop: 6, fontWeight: 700, color: "var(--text)", fontSize: "0.96rem" }}>
                     {overBudgetRows[0]?.name || t("allProjectsHealthy")}
                   </div>
                   <div style={{ marginTop: 4, color: "var(--muted)", fontSize: "0.8rem" }}>
@@ -455,7 +455,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
                     {t("nextDelivery")}
                   </div>
-                  <div style={{ marginTop: 6, fontWeight: 700, color: "#0f172a", fontSize: "0.96rem" }}>
+                  <div style={{ marginTop: 6, fontWeight: 700, color: "var(--text)", fontSize: "0.96rem" }}>
                     {nextTasks[0]?.title || t("noTasksPlanned")}
                   </div>
                   <div style={{ marginTop: 4, color: "var(--muted)", fontSize: "0.8rem" }}>

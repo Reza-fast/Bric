@@ -278,7 +278,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
               {initials(member.displayName)}
             </div>
             <div style={{ minWidth: 0 }}>
-              <h2 id="member-detail-title" style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
+              <h2 id="member-detail-title" style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em" }}>
                 {member.displayName}
               </h2>
               <div style={{ fontSize: "0.9rem", color: "#64748b", marginTop: 6 }}>{member.email}</div>
@@ -348,7 +348,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                     background: "#fff",
                     fontSize: "0.9rem",
                     fontWeight: 600,
-                    color: "#0f172a",
+                    color: "var(--text)",
                   }}
                 >
                   {FIRM_ROLE_VALUES.map((value) => (
@@ -368,7 +368,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                     padding: "0.55rem 1rem",
                     borderRadius: 8,
                     border: "none",
-                    background: savingRole || !roleDirty ? "#94a3b8" : "#0f172a",
+                    background: savingRole || !roleDirty ? "#94a3b8" : "var(--text)",
                     color: "#fff",
                     fontWeight: 700,
                     fontSize: "0.82rem",
@@ -444,8 +444,8 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                             alignItems: "center",
                           }}
                         >
-                          <span style={{ fontWeight: 600, color: "#0f172a", display: "flex", alignItems: "center", gap: "0.45rem" }}>
-                            <span style={{ color: "#0f172a", fontSize: "0.5rem" }}>●</span>
+                          <span style={{ fontWeight: 600, color: "var(--text)", display: "flex", alignItems: "center", gap: "0.45rem" }}>
+                            <span style={{ color: "var(--text)", fontSize: "0.5rem" }}>●</span>
                             {row.projectName}
                           </span>
                           <span style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", color: "#334155" }}>{formatHours(row.hours)}</span>
@@ -502,7 +502,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                         background: "#eff6ff",
                       }}
                     >
-                      <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600, color: "#0f172a", fontSize: "0.88rem", minWidth: 0 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600, color: "var(--text)", fontSize: "0.88rem", minWidth: 0 }}>
                         <span style={{ color: "#3b82f6", flexShrink: 0 }}>
                           <IconBuilding />
                         </span>
@@ -581,7 +581,7 @@ export function MemberDetailModal({ member, allProjects, currentUserId, onClose,
                               padding: "0.4rem 0.85rem",
                               borderRadius: 8,
                               border: "none",
-                              background: "#0f172a",
+                              background: "var(--text)",
                               color: "#fff",
                               fontWeight: 700,
                               fontSize: "0.78rem",

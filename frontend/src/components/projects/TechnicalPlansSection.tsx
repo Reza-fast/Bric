@@ -14,6 +14,13 @@ import {
   type TechnicalPlan,
 } from "@/lib/api/technicalPlans";
 import { intlLocaleTags, type AppLocale } from "@/i18n/routing";
+import {
+  ActionIconButton,
+  ActionIconLink,
+  IconDownload,
+  IconEye,
+  IconTrash,
+} from "@/components/ui/ActionIcons";
 
 function formatWhen(iso: string, locale: string): string {
   const d = new Date(iso);
@@ -201,7 +208,7 @@ export function TechnicalPlansSection({
                 padding: "0.45rem 0.9rem",
                 borderRadius: 8,
                 border: "none",
-                background: "#0f172a",
+                background: "var(--text)",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "0.82rem",
@@ -257,9 +264,9 @@ export function TechnicalPlansSection({
                   return (
                     <tr key={plan.id} style={{ borderBottom: i < plans.length - 1 ? "1px solid #f1f5f9" : undefined }}>
                       {showProjectColumn ? (
-                        <td style={{ padding: "0.65rem 0.85rem", fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap" }}>
+                        <td style={{ padding: "0.65rem 0.85rem", fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap" }}>
                           {plan.projectName ? (
-                            <Link href={`/projects/${plan.projectId}`} style={{ color: "#2563eb", textDecoration: "none" }}>
+                            <Link href={`/projects/${plan.projectId}`} style={{ color: "var(--text)", textDecoration: "none" }}>
                               {plan.projectName}
                             </Link>
                           ) : (
@@ -268,7 +275,7 @@ export function TechnicalPlansSection({
                         </td>
                       ) : null}
                       <td style={{ padding: "0.65rem 0.85rem" }}>
-                        <div style={{ fontWeight: 700, color: "#0f172a" }}>{plan.title}</div>
+                        <div style={{ fontWeight: 700, color: "var(--text)" }}>{plan.title}</div>
                         <div style={{ fontSize: "0.78rem", color: "#94a3b8", marginTop: 2 }}>{plan.fileOriginalName}</div>
                       </td>
                       <td style={{ padding: "0.65rem 0.85rem", color: "#64748b", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
@@ -277,39 +284,26 @@ export function TechnicalPlansSection({
                       <td style={{ padding: "0.65rem 0.85rem", whiteSpace: "nowrap" }}>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center" }}>
                           {openable ? (
-                            <a
+                            <ActionIconLink
                               href={fileUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.82rem" }}
+                              label={tCommon("open")}
                             >
-                              {tCommon("open")}
-                            </a>
+                              <IconEye />
+                            </ActionIconLink>
                           ) : null}
-                          <a
-                            href={fileUrl}
-                            download={plan.fileOriginalName}
-                            style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.82rem" }}
-                          >
-                            {tCommon("download")}
-                          </a>
-                          <button
-                            type="button"
+                          <ActionIconLink href={fileUrl} download={plan.fileOriginalName} label={tCommon("download")}>
+                            <IconDownload />
+                          </ActionIconLink>
+                          <ActionIconButton
+                            label={tCommon("delete")}
+                            variant="danger"
                             disabled={busyId !== null}
                             onClick={() => void onDelete(plan)}
-                            style={{
-                              padding: "0.2rem 0.5rem",
-                              borderRadius: 6,
-                              border: "1px solid #fecaca",
-                              background: "#fff",
-                              color: "#b91c1c",
-                              fontWeight: 700,
-                              fontSize: "0.75rem",
-                              cursor: busyId !== null ? "wait" : "pointer",
-                            }}
                           >
-                            {busyId === plan.id ? tCommon("emDash") : tCommon("delete")}
-                          </button>
+                            {busyId === plan.id ? <span style={{ fontSize: "0.75rem" }}>{tCommon("emDash")}</span> : <IconTrash />}
+                          </ActionIconButton>
                         </div>
                       </td>
                     </tr>

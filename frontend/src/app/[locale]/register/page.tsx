@@ -52,7 +52,7 @@ export default function RegisterPage() {
           maxWidth: 400,
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: 12,
+          borderRadius: 20,
           padding: "1.75rem",
         }}
       >
@@ -135,16 +135,8 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              marginTop: "0.25rem",
-              padding: "0.65rem 1rem",
-              borderRadius: 10,
-              border: "none",
-              background: "var(--text)",
-              color: "#fff",
-              fontWeight: 600,
-              cursor: loading ? "wait" : "pointer",
-            }}
+            className="app-btn app-btn-primary"
+            style={{ marginTop: "0.25rem", cursor: loading ? "wait" : "pointer" }}
           >
             {loading ? tCommon("loading") : t("register")}
           </button>

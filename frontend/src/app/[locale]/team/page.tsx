@@ -227,7 +227,7 @@ export default function TeamPage() {
                             {initials(m.displayName)}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 700, color: "#0f172a" }}>{m.displayName}</div>
+                            <div style={{ fontWeight: 700, color: "var(--text)" }}>{m.displayName}</div>
                             <div style={{ color: "#64748b", fontSize: "0.8rem" }}>{m.email}</div>
                           </div>
                         </div>
@@ -329,7 +329,7 @@ export default function TeamPage() {
                   marginTop: "0.35rem",
                   border: "none",
                   borderRadius: 10,
-                  background: "#0f172a",
+                  background: "var(--text)",
                   color: "#fff",
                   fontWeight: 700,
                   padding: "0.62rem 0.9rem",

@@ -404,7 +404,7 @@ function PlanningPageContent() {
             <div
               style={{
                 display: "inline-flex",
-                borderRadius: 10,
+                borderRadius: 999,
                 border: "1px solid var(--border)",
                 overflow: "hidden",
                 background: "var(--surface)",
@@ -437,6 +437,7 @@ function PlanningPageContent() {
             </div>
             <button
               type="button"
+              className="app-btn app-btn-primary app-btn-sm"
               onClick={() => {
                 setFormError(null);
                 setModal({ kind: "add" });
@@ -450,16 +451,6 @@ function PlanningPageContent() {
                 setFormEnd(toDatetimeLocalValue(e.toISOString()));
                 setFormStatus("scheduled");
                 setFormPriority("normal");
-              }}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: 10,
-                border: "none",
-                background: "#ea580c",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: "0.88rem",
-                cursor: "pointer",
               }}
             >
               {t("addPlanning")}
@@ -520,7 +511,7 @@ function PlanningPageContent() {
                         marginLeft: -1,
                         zIndex: 3,
                         pointerEvents: "none",
-                        background: "#ea580c",
+                        background: "var(--text)",
                         borderRadius: 1,
                       }}
                     />
@@ -750,7 +741,7 @@ function PlanningPageContent() {
                       overflow: "hidden",
                     }}
                   >
-                    <div style={{ width: `${r.load}%`, height: "100%", background: "#2563eb", borderRadius: 999 }} />
+                    <div style={{ width: `${r.load}%`, height: "100%", background: "var(--text)", borderRadius: 999 }} />
                   </div>
                 </div>
               ))}
@@ -847,7 +838,7 @@ function PlanningPageContent() {
               style={{
                 borderRadius: 14,
                 padding: "1.35rem 1.5rem",
-                background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
+                background: "var(--text)",
                 color: "#e2e8f0",
                 position: "relative",
                 overflow: "hidden",
@@ -865,7 +856,7 @@ function PlanningPageContent() {
                       padding: "0.5rem 1rem",
                       borderRadius: 8,
                       border: "none",
-                      background: "#ea580c",
+                      background: "var(--text)",
                       color: "#fff",
                       fontWeight: 700,
                       fontSize: "0.85rem",

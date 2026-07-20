@@ -153,7 +153,7 @@ export default function ProjectsPage() {
           <div className="projects-progress-bar">
             <div className="projects-progress-fill" style={{ width: `${pct}%` }} />
           </div>
-          <span style={{ fontSize: "0.74rem", color: "#64748b", fontWeight: 700 }}>{pct}%</span>
+          <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 700 }}>{pct}%</span>
         </div>
       </>
     );
@@ -190,8 +190,8 @@ export default function ProjectsPage() {
       <div className="projects-lead">
         <div className="projects-lead-avatar">{leadInitials(name)}</div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "#0f172a", overflowWrap: "anywhere" }}>{name}</div>
-          <div style={{ marginTop: 2, fontSize: "0.72rem", color: "#64748b" }}>{t("leadRole")}</div>
+          <div style={{ fontSize: "0.84rem", fontWeight: 700, color: "var(--text)", overflowWrap: "anywhere" }}>{name}</div>
+          <div style={{ marginTop: 2, fontSize: "0.72rem", color: "var(--muted)" }}>{t("leadRole")}</div>
         </div>
       </div>
     );
@@ -245,21 +245,10 @@ export default function ProjectsPage() {
         </div>
         <Link
           href="/projects/new"
+          className="app-btn app-btn-primary"
           style={{
-            display: "inline-block",
-            padding: "0.65rem 1.1rem",
-            borderRadius: 10,
-            border: "none",
-            background: "var(--text)",
-            color: "#fff",
-            fontWeight: 600,
-            fontSize: "0.9rem",
-            cursor: "pointer",
             whiteSpace: "nowrap",
-            textDecoration: "none",
             width: isMobile ? "100%" : undefined,
-            textAlign: "center",
-            boxSizing: "border-box",
           }}
         >
           {t("newProject")}
@@ -273,22 +262,13 @@ export default function ProjectsPage() {
               key={tabItem.id}
               type="button"
               onClick={() => setTab(tabItem.id)}
-              style={{
-                padding: "0.55rem 0.8rem",
-                borderRadius: 10,
-                border: tab === tabItem.id ? "1px solid #0f172a" : "1px solid #dbe4f0",
-                background: tab === tabItem.id ? "#0f172a" : "#f8fbff",
-                color: tab === tabItem.id ? "#fff" : "#475569",
-                fontSize: "0.78rem",
-                fontWeight: 700,
-                cursor: "pointer",
-              }}
+              className={`app-tab${tab === tabItem.id ? " app-tab-active" : ""}`}
             >
               {tabItem.label}
             </button>
           ))}
           <div className="projects-toolbar-meta">
-            <span style={{ fontSize: "0.78rem", color: "#64748b", fontWeight: 600 }}>
+            <span style={{ fontSize: "0.78rem", color: "var(--muted)", fontWeight: 600 }}>
               {data === undefined ? tCommon("emDash") : t("showingProjects", { count: filtered.length })}
             </span>
           </div>

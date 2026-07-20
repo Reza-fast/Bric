@@ -54,7 +54,7 @@ export function BudgetBars({ rows }: { rows: ProjectHoursSummary[] }) {
                   style={{
                     height: "100%",
                     width: `${width}%`,
-                    background: over ? "#ea580c" : "var(--accent)",
+                    background: over ? "#dc2626" : "var(--text)",
                     borderRadius: 4,
                   }}
                 />

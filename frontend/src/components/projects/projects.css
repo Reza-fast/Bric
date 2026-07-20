@@ -1,8 +1,8 @@
 .projects-sheet {
-  background: #eef5fb;
-  border-radius: 18px;
+  background: var(--soft);
+  border-radius: 20px;
   padding: 1rem;
-  border: 1px solid #dbe7f3;
+  border: 1px solid var(--border);
 }
 
 .projects-toolbar {
@@ -23,9 +23,9 @@
 }
 
 .projects-table-wrap {
-  background: #fff;
-  border: 1px solid #dbe4f0;
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -48,9 +48,9 @@
 }
 
 .projects-table-head {
-  background: #f8fbff;
-  border-bottom: 1px solid #dbe4f0;
-  color: #64748b;
+  background: var(--soft);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -58,14 +58,14 @@
 }
 
 .projects-table-row {
-  border-top: 1px solid #e8eef7;
+  border-top: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
   transition: background 0.12s ease;
 }
 
 .projects-table-row:hover {
-  background: #fafcff;
+  background: var(--ghost);
 }
 
 .projects-table-row:first-of-type {
@@ -82,20 +82,20 @@
 .projects-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
   overflow-wrap: anywhere;
 }
 
 .projects-location {
   margin-top: 4px;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
 .projects-progress-label {
   font-size: 0.84rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .projects-progress-track {
@@ -109,14 +109,14 @@
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: #dbe4f0;
+  background: var(--border);
   overflow: hidden;
   min-width: 48px;
 }
 
 .projects-progress-fill {
   height: 100%;
-  background: #b45309;
+  background: var(--text);
   border-radius: 999px;
 }
 
@@ -124,7 +124,7 @@
   margin-top: 8px;
   font-size: 0.84rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text);
 }
 
 .projects-budget-value.over {
@@ -142,8 +142,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #e2e8f0;
-  color: #334155;
+  background: var(--ghost);
+  color: var(--text);
   display: grid;
   place-items: center;
   font-size: 0.72rem;
@@ -154,7 +154,7 @@
 .projects-action {
   display: grid;
   place-items: center;
-  color: #475569;
+  color: var(--muted);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -168,7 +168,7 @@
 .projects-mobile-card {
   display: block;
   padding: 1rem;
-  border-top: 1px solid #e8eef7;
+  border-top: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
 }
@@ -188,7 +188,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--muted);
   margin-bottom: 0.35rem;
 }
 

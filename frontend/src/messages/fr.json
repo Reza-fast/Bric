@@ -579,7 +579,7 @@
     "navReports": "Rapports",
     "todaysSession": "Session du jour",
     "statusIdle": "INACTIF",
-    "statusActive": "ACTIF",
+    "statusActive": "SESSION ACTIVE",
     "statusPaused": "EN PAUSE",
     "timerHint": "Le minuteur enregistre votre journée (sans projet). Allouez du temps aux projets ci-dessous à partir de ces heures enregistrées.",
     "clockIn": "Pointer entrée",
@@ -626,7 +626,13 @@
     "pauseHint": "Mettez en pause pour le déjeuner ou les pauses ; reprenez pour continuer. Le temps actif est enregistré à la sortie.",
     "pause": "Pause",
     "resume": "Reprendre",
-    "deleteEntry": "Supprimer"
+    "deleteEntry": "Supprimer",
+    "logEntry": "Entrée de journal",
+    "allocateHours": "Allouer les heures au projet",
+    "weeklyMetrics": "Statistiques hebdomadaires",
+    "activityLog": "Journal d'activité",
+    "viewFullHistory": "Voir l'historique complet",
+    "showLess": "Afficher moins"
   },
   "Profile": {
     "title": "Votre profil",

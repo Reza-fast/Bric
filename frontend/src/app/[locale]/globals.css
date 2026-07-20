@@ -1,13 +1,25 @@
 :root {
   color-scheme: light;
-  --bg: #f4f4f5;
+
+  /* Landing-aligned palette */
+  --bg: #fdfdf8;
   --surface: #ffffff;
-  --text: #18181b;
-  --muted: #71717a;
-  --accent: #2563eb;
-  --sidebar: #fafafa;
-  --border: #e4e4e7;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --text: #0f0f0f;
+  --muted: #5c5c5c;
+  --accent: #0f0f0f;
+  --accent-lime: #d9f99d;
+  --sidebar: #fdfdf8;
+  --border: #e8e6e1;
+  --line: #e8e6e1;
+  --soft: #f3f2ee;
+  --ghost: #efeee9;
+  --outline-border: #d6d3cd;
+
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: var(--font-inter), Inter, system-ui, sans-serif;
+
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -19,4 +31,120 @@ body {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+/* Shared button system (matches landing .lp-btn) */
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.2;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.app-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.app-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.app-btn-primary {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+
+.app-btn-accent {
+  background: var(--accent-lime);
+  color: var(--text);
+  border-color: var(--accent-lime);
+}
+
+.app-btn-ghost {
+  background: var(--ghost);
+  color: var(--text);
+  border-color: transparent;
+}
+
+.app-btn-outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--outline-border);
+}
+
+.app-btn-sm {
+  padding: 0.55rem 1rem;
+  font-size: 0.88rem;
+}
+
+/* Filter / tab pills */
+.app-tab {
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--outline-border);
+  background: var(--ghost);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-tab:hover {
+  color: var(--text);
+}
+
+.app-tab-active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+
+/* Cards & surfaces */
+.app-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.app-sheet {
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+/* Form controls */
+.app-input {
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.app-input:focus {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
 }

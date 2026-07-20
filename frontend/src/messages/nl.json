@@ -579,7 +579,7 @@
     "navReports": "Rapporten",
     "todaysSession": "Sessie vandaag",
     "statusIdle": "INACTIEF",
-    "statusActive": "ACTIEF",
+    "statusActive": "ACTIEVE SESSIE",
     "statusPaused": "GEPAUZEERD",
     "timerHint": "De timer registreert je dag (geen project). Wijs hieronder tijd toe aan projecten vanuit die geregistreerde uren.",
     "clockIn": "Instampen",
@@ -626,7 +626,13 @@
     "pauseHint": "Pauzeer voor lunch of pauzes; hervat om verder te gaan. Actieve tijd wordt bij uitstampen opgeslagen.",
     "pause": "Pauzeren",
     "resume": "Hervatten",
-    "deleteEntry": "Verwijderen"
+    "deleteEntry": "Verwijderen",
+    "logEntry": "Logboek",
+    "allocateHours": "Uren toewijzen aan project",
+    "weeklyMetrics": "Weekstatistieken",
+    "activityLog": "Activiteitenlog",
+    "viewFullHistory": "Volledige historiek bekijken",
+    "showLess": "Minder tonen"
   },
   "Profile": {
     "title": "Je profiel",

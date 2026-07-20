@@ -23,6 +23,7 @@ import {
 } from "@/lib/api/reports";
 import { fetchProjectPortfolio, type ProjectPortfolioCard } from "@/lib/api/projects";
 import { htmlToPlainPreview, isEffectivelyEmptyHtml, RichTextEditor } from "@/components/reporting/RichTextEditor";
+import { ActionIconButton, ActionIconLink, IconDownload, IconEye, IconTrash } from "@/components/ui/ActionIcons";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 const FILE_INPUT_ACCEPT =
@@ -360,7 +361,7 @@ function ReportingPageContent() {
                 fontSize: "0.7rem",
                 fontWeight: 700,
                 letterSpacing: "0.14em",
-                color: "#64748b",
+                color: "var(--muted)",
                 textTransform: "uppercase",
               }}
             >
@@ -372,12 +373,12 @@ function ReportingPageContent() {
                 fontSize: "clamp(1.35rem, 2.5vw, 1.85rem)",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
-                color: "#0f172a",
+                color: "var(--text)",
               }}
             >
               {t("title")}
             </h1>
-            <p style={{ margin: "0.35rem 0 0", color: "#64748b", fontSize: "0.92rem", maxWidth: "52ch" }}>
+            <p style={{ margin: "0.35rem 0 0", color: "var(--muted)", fontSize: "0.92rem", maxWidth: "52ch" }}>
 {t("subtitle")}
             </p>
           </div>
@@ -428,7 +429,7 @@ function ReportingPageContent() {
                   fontSize: "0.82rem",
                   fontWeight: 700,
                   color: "#fff",
-                  background: "#0f172a",
+                  background: "var(--text)",
                 }}
               >
                 {t("navSpecs")}
@@ -437,7 +438,7 @@ function ReportingPageContent() {
             <label
               style={{
                 fontSize: "0.8rem",
-                color: "#64748b",
+                color: "var(--muted)",
                 display: "flex",
                 alignItems: isMobile ? "stretch" : "center",
                 flexDirection: isMobile ? "column" : "row",
@@ -459,7 +460,7 @@ function ReportingPageContent() {
                   minWidth: isMobile ? 0 : 200,
                   width: isMobile ? "100%" : undefined,
                   background: "#fff",
-                  color: "#0f172a",
+                  color: "var(--text)",
                 }}
               >
                 {(portfolio ?? []).map((p) => (
@@ -514,7 +515,7 @@ function ReportingPageContent() {
               marginLeft: "auto",
               padding: "0.45rem 1rem",
               borderRadius: 10,
-              background: "#0f172a",
+              background: "var(--text)",
               color: "#fff",
               fontSize: "0.82rem",
               fontWeight: 700,
@@ -540,7 +541,7 @@ function ReportingPageContent() {
             style={{
               borderRadius: 16,
               padding: "1.35rem 1.25rem",
-              background: "linear-gradient(145deg, #0f172a 0%, #1e293b 55%, #0f172a 100%)",
+              background: "linear-gradient(145deg, var(--text) 0%, var(--text) 100%)",
               color: "#f8fafc",
               border: "1px solid rgba(255,255,255,0.08)",
               boxShadow: "0 18px 40px rgba(15, 23, 42, 0.25)",
@@ -562,7 +563,7 @@ function ReportingPageContent() {
                   borderRadius: 10,
                   border: "none",
                   background: "#f8fafc",
-                  color: "#0f172a",
+                  color: "var(--text)",
                   fontWeight: 700,
                   fontSize: "0.85rem",
                   cursor: "pointer",
@@ -600,13 +601,13 @@ function ReportingPageContent() {
               justifyContent: "center",
             }}
           >
-            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em", color: "#64748b" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--muted)" }}>
               MANUAL
             </div>
-            <h2 style={{ margin: "0.5rem 0 0.5rem", fontSize: "1.15rem", fontWeight: 800, color: "#0f172a" }}>
+            <h2 style={{ margin: "0.5rem 0 0.5rem", fontSize: "1.15rem", fontWeight: 800, color: "var(--text)" }}>
               Manual report
             </h2>
-            <p style={{ margin: 0, fontSize: "0.88rem", lineHeight: 1.55, color: "#64748b", maxWidth: "42ch" }}>
+            <p style={{ margin: 0, fontSize: "0.88rem", lineHeight: 1.55, color: "var(--muted)", maxWidth: "42ch" }}>
               Start from scratch with full control — ideal for inspections, checklists, and compliance narratives.
             </p>
             <button
@@ -621,7 +622,7 @@ function ReportingPageContent() {
                 padding: "0.5rem 0",
                 border: "none",
                 background: "none",
-                color: "#2563eb",
+                color: "var(--text)",
                 fontWeight: 700,
                 fontSize: "0.9rem",
                 cursor: "pointer",
@@ -636,7 +637,7 @@ function ReportingPageContent() {
         </div>
 
         {!projectId ? (
-          <p style={{ padding: `1rem ${pagePad}`, color: "#64748b" }}>{t("loadingProjects")}</p>
+          <p style={{ padding: `1rem ${pagePad}`, color: "var(--muted)" }}>{t("loadingProjects")}</p>
         ) : (
           <>
             <div style={{ padding: `1.5rem ${pagePad} 0`, width: "100%" }}>
@@ -662,13 +663,13 @@ function ReportingPageContent() {
                   }}
                 >
                   <div style={{ marginBottom: "1rem" }}>
-                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "#64748b" }}>
+                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--muted)" }}>
                       DRAFTING TERMINAL
                     </div>
-                    <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.05rem", fontWeight: 800, color: "#0f172a" }}>
+                    <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.05rem", fontWeight: 800, color: "var(--text)" }}>
                       New narrative report
                     </h2>
-                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.84rem", color: "#64748b" }}>
+                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.84rem", color: "var(--muted)" }}>
                       {selectedProject?.name}
                       {selectedProject?.location ? (
                         <span style={{ color: "#94a3b8" }}> · {selectedProject.location}</span>
@@ -705,7 +706,7 @@ function ReportingPageContent() {
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#334155" }}>{t("sitePhotosOptional")}</span>
-                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#64748b", lineHeight: 1.45 }}>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--muted)", lineHeight: 1.45 }}>
                         Add multiple images (up to 30, max 25 MB each). HEIC, PNG, JPEG, WebP, and other common formats.
                       </p>
                       <input
@@ -745,7 +746,7 @@ function ReportingPageContent() {
                         }}
                         style={{
                           borderRadius: 12,
-                          border: `2px dashed ${narrativePicDragActive ? "#2563eb" : "#cbd5e1"}`,
+                          border: `2px dashed ${narrativePicDragActive ? "var(--text)" : "#cbd5e1"}`,
                           background: narrativePicDragActive ? "rgba(37, 99, 235, 0.06)" : "#f8fafc",
                           padding: "0.85rem 1rem",
                           display: "flex",
@@ -765,12 +766,12 @@ function ReportingPageContent() {
                             fontWeight: 600,
                             fontSize: "0.85rem",
                             cursor: "pointer",
-                            color: "#0f172a",
+                            color: "var(--text)",
                           }}
                         >
                           Choose photos
                         </button>
-                        <span style={{ fontSize: "0.8rem", color: "#64748b" }}>{t("orDropImages")}</span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{t("orDropImages")}</span>
                       </div>
                       {digitalPictures.length > 0 ? (
                         <div
@@ -784,7 +785,7 @@ function ReportingPageContent() {
                             background: "#fff",
                           }}
                         >
-                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--muted)" }}>
                             Selected ({digitalPictures.length}/30)
                           </div>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
@@ -821,7 +822,7 @@ function ReportingPageContent() {
                                     style={{
                                       fontSize: "0.8rem",
                                       fontWeight: 600,
-                                      color: "#0f172a",
+                                      color: "var(--text)",
                                       overflow: "hidden",
                                       textOverflow: "ellipsis",
                                       whiteSpace: "nowrap",
@@ -838,7 +839,7 @@ function ReportingPageContent() {
                                       marginTop: 4,
                                       border: "none",
                                       background: "none",
-                                      color: "#64748b",
+                                      color: "var(--muted)",
                                       fontSize: "0.72rem",
                                       fontWeight: 600,
                                       cursor: "pointer",
@@ -858,7 +859,7 @@ function ReportingPageContent() {
                               alignSelf: "flex-start",
                               border: "none",
                               background: "none",
-                              color: "#64748b",
+                              color: "var(--muted)",
                               fontSize: "0.78rem",
                               fontWeight: 600,
                               cursor: "pointer",
@@ -906,7 +907,7 @@ function ReportingPageContent() {
                       </label>
                     </div>
                     {digitalMsg ? (
-                      <p style={{ margin: 0, fontSize: "0.85rem", color: "#64748b" }}>{digitalMsg}</p>
+                      <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>{digitalMsg}</p>
                     ) : null}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.25rem" }}>
                       <button
@@ -939,7 +940,7 @@ function ReportingPageContent() {
                           padding: "0.6rem 1.25rem",
                           borderRadius: 10,
                           border: "none",
-                          background: "#0f172a",
+                          background: "var(--text)",
                           color: "#fff",
                           fontWeight: 700,
                           fontSize: "0.88rem",
@@ -968,13 +969,13 @@ function ReportingPageContent() {
                   }}
                 >
                   <div style={{ marginBottom: "1rem" }}>
-                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "#64748b" }}>
+                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--muted)" }}>
                       ASSET REPOSITORY
                     </div>
-                    <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.05rem", fontWeight: 800, color: "#0f172a" }}>
+                    <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.05rem", fontWeight: 800, color: "var(--text)" }}>
                       Upload technical specs
                     </h2>
-                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.82rem", color: "#64748b", lineHeight: 1.45 }}>
+                    <p style={{ margin: "0.35rem 0 0", fontSize: "0.82rem", color: "var(--muted)", lineHeight: 1.45 }}>
                       PDF, Office, CAD, images, archives — max 25 MB per file.
                     </p>
                   </div>
@@ -1023,7 +1024,7 @@ function ReportingPageContent() {
                       }}
                       style={{
                         borderRadius: 12,
-                        border: `2px dashed ${assetDragActive ? "#2563eb" : "#cbd5e1"}`,
+                        border: `2px dashed ${assetDragActive ? "var(--text)" : "#cbd5e1"}`,
                         background: assetDragActive ? "rgba(37, 99, 235, 0.06)" : "#f8fafc",
                         padding: "1.35rem 1rem",
                         textAlign: "center",
@@ -1043,7 +1044,7 @@ function ReportingPageContent() {
                           fontWeight: 600,
                           fontSize: "0.85rem",
                           cursor: "pointer",
-                          color: "#0f172a",
+                          color: "var(--text)",
                         }}
                       >
                         Select files
@@ -1065,8 +1066,8 @@ function ReportingPageContent() {
                       }}
                     >
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#64748b" }}>{t("queuedAttachment")}</div>
-                        <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--muted)" }}>{t("queuedAttachment")}</div>
+                        <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {uploadFile.name}
                         </div>
                         <div style={{ fontSize: "0.78rem", color: "#94a3b8" }}>{formatFileSize(uploadFile.size)}</div>
@@ -1077,7 +1078,7 @@ function ReportingPageContent() {
                         style={{
                           border: "none",
                           background: "none",
-                          color: "#64748b",
+                          color: "var(--muted)",
                           fontSize: "0.78rem",
                           fontWeight: 600,
                           cursor: "pointer",
@@ -1089,7 +1090,7 @@ function ReportingPageContent() {
                     </div>
                   ) : null}
                   {fileMsg ? (
-                    <p style={{ margin: "0.65rem 0 0", fontSize: "0.85rem", color: "#64748b" }}>{fileMsg}</p>
+                    <p style={{ margin: "0.65rem 0 0", fontSize: "0.85rem", color: "var(--muted)" }}>{fileMsg}</p>
                   ) : null}
                   <button
                     type="submit"
@@ -1098,9 +1099,9 @@ function ReportingPageContent() {
                       marginTop: "auto",
                       padding: "0.6rem 1rem",
                       borderRadius: 10,
-                      border: "1px solid #0f172a",
+                      border: "1px solid var(--text)",
                       background: "#fff",
-                      color: "#0f172a",
+                      color: "var(--text)",
                       fontWeight: 700,
                       fontSize: "0.88rem",
                       cursor: savingFile ? "wait" : "pointer",
@@ -1125,8 +1126,8 @@ function ReportingPageContent() {
                 }}
               >
                 <div>
-                  <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "#64748b" }}>{t("submissionLog")}</div>
-                  <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.15rem", fontWeight: 800, color: "#0f172a" }}>
+                  <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", color: "var(--muted)" }}>{t("submissionLog")}</div>
+                  <h2 style={{ margin: "0.35rem 0 0", fontSize: "1.15rem", fontWeight: 800, color: "var(--text)" }}>
                     Project submission history
                   </h2>
                 </div>
@@ -1136,7 +1137,7 @@ function ReportingPageContent() {
                   style={{
                     border: "none",
                     background: "none",
-                    color: "#2563eb",
+                    color: "var(--text)",
                     fontWeight: 700,
                     fontSize: "0.85rem",
                     cursor: "pointer",
@@ -1156,11 +1157,11 @@ function ReportingPageContent() {
                 }}
               >
                 {loading ? (
-                  <p style={{ margin: 0, padding: "1.25rem", color: "#64748b" }}>{t("loading")}</p>
+                  <p style={{ margin: 0, padding: "1.25rem", color: "var(--muted)" }}>{t("loading")}</p>
                 ) : error ? (
                   <p style={{ margin: 0, padding: "1.25rem", color: "#b91c1c" }}>{error}</p>
                 ) : reports.length === 0 ? (
-                  <p style={{ margin: 0, padding: "1.25rem", color: "#64748b" }}>
+                  <p style={{ margin: 0, padding: "1.25rem", color: "var(--muted)" }}>
                     No submissions yet. Create a draft or upload a file above.
                   </p>
                 ) : (
@@ -1174,11 +1175,11 @@ function ReportingPageContent() {
                   >
                     <thead>
                       <tr style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textAlign: "left" }}>
-                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>{t("colReference")}</th>
-                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "#64748b" }}>{t("colTitle")}</th>
-                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>{t("colStatus")}</th>
-                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>{t("colSubmitted")}</th>
-                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>{t("colActions")}</th>
+                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "var(--muted)", whiteSpace: "nowrap" }}>{t("colReference")}</th>
+                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "var(--muted)" }}>{t("colTitle")}</th>
+                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "var(--muted)", whiteSpace: "nowrap" }}>{t("colStatus")}</th>
+                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "var(--muted)", whiteSpace: "nowrap" }}>{t("colSubmitted")}</th>
+                        <th style={{ padding: "0.85rem 1rem", fontWeight: 700, color: "var(--muted)", whiteSpace: "nowrap" }}>{t("colActions")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1196,7 +1197,7 @@ function ReportingPageContent() {
                               {r.id.slice(0, 8)}…
                             </td>
                             <td style={{ padding: "0.75rem 1rem", maxWidth: 360 }}>
-                              <div style={{ fontWeight: 600, color: "#0f172a" }} title={r.title}>
+                              <div style={{ fontWeight: 600, color: "var(--text)" }} title={r.title}>
                                 {r.title.length > 80 ? `${r.title.slice(0, 80)}…` : r.title}
                               </div>
                               {selectedProject?.location ? (
@@ -1223,34 +1224,43 @@ function ReportingPageContent() {
                                 {t(st.statusKey)}
                               </span>
                             </td>
-                            <td style={{ padding: "0.75rem 1rem", color: "#64748b", whiteSpace: "nowrap" }}>{formatWhen(r.createdAt, intlLocale)}</td>
+                            <td style={{ padding: "0.75rem 1rem", color: "var(--muted)", whiteSpace: "nowrap" }}>{formatWhen(r.createdAt, intlLocale)}</td>
                             <td style={{ padding: "0.75rem 1rem", whiteSpace: "nowrap" }}>
                               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center" }}>
                                 {r.fileStorageKey ? (
-                                  <a
-                                    href={reportFileUrl(projectId, r.id)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ fontSize: "0.82rem", fontWeight: 600, color: "#2563eb" }}
-                                  >
-                                    File
-                                  </a>
+                                  <>
+                                    <ActionIconLink
+                                      href={reportFileUrl(projectId, r.id)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      label={tCommon("open")}
+                                    >
+                                      <IconEye />
+                                    </ActionIconLink>
+                                    <ActionIconLink
+                                      href={reportFileUrl(projectId, r.id)}
+                                      download={r.fileOriginalName ?? undefined}
+                                      label={tCommon("download")}
+                                    >
+                                      <IconDownload />
+                                    </ActionIconLink>
+                                  </>
                                 ) : null}
                                 {r.photos && r.photos.length > 0
                                   ? r.photos.map((p, idx) => (
-                                      <a
+                                      <ActionIconLink
                                         key={p.id}
                                         href={reportPhotoUrl(projectId, r.id, p.id)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        style={{ fontSize: "0.82rem", fontWeight: 600, color: "#2563eb" }}
+                                        label={`${tCommon("open")}: ${p.fileOriginalName}`}
                                       >
-                                        Photo {idx + 1}
-                                      </a>
+                                        <IconEye />
+                                      </ActionIconLink>
                                     ))
                                   : null}
                                 {!r.fileStorageKey && (!r.photos || r.photos.length === 0) ? (
-                                  <span style={{ fontSize: "0.78rem", color: "#cbd5e1" }}>—</span>
+                                  <span style={{ fontSize: "0.78rem", color: "#cbd5e1" }}>{tCommon("emDash")}</span>
                                 ) : null}
                                 <button
                                   type="button"
@@ -1259,14 +1269,14 @@ function ReportingPageContent() {
                                     fontSize: "0.82rem",
                                     fontWeight: 600,
                                     padding: "0.2rem 0.5rem",
-                                    borderRadius: 8,
-                                    border: "1px solid #e2e8f0",
-                                    background: "#fff",
+                                    borderRadius: 999,
+                                    border: "1px solid var(--border)",
+                                    background: "var(--surface)",
                                     cursor: "pointer",
-                                    color: "#334155",
+                                    color: "var(--text)",
                                   }}
                                 >
-                                  Edit
+                                  {tCommon("edit")}
                                 </button>
                               </div>
                             </td>
@@ -1345,7 +1355,7 @@ function ReportingPageContent() {
                   disabled={editSaving}
                   minHeight={200}
                 />
-                <span style={{ fontSize: "0.75rem", color: "var(--muted, #64748b)" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--muted, var(--muted))" }}>
                   Leave empty if this report is file-only. Use bold, italic, and size after selecting text.
                 </span>
               </div>
@@ -1394,35 +1404,31 @@ function ReportingPageContent() {
               {editing.photos && editing.photos.length > 0 ? (
                 <div style={{ fontSize: "0.85rem" }}>
                   <div style={{ fontWeight: 600, marginBottom: 6 }}>{t("savedPhotos")}</div>
-                  <ul style={{ margin: 0, paddingLeft: "1.1rem", display: "flex", flexDirection: "column", gap: 6 }}>
+                  <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
                     {editing.photos.map((p) => (
-                      <li key={p.id} style={{ fontSize: "0.82rem" }}>
-                        <a
+                      <li
+                        key={p.id}
+                        style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}
+                      >
+                        <span style={{ flex: 1, minWidth: 0, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.fileOriginalName}
+                        </span>
+                        <ActionIconLink
                           href={reportPhotoUrl(projectId, editing.id, p.id)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: "#2563eb", fontWeight: 600 }}
+                          label={tCommon("open")}
                         >
-                          {p.fileOriginalName}
-                        </a>
-                        {" · "}
-                        <button
-                          type="button"
+                          <IconEye />
+                        </ActionIconLink>
+                        <ActionIconButton
+                          label={tCommon("delete")}
+                          variant="danger"
                           disabled={editSaving}
                           onClick={() => void removeExistingPhoto(p.id)}
-                          style={{
-                            border: "none",
-                            background: "none",
-                            color: "#64748b",
-                            cursor: editSaving ? "wait" : "pointer",
-                            fontSize: "0.82rem",
-                            fontWeight: 600,
-                            padding: 0,
-                            textDecoration: "underline",
-                          }}
                         >
-                          Remove
-                        </button>
+                          <IconTrash />
+                        </ActionIconButton>
                       </li>
                     ))}
                   </ul>
@@ -1445,7 +1451,7 @@ function ReportingPageContent() {
                 />
               </label>
               {editNewPhotos.length > 0 ? (
-                <div style={{ fontSize: "0.82rem", color: "#64748b" }}>
+                <div style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
                   {editNewPhotos.length} new photo{editNewPhotos.length === 1 ? "" : "s"} queued
                   {" · "}
                   <button
@@ -1454,7 +1460,7 @@ function ReportingPageContent() {
                     style={{
                       border: "none",
                       background: "none",
-                      color: "#2563eb",
+                      color: "var(--text)",
                       cursor: "pointer",
                       fontWeight: 600,
                       padding: 0,
@@ -1511,7 +1517,7 @@ function ReportingSuspenseFallback() {
   const t = useTranslations("Reporting");
   return (
     <DashboardShell user={null}>
-      <p style={{ padding: "1.5rem", color: "#64748b" }}>{t("loadingPage")}</p>
+      <p style={{ padding: "1.5rem", color: "var(--muted)" }}>{t("loadingPage")}</p>
     </DashboardShell>
   );
 }

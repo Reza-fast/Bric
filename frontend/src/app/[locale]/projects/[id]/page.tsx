@@ -24,10 +24,11 @@ import { fetchTeamDirectory } from "@/lib/api/team";
 import { formatLaborBudget } from "@/lib/projectFormShared";
 import { useIsMobile } from "@/lib/useMediaQuery";
 import { intlLocaleTags, type AppLocale } from "@/i18n/routing";
+import { ActionIconLink, IconDownload, IconEye, actionIconStyle } from "@/components/ui/ActionIcons";
 
-const CANVAS_BG = "#e8eef7";
-const NAVY = "#0f172a";
-const SLATE_HEADER = "#64748b";
+const CANVAS_BG = "var(--soft)";
+const NAVY = "var(--text)";
+const SLATE_HEADER = "var(--muted)";
 
 function formatWhen(iso: string, locale: string): string {
   try {
@@ -111,7 +112,7 @@ function buildDocumentRows(projectId: string, reports: ProjectReport[]): DocRow[
 
 const whiteCard: CSSProperties = {
   background: "#fff",
-  border: "1px solid #dbe4f0",
+  border: "1px solid var(--border)",
   borderRadius: 14,
   padding: "1.25rem 1.35rem",
   boxShadow: "0 1px 3px rgba(15, 23, 42, 0.06)",
@@ -138,7 +139,7 @@ function ProgressTrack({ pct, tone }: { pct: number; tone?: "blue" | "amber" }) 
   const p = Math.min(100, Math.max(0, pct));
   const fill =
     tone === "amber"
-      ? "linear-gradient(90deg, #ea580c, #fb923c)"
+      ? "var(--text)"
       : "linear-gradient(90deg, #1e40af, #3b82f6)";
   return (
     <div style={{ height: 10, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
@@ -386,10 +387,10 @@ export default function ProjectDetailPage() {
     marginRight: "1.15rem",
     fontSize: "0.88rem",
     fontWeight: active ? 700 : 500,
-    color: active ? NAVY : "#64748b",
+    color: active ? NAVY : "var(--muted)",
     background: "transparent",
     textDecoration: "none",
-    borderBottom: active ? "2px solid #C45C26" : "2px solid transparent",
+    borderBottom: active ? "2px solid var(--text)" : "2px solid transparent",
     whiteSpace: "nowrap",
   });
 
@@ -469,14 +470,14 @@ export default function ProjectDetailPage() {
         <nav
           style={{
             fontSize: "0.88rem",
-            color: "#64748b",
+            color: "var(--muted)",
             marginBottom: "1rem",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
           }}
         >
-          <Link href="/projects" style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>
+          <Link href="/projects" style={{ color: "var(--muted)", textDecoration: "none", fontWeight: 500 }}>
             {tProjects("breadcrumbsProjects")}
           </Link>
           <span style={{ margin: "0 0.45rem", color: "#cbd5e1" }}>/</span>
@@ -494,7 +495,7 @@ export default function ProjectDetailPage() {
                 background: "#fff",
                 padding: "0.35rem 0.65rem",
                 borderRadius: 8,
-                border: "1px solid #dbe4f0",
+                border: "1px solid var(--border)",
               }}
             >
               {statusReadable(project.status).toUpperCase()} — {phaseFromCompletion(project.completionPercent ?? 0).toUpperCase()}
@@ -507,7 +508,7 @@ export default function ProjectDetailPage() {
                 background: "#fff",
                 padding: "0.35rem 0.65rem",
                 borderRadius: 8,
-                border: "1px solid #dbe4f0",
+                border: "1px solid var(--border)",
                 fontFamily: "ui-monospace, monospace",
               }}
             >
@@ -734,7 +735,7 @@ export default function ProjectDetailPage() {
                   style={{
                     padding: "0.5rem 1rem",
                     borderRadius: 10,
-                    border: "1px solid #dbe4f0",
+                    border: "1px solid var(--border)",
                     background: "#fff",
                     color: NAVY,
                     fontWeight: 700,
@@ -804,11 +805,11 @@ export default function ProjectDetailPage() {
                   </Link>
                 </p>
               ) : (
-                <div style={{ border: "1px solid #dbe4f0", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
                   <div style={{ width: "100%", overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
                       <thead>
-                        <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #dbe4f0" }}>
+                        <tr style={{ background: "#f1f5f9", borderBottom: "1px solid var(--border)" }}>
                           {([t("colType"), t("colFileName"), t("colReport"), t("colUpdated"), t("colActions")] as const).map((col) => (
                             <th
                               key={col}
@@ -837,20 +838,32 @@ export default function ProjectDetailPage() {
                             <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap", color: SLATE_HEADER }}>{formatWhen(row.sortAt, intlLocale)}</td>
                             <td style={{ padding: "0.8rem 1rem", whiteSpace: "nowrap" }}>
                               {row.href ? (
-                                row.kind === "narrative" ? (
-                                  <Link href={row.href} style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}>
-                                    {tCommon("open")}
-                                  </Link>
-                                ) : (
-                                  <a
-                                    href={row.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.82rem" }}
-                                  >
-                                    {tCommon("download")}
-                                  </a>
-                                )
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center" }}>
+                                  {row.kind === "narrative" ? (
+                                    <Link
+                                      href={row.href}
+                                      aria-label={tCommon("open")}
+                                      title={tCommon("open")}
+                                      style={actionIconStyle()}
+                                    >
+                                      <IconEye />
+                                    </Link>
+                                  ) : (
+                                    <>
+                                      <ActionIconLink
+                                        href={row.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        label={tCommon("open")}
+                                      >
+                                        <IconEye />
+                                      </ActionIconLink>
+                                      <ActionIconLink href={row.href} download={row.label} label={tCommon("download")}>
+                                        <IconDownload />
+                                      </ActionIconLink>
+                                    </>
+                                  )}
+                                </div>
                               ) : (
                                 <span style={{ color: "#cbd5e1" }}>{tCommon("emDash")}</span>
                               )}
@@ -881,7 +894,7 @@ export default function ProjectDetailPage() {
                               width: 42,
                               height: 42,
                               borderRadius: "50%",
-                              background: "#1e293b",
+                              background: "var(--text)",
                               color: "#fff",
                               display: "flex",
                               alignItems: "center",
@@ -908,7 +921,7 @@ export default function ProjectDetailPage() {
                               width: 42,
                               height: 42,
                               borderRadius: "50%",
-                              background: "#1e293b",
+                              background: "var(--text)",
                               color: "#fff",
                               display: "flex",
                               alignItems: "center",
@@ -965,7 +978,7 @@ export default function ProjectDetailPage() {
                 ) : (
                   upcomingMilestones.slice(0, 4).map((task) => (
                     <div key={task.id} style={{ borderLeft: "2px solid #f97316", paddingLeft: "0.7rem" }}>
-                      <div style={{ fontSize: "0.64rem", fontWeight: 800, letterSpacing: "0.08em", color: "#ea580c" }}>
+                      <div style={{ fontSize: "0.64rem", fontWeight: 800, letterSpacing: "0.08em", color: "var(--text)" }}>
                         {milestoneStatusLabel(task.taskStatus)}
                       </div>
                       <div style={{ marginTop: 4, fontWeight: 700, fontSize: "0.88rem", color: NAVY }}>{task.title}</div>

@@ -1,9 +1,10 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { Link } from "@/i18n/navigation";
+import { ActionIconButton, IconTrash } from "@/components/ui/ActionIcons";
+import "@/components/time/time.css";
 import { intlLocaleTags, type AppLocale } from "@/i18n/routing";
 import type { AuthUser } from "@/lib/api/auth";
 import { meRequest } from "@/lib/api/auth";
@@ -133,23 +134,42 @@ function IconPlay() {
   );
 }
 
-const labelCaps: CSSProperties = {
-  fontSize: "0.65rem",
-  fontWeight: 800,
-  letterSpacing: "0.12em",
-  color: "#64748b",
-  textTransform: "uppercase",
-};
+function IconStop() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="9" y="9" width="6" height="6" rx="1" />
+    </svg>
+  );
+}
 
-const fieldStyle: CSSProperties = {
-  padding: "0.55rem 0.75rem",
-  borderRadius: 10,
-  border: "1px solid #e2e8f0",
-  fontSize: "0.9rem",
-  background: "#f8fafc",
-  width: "100%",
-  boxSizing: "border-box",
-};
+function IconPlus() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+      <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function projectCode(name: string, projectId: string | null): string {
+  if (!projectId) return "INT";
+  const cleaned = name.replace(/[^a-zA-Z0-9\s]/g, "").trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return words
+      .slice(0, 3)
+      .map((w) => w[0] ?? "")
+      .join("")
+      .toUpperCase()
+      .slice(0, 4);
+  }
+  return (cleaned.slice(0, 4) || "PRJ").toUpperCase();
+}
+
+function todayWeekIndex(): number {
+  const idx = new Date().getDay() - 1;
+  return idx < 0 ? 6 : idx;
+}
 
 function logsToCsv(rows: TimeLogRow[]): string {
   const header = ["loggedAt", "project", "durationHours", "note"];
@@ -184,6 +204,7 @@ export default function TimeTrackerPage() {
   const [manualDuration, setManualDuration] = useState("2.5");
   const [manualSaving, setManualSaving] = useState(false);
   const [manualMsg, setManualMsg] = useState<string | null>(null);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -290,9 +311,13 @@ export default function TimeTrackerPage() {
     };
   }, [logsForMyPool, manualAnchorLoggedAt]);
 
-  const recentSorted = useMemo(() => {
-    return [...logs].sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()).slice(0, 20);
+  const allSorted = useMemo(() => {
+    return [...logs].sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime());
   }, [logs]);
+
+  const displayedLogs = useMemo(() => {
+    return showAllHistory ? allSorted : allSorted.slice(0, 6);
+  }, [allSorted, showAllHistory]);
 
   const elapsedSeconds = useMemo(() => {
     if (!activeSession) return 0;
@@ -432,608 +457,254 @@ export default function TimeTrackerPage() {
   }
 
   const todayLabel = new Date().toLocaleDateString(intlLocale, {
-    weekday: "long",
-    month: "long",
+    weekday: "short",
+    month: "short",
     day: "numeric",
-  });
-  const weekPct = Math.min(100, Math.round((weeklyTotalHours / WEEK_TARGET_H) * 100));
-
-  const pageBg =
-    "radial-gradient(circle at 1px 1px, rgba(148,163,184,0.18) 1px, transparent 0) 0 0/18px 18px, linear-gradient(180deg, #e8f1f9 0%, #eef2f7 50%, #f8fafc 100%)";
+  }).toUpperCase();
+  const todayIdx = todayWeekIndex();
 
   return (
     <DashboardShell user={user} fullBleed>
-      <div style={{ flex: 1, minHeight: "100%", background: pageBg, width: "100%", boxSizing: "border-box" }}>
-        <div style={{ padding: "1.25rem clamp(1rem, 4vw, 3rem) 2.5rem", width: "100%", maxWidth: "100%" }}>
-          <header
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "1rem",
-              paddingBottom: "1.15rem",
-              marginBottom: "1.5rem",
-              borderBottom: "1px solid rgba(148, 163, 184, 0.4)",
-            }}
-          >
-            <div style={{ minWidth: 0 }}>
-              <div style={{ ...labelCaps, marginBottom: 4 }}>{t("schedule")}</div>
-              <div style={{ fontWeight: 800, fontSize: "clamp(1.15rem, 2vw, 1.45rem)", color: "#0f172a", letterSpacing: "-0.02em" }}>
-                {t("brand")}
-              </div>
-            </div>
-            <nav
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                gap: "0.15rem",
-              }}
-              aria-label={t("workspaceAria")}
-            >
-              <Link
-                href="/projects"
-                style={{
-                  padding: "0.45rem 0.85rem",
-                  borderRadius: 8,
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#64748b",
-                  textDecoration: "none",
-                }}
-              >
-                {t("navProjects")}
-              </Link>
-              <Link
-                href="/time"
-                style={{
-                  padding: "0.45rem 0.85rem",
-                  borderRadius: 8,
-                  fontSize: "0.78rem",
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#0f172a",
-                  textDecoration: "none",
-                  borderBottom: "2px solid #0f172a",
-                }}
-              >
-                {t("navSchedule")}
-              </Link>
-              <Link
-                href="/reporting"
-                style={{
-                  padding: "0.45rem 0.85rem",
-                  borderRadius: 8,
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "#64748b",
-                  textDecoration: "none",
-                }}
-              >
-                {t("navReports")}
-              </Link>
-            </nav>
-          </header>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 24rem), 1fr))",
-              gap: "clamp(1rem, 2vw, 1.75rem)",
-              marginBottom: "1rem",
-              alignItems: "stretch",
-            }}
-          >
-            <section
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e2e8f0",
-                background: "#fff",
-                boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
-                padding: "clamp(1.25rem, 2.5vw, 2rem) clamp(1.35rem, 3vw, 2.5rem)",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>
-                <div>
-                  <div style={{ ...labelCaps, marginBottom: 6 }}>{t("todaysSession")}</div>
-                  <div style={{ fontSize: "0.98rem", color: "#334155", fontWeight: 600 }}>{todayLabel}</div>
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    fontWeight: 800,
-                    letterSpacing: "0.1em",
-                    padding: "0.35rem 0.65rem",
-                    borderRadius: 999,
-                    background:
-                      sessionStatusKind === "active"
-                        ? "#dbeafe"
-                        : sessionStatusKind === "paused"
-                          ? "#ffedd5"
-                          : "#f1f5f9",
-                    color:
-                      sessionStatusKind === "active"
-                        ? "#1d4ed8"
-                        : sessionStatusKind === "paused"
-                          ? "#c2410c"
-                          : "#64748b",
-                  }}
-                >
-                  {sessionStatusLabel}
-                </span>
-              </div>
-
-              <p style={{ margin: "0.85rem 0 0", fontSize: "0.78rem", color: "#64748b", lineHeight: 1.45 }}>
-                {t("timerHint")}
-              </p>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: "clamp(96px, 12vw, 140px)",
-                  margin: "0.75rem 0 1rem",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "clamp(2rem, 4.5vw, 3.25rem)",
-                    fontWeight: 800,
-                    fontVariantNumeric: "tabular-nums",
-                    letterSpacing: "-0.03em",
-                    lineHeight: 1,
-                    color: "#0f172a",
-                    textAlign: "center",
-                    width: "100%",
-                  }}
-                >
-                  {formatClock(elapsedSeconds)}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", alignItems: "stretch" }}>
-                {!activeSession ? (
-                  <button
-                    type="button"
-                    onClick={() => onClockIn()}
-                    style={{
-                      flex: "1 1 200px",
-                      padding: "0.75rem 1.25rem",
-                      borderRadius: 10,
-                      border: "none",
-                      background: "#0f172a",
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: "0.92rem",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {t("clockIn")}
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => void onClockOut()}
-                      style={{
-                        flex: "1 1 180px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8,
-                        padding: "0.75rem 1.25rem",
-                        borderRadius: 10,
-                        border: "none",
-                        background: "#0f172a",
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.92rem",
-                        cursor: "pointer",
-                      }}
+      <div className="time-page">
+        <div className="time-page-inner">
+          <div className="time-layout">
+            {/* Left column: session + log entry */}
+            <div className="time-main">
+              <section className="time-card">
+                <div className="time-session-head">
+                  <div>
+                    <span
+                      className={`time-session-badge ${
+                        sessionStatusKind === "active"
+                          ? "time-session-badge--active"
+                          : sessionStatusKind === "paused"
+                            ? "time-session-badge--paused"
+                            : "time-session-badge--idle"
+                      }`}
                     >
-                      <span style={{ fontSize: "1rem", opacity: 0.9 }} aria-hidden>
-                        ■
-                      </span>
-                      {t("clockOut")}
+                      {sessionStatusLabel}
+                    </span>
+                    <div className="time-session-date">{todayLabel}</div>
+                  </div>
+                </div>
+
+                <div className="time-clock-wrap">
+                  <div className="time-clock">{formatClock(elapsedSeconds)}</div>
+                </div>
+
+                <div className="time-session-actions">
+                  {!activeSession ? (
+                    <button type="button" onClick={() => onClockIn()} className="app-btn app-btn-primary time-btn-clockin">
+                      {t("clockIn")}
                     </button>
-                    {activeSession.segmentStartedAt ? (
-                      <button
-                        type="button"
-                        title={t("pause")}
-                        aria-label={t("pauseAria")}
-                        onClick={() => onPause()}
-                        style={{
-                          width: 48,
-                          minHeight: 48,
-                          borderRadius: 10,
-                          border: "1px solid #cbd5e1",
-                          background: "#fff",
-                          color: "#334155",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <IconPause />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        title={t("resume")}
-                        aria-label={t("resumeAria")}
-                        onClick={() => onResume()}
-                        style={{
-                          width: 48,
-                          minHeight: 48,
-                          borderRadius: 10,
-                          border: "1px solid #93c5fd",
-                          background: "#eff6ff",
-                          color: "#1d4ed8",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <IconPlay />
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-              {activeSession ? (
-                <p style={{ margin: "0.75rem 0 0", fontSize: "0.76rem", color: "#94a3b8", lineHeight: 1.45 }}>
-                  {t("pauseHint")}
-                </p>
-              ) : null}
-            </section>
-
-            <section
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e2e8f0",
-                background: "#fff",
-                boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
-                padding: "clamp(1.25rem, 2.5vw, 2rem) clamp(1.35rem, 3vw, 2.5rem)",
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                minHeight: 0,
-              }}
-            >
-              <div style={{ ...labelCaps, marginBottom: 8 }}>{t("weeklySummary")}</div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "0.5rem" }}>
-                <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "#0f172a", letterSpacing: "-0.02em" }}>
-                  {weeklyTotalHours.toFixed(1)}{" "}
-                  <span style={{ color: "#94a3b8", fontWeight: 600, fontSize: "1.05rem" }}>/ {WEEK_TARGET_H}h</span>
-                </div>
-                <div style={{ fontSize: "0.95rem", fontWeight: 800, color: "#ea580c" }}>{t("pctComplete", { pct: weekPct })}</div>
-              </div>
-              <div
-                style={{
-                  marginTop: "auto",
-                  paddingTop: "1.5rem",
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "flex-end",
-                  gap: 8,
-                  minHeight: "clamp(120px, 18vw, 160px)",
-                }}
-              >
-                {weekdayLabels(t).map((label, i) => {
-                  const h = dailyHours[i] ?? 0;
-                  const fillPct = Math.min(100, (h / DAY_BAR_CAP_H) * 100);
-                  const isWeekend = i >= 5;
-                  const fillGradient = isWeekend
-                    ? "linear-gradient(180deg, #fb923c, #ea580c)"
-                    : "linear-gradient(180deg, #1e3a8a, #172554)";
-                  return (
-                    <div
-                      key={label}
-                      style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 0 }}
-                    >
-                      <div
-                        style={{
-                          width: "100%",
-                          maxWidth: 52,
-                          height: "clamp(112px, 22vw, 140px)",
-                          borderRadius: 10,
-                          background: "#e2e8f0",
-                          display: "flex",
-                          alignItems: "flex-end",
-                          overflow: "hidden",
-                          alignSelf: "center",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "100%",
-                            height: `${fillPct}%`,
-                            minHeight: h > 0 ? 3 : 0,
-                            borderRadius: fillPct >= 98 ? 10 : "9px 9px 3px 3px",
-                            background: fillGradient,
-                          }}
-                        />
-                      </div>
-                      <div style={{ fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.06em", color: "#475569" }}>{label}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))",
-              gap: "clamp(1rem, 2vw, 1.75rem)",
-              alignItems: "start",
-            }}
-          >
-            <section
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e2e8f0",
-                background: "#fff",
-                boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
-                padding: "clamp(1.25rem, 2.5vw, 2rem) clamp(1.35rem, 3vw, 2.5rem)",
-              }}
-            >
-              <div style={{ ...labelCaps, marginBottom: "1rem" }}>{t("newRegistration")}</div>
-              <form onSubmit={(e) => void onManualSubmit(e)} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-                <label style={{ display: "block" }}>
-                  <span style={{ ...labelCaps, display: "block", marginBottom: 6 }}>{t("project")}</span>
-                  <select
-                    required
-                    value={manualProjectId}
-                    onChange={(e) => setManualProjectId(e.target.value)}
-                    style={{ ...fieldStyle, cursor: "pointer" }}
-                  >
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label style={{ display: "block" }}>
-                  <span style={{ ...labelCaps, display: "block", marginBottom: 6 }}>{t("taskDescription")}</span>
-                  <textarea
-                    value={manualNote}
-                    onChange={(e) => setManualNote(e.target.value)}
-                    rows={3}
-                    placeholder={t("taskPlaceholder")}
-                    style={{
-                      ...fieldStyle,
-                      resize: "vertical",
-                      fontFamily: "inherit",
-                      minHeight: "4.5rem",
-                    }}
-                  />
-                </label>
-                <p style={{ margin: 0, fontSize: "0.78rem", color: "#64748b", lineHeight: 1.45 }}>
-                  {t("dayPool")}: <strong>{dayAllocationHint.dayPoolHours.toFixed(2)} h</strong> · {t("toProjects")}:{" "}
-                  <strong>{dayAllocationHint.allocatedHours.toFixed(2)} h</strong> · {t("remaining")}:{" "}
-                  <strong style={{ color: dayAllocationHint.remainingHours < 0.01 ? "#b91c1c" : "#0f172a" }}>
-                    {dayAllocationHint.remainingHours.toFixed(2)} h
-                  </strong>
-                </p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-                  <label style={{ display: "block", flex: "1 1 140px" }}>
-                    <span style={{ ...labelCaps, display: "block", marginBottom: 6 }}>{t("date")}</span>
-                    <input
-                      type="date"
-                      required
-                      value={manualDate}
-                      onChange={(e) => setManualDate(e.target.value)}
-                      style={fieldStyle}
-                    />
-                  </label>
-                  <label style={{ display: "block", flex: "1 1 120px" }}>
-                    <span style={{ ...labelCaps, display: "block", marginBottom: 6 }}>{t("startTime")}</span>
-                    <input
-                      type="time"
-                      required
-                      value={manualStartTime}
-                      onChange={(e) => setManualStartTime(e.target.value)}
-                      style={fieldStyle}
-                    />
-                  </label>
-                  <label style={{ display: "block", flex: "1 1 120px" }}>
-                    <span style={{ ...labelCaps, display: "block", marginBottom: 6 }}>{t("durationH")}</span>
-                    <input
-                      type="number"
-                      required
-                      min={0.05}
-                      max={24}
-                      step={0.05}
-                      value={manualDuration}
-                      onChange={(e) => setManualDuration(e.target.value)}
-                      style={fieldStyle}
-                    />
-                  </label>
-                </div>
-                {manualMsg ? (
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: manualMsgOk ? "#047857" : "#b91c1c" }}>{manualMsg}</p>
-                ) : null}
-                <button
-                  type="submit"
-                  disabled={manualSaving || projects.length === 0}
-                  style={{
-                    width: "100%",
-                    marginTop: "0.15rem",
-                    padding: "0.75rem 1.25rem",
-                    borderRadius: 10,
-                    border: "none",
-                    background: "linear-gradient(180deg, #ffedd5, #fed7aa)",
-                    color: "#9a3412",
-                    fontWeight: 800,
-                    fontSize: "0.92rem",
-                    letterSpacing: "0.02em",
-                    cursor: manualSaving ? "wait" : "pointer",
-                    boxShadow: "0 4px 14px rgba(234, 88, 12, 0.2)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                >
-                  <span aria-hidden style={{ fontSize: "1.1rem", fontWeight: 700, opacity: 0.85 }}>
-                    +
-                  </span>
-                  {manualSaving ? t("saving") : t("submitEntry")}
-                </button>
-              </form>
-            </section>
-
-            <section
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e2e8f0",
-                background: "#fff",
-                boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
-                padding: "clamp(1.25rem, 2.5vw, 2rem) clamp(1.35rem, 3vw, 2.5rem)",
-                display: "flex",
-                flexDirection: "column",
-                minHeight: "100%",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  marginBottom: "0.85rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div style={labelCaps}>{t("recentActivity")}</div>
-                <button
-                  type="button"
-                  onClick={() => onExportCsv()}
-                  style={{
-                    border: "none",
-                    background: "none",
-                    color: "#2563eb",
-                    fontWeight: 700,
-                    fontSize: "0.78rem",
-                    letterSpacing: "0.04em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                    padding: "0.25rem 0",
-                  }}
-                >
-                  {t("exportCsv")}
-                </button>
-              </div>
-              {loading ? (
-                <p style={{ color: "#64748b", margin: 0 }}>{t("loading")}</p>
-              ) : error ? (
-                <p style={{ color: "#b91c1c", margin: 0 }}>{error}</p>
-              ) : recentSorted.length === 0 ? (
-                <p style={{ color: "#64748b", margin: 0 }}>{t("noEntries")}</p>
-              ) : (
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 0 }}>
-                  {recentSorted.map((row) => {
-                    const proj = row.projectId ? projects.find((p) => p.id === row.projectId) : undefined;
-                    const title = row.projectId === null ? t("dayWorked") : (row.projectName ?? proj?.name ?? t("projectFallback"));
-                    const titleColor = row.projectId === null ? "#475569" : "#ea580c";
-                    return (
-                      <li
-                        key={row.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "0.65rem",
-                          padding: "0.65rem 0",
-                          borderBottom: "1px solid #f1f5f9",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 10,
-                            background: "#e0e7ff",
-                            flexShrink: 0,
-                            display: "grid",
-                            placeItems: "center",
-                            fontSize: "0.85rem",
-                          }}
-                          aria-hidden
-                        >
-                          ⏱
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          {isHr(user?.role) && row.ownerDisplayName ? (
-                            <div style={{ fontSize: "0.7rem", color: "#64748b", fontWeight: 600, marginBottom: 2 }}>
-                              {row.ownerDisplayName}
-                            </div>
-                          ) : null}
-                          <div style={{ fontWeight: 800, color: titleColor, fontSize: "0.72rem", letterSpacing: "0.06em" }}>
-                            {title.toUpperCase()}
-                          </div>
-                          <div style={{ fontSize: "0.82rem", color: "#334155", marginTop: 4, lineHeight: 1.35 }}>{row.note ?? "—"}</div>
-                          <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
-                            {new Date(row.loggedAt).toLocaleString(intlLocale)}
-                          </div>
-                        </div>
-                        <div style={{ fontWeight: 700, color: "#334155", fontSize: "0.88rem", whiteSpace: "nowrap" }}>
-                          {formatDurationHours(row.durationHours)}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => void onDelete(row.id)}
-                          title={t("deleteEntry")}
-                          style={{
-                            border: "none",
-                            background: "none",
-                            cursor: "pointer",
-                            color: "#94a3b8",
-                            fontSize: "1rem",
-                            padding: "0 0.25rem",
-                          }}
-                        >
-                          🗑
+                  ) : (
+                    <>
+                      {activeSession.segmentStartedAt ? (
+                        <button type="button" className="time-btn-pause" onClick={() => onPause()} aria-label={t("pauseAria")}>
+                          <IconPause />
+                          {t("pause")}
                         </button>
-                      </li>
+                      ) : (
+                        <button type="button" className="time-btn-pause" onClick={() => onResume()} aria-label={t("resumeAria")}>
+                          <IconPlay />
+                          {t("resume")}
+                        </button>
+                      )}
+                      <button type="button" className="time-btn-clockout" onClick={() => void onClockOut()}>
+                        <IconStop />
+                        {t("clockOut")}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {activeSession ? <p className="time-session-hint">{t("pauseHint")}</p> : <p className="time-session-hint">{t("timerHint")}</p>}
+              </section>
+
+              <section className="time-card">
+                <h2 className="time-log-title">{t("logEntry")}</h2>
+                <p className="time-log-sub">{t("allocateHours")}</p>
+
+                <form className="time-form" onSubmit={(e) => void onManualSubmit(e)}>
+                  <label>
+                    <span className="time-field-label">{t("project")}</span>
+                    <select
+                      required
+                      className="time-select"
+                      value={manualProjectId}
+                      onChange={(e) => setManualProjectId(e.target.value)}
+                    >
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    <span className="time-field-label">{t("taskDescription")}</span>
+                    <textarea
+                      className="time-textarea"
+                      value={manualNote}
+                      onChange={(e) => setManualNote(e.target.value)}
+                      rows={3}
+                      placeholder={t("taskPlaceholder")}
+                    />
+                  </label>
+
+                  <p className="time-pool-hint">
+                    {t("dayPool")}: <strong>{dayAllocationHint.dayPoolHours.toFixed(2)} h</strong> · {t("toProjects")}:{" "}
+                    <strong>{dayAllocationHint.allocatedHours.toFixed(2)} h</strong> · {t("remaining")}:{" "}
+                    <strong style={{ color: dayAllocationHint.remainingHours < 0.01 ? "#b91c1c" : undefined }}>
+                      {dayAllocationHint.remainingHours.toFixed(2)} h
+                    </strong>
+                  </p>
+
+                  <div className="time-form-row time-form-row--3">
+                    <label>
+                      <span className="time-field-label">{t("date")}</span>
+                      <input
+                        type="date"
+                        required
+                        className="time-input"
+                        value={manualDate}
+                        onChange={(e) => setManualDate(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span className="time-field-label">{t("startTime")}</span>
+                      <input
+                        type="time"
+                        required
+                        className="time-input"
+                        value={manualStartTime}
+                        onChange={(e) => setManualStartTime(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span className="time-field-label">{t("durationH")}</span>
+                      <input
+                        type="number"
+                        required
+                        min={0.05}
+                        max={24}
+                        step={0.05}
+                        className="time-input"
+                        value={manualDuration}
+                        onChange={(e) => setManualDuration(e.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="time-form-footer">
+                    {manualMsg ? (
+                      <p className={`time-msg ${manualMsgOk ? "time-msg--ok" : "time-msg--err"}`}>{manualMsg}</p>
+                    ) : (
+                      <span />
+                    )}
+                    <button type="submit" className="time-btn-submit" disabled={manualSaving || projects.length === 0}>
+                      <IconPlus />
+                      {manualSaving ? t("saving") : t("submitEntry")}
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+
+            {/* Right column: metrics + activity */}
+            <div className="time-sidebar">
+              <section className="time-card">
+                <p className="time-eyebrow">{t("weeklyMetrics")}</p>
+                <div className="time-metrics-total">
+                  {weeklyTotalHours.toFixed(1)} <span>/ {WEEK_TARGET_H}h</span>
+                </div>
+
+                <div className="time-chart">
+                  {weekdayLabels(t).map((label, i) => {
+                    const h = dailyHours[i] ?? 0;
+                    const fillPct = Math.min(100, (h / DAY_BAR_CAP_H) * 100);
+                    const isToday = i === todayIdx;
+                    const isWeekend = i >= 5;
+                    let fillClass = "time-chart-fill";
+                    if (isToday) fillClass += " time-chart-fill--today";
+                    else if (isWeekend) fillClass += " time-chart-fill--weekend";
+
+                    return (
+                      <div key={label} className="time-chart-col">
+                        <div className="time-chart-track">
+                          <div className={fillClass} style={{ height: `${fillPct}%`, minHeight: h > 0 ? 3 : 0 }} />
+                        </div>
+                        <div className="time-chart-label">{label}</div>
+                      </div>
                     );
                   })}
-                </ul>
-              )}
-              <div style={{ marginTop: "auto", paddingTop: "1.25rem" }}>
-                <Link
-                  href="/reporting"
-                  style={{
-                    display: "block",
-                    width: "100%",
-                    textAlign: "center",
-                    padding: "0.65rem 1rem",
-                    borderRadius: 10,
-                    border: "1px solid #e2e8f0",
-                    background: "#f8fafc",
-                    color: "#475569",
-                    fontWeight: 700,
-                    fontSize: "0.72rem",
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    textDecoration: "none",
-                  }}
-                >
-                  View monthly archive
-                </Link>
-              </div>
-            </section>
+                </div>
+              </section>
+
+              <section className="time-card">
+                <div className="time-activity-head">
+                  <p className="time-eyebrow">{t("activityLog")}</p>
+                  <button type="button" className="time-export-btn" onClick={() => onExportCsv()}>
+                    {t("exportCsv")}
+                  </button>
+                </div>
+
+                {loading ? (
+                  <p style={{ color: "var(--muted)", margin: 0 }}>{t("loading")}</p>
+                ) : error ? (
+                  <p className="time-msg time-msg--err">{error}</p>
+                ) : displayedLogs.length === 0 ? (
+                  <p style={{ color: "var(--muted)", margin: 0 }}>{t("noEntries")}</p>
+                ) : (
+                  <ul className="time-activity-list">
+                    {displayedLogs.map((row) => {
+                      const proj = row.projectId ? projects.find((p) => p.id === row.projectId) : undefined;
+                      const title = row.projectId === null ? t("dayWorked") : (row.projectName ?? proj?.name ?? t("projectFallback"));
+                      const code = projectCode(title, row.projectId);
+                      const dateLabel = new Date(row.loggedAt)
+                        .toLocaleDateString(intlLocale, { month: "short", day: "numeric" })
+                        .toUpperCase();
+
+                      return (
+                        <li key={row.id} className="time-activity-item">
+                          <div className="time-activity-body">
+                            {isHr(user?.role) && row.ownerDisplayName ? (
+                              <div style={{ fontSize: "0.7rem", color: "var(--muted)", fontWeight: 600, marginBottom: 2 }}>
+                                {row.ownerDisplayName}
+                              </div>
+                            ) : null}
+                            <span className="time-activity-tag">{code}</span>
+                            <div className="time-activity-desc">{row.note?.trim() || title}</div>
+                            <div className="time-activity-date">{dateLabel}</div>
+                          </div>
+                          <div className="time-activity-hours">{row.durationHours.toFixed(2)}h</div>
+                          <div className="time-activity-delete">
+                            <ActionIconButton
+                              label={t("deleteEntry")}
+                              variant="danger"
+                              onClick={() => void onDelete(row.id)}
+                            >
+                              <IconTrash />
+                            </ActionIconButton>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
+                {allSorted.length > 6 ? (
+                  <button
+                    type="button"
+                    className="time-view-history"
+                    onClick={() => setShowAllHistory((v) => !v)}
+                  >
+                    {showAllHistory ? t("showLess") : t("viewFullHistory")}
+                  </button>
+                ) : null}
+              </section>
+            </div>
           </div>
         </div>
       </div>
