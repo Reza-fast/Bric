@@ -54,6 +54,7 @@ export function createApiRouter(deps: {
   r.delete("/projects/:projectId/planned-tasks/:taskId", deps.plannedTasks.remove);
 
   r.get("/time-logs", deps.timeLogs.list);
+  r.get("/time-logs/personnel-analysis", requireHr, deps.timeLogs.personnelAnalysis);
   r.delete("/time-logs/:id", deps.timeLogs.delete);
   r.post("/time-logs", deps.timeLogs.create);
   r.get("/team", requireHr, deps.team.list);

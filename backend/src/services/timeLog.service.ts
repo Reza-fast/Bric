@@ -21,6 +21,29 @@ function utcDayInterval(loggedAt: Date): { start: Date; end: Date } {
   return { start: new Date(startMs), end: new Date(startMs + 86_400_000) };
 }
 
+export type PersonnelProjectBreakdown = {
+  projectId: string;
+  name: string;
+  hours: number;
+};
+
+export type PersonnelMonthBreakdown = {
+  /** UTC calendar month as `YYYY-MM`. */
+  monthKey: string;
+  hours: number;
+};
+
+export type PersonnelAnalysisPerson = {
+  userId: string;
+  name: string;
+  email: string;
+  clockHours: number;
+  projectHours: number;
+  totalHours: number;
+  projects: PersonnelProjectBreakdown[];
+  months: PersonnelMonthBreakdown[];
+};
+
 export class TimeLogService {
   constructor(
     private readonly timeLogs: TimeLogsRepository,
@@ -40,6 +63,80 @@ export class TimeLogService {
       return this.timeLogs.listAllInRange(range.from, range.to);
     }
     return this.timeLogs.listByUserInRange(actorUserId, range.from, range.to);
+  }
+
+  /**
+   * HR-only aggregated roster: total hours per person, broken down by project and by month.
+   */
+  async personnelAnalysis(range: { from: Date; to: Date }): Promise<PersonnelAnalysisPerson[]> {
+    const logs = await this.timeLogs.listAllInRange(range.from, range.to);
+
+    type Acc = {
+      userId: string;
+      name: string;
+      email: string;
+      clockHours: number;
+      projects: Map<string, PersonnelProjectBreakdown>;
+      months: Map<string, number>;
+    };
+
+    const byUser = new Map<string, Acc>();
+
+    for (const log of logs) {
+      const existing = byUser.get(log.userId) ?? {
+        userId: log.userId,
+        name: log.ownerDisplayName,
+        email: log.ownerEmail,
+        clockHours: 0,
+        projects: new Map(),
+        months: new Map(),
+      };
+
+      existing.name = log.ownerDisplayName;
+      existing.email = log.ownerEmail;
+
+      const y = log.loggedAt.getUTCFullYear();
+      const m = String(log.loggedAt.getUTCMonth() + 1).padStart(2, "0");
+      const monthKey = `${y}-${m}`;
+      existing.months.set(monthKey, (existing.months.get(monthKey) ?? 0) + log.durationHours);
+
+      if (log.projectId === null) {
+        existing.clockHours += log.durationHours;
+      } else {
+        const proj = existing.projects.get(log.projectId) ?? {
+          projectId: log.projectId,
+          name: log.projectName,
+          hours: 0,
+        };
+        proj.hours += log.durationHours;
+        proj.name = log.projectName;
+        existing.projects.set(log.projectId, proj);
+      }
+
+      byUser.set(log.userId, existing);
+    }
+
+    return [...byUser.values()]
+      .map((row): PersonnelAnalysisPerson => {
+        const projects = [...row.projects.values()].sort((a, b) => b.hours - a.hours);
+        const projectHours = projects.reduce((sum, p) => sum + p.hours, 0);
+        const months = [...row.months.entries()]
+          .map(([monthKey, hours]) => ({ monthKey, hours }))
+          .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+
+        return {
+          userId: row.userId,
+          name: row.name,
+          email: row.email,
+          clockHours: row.clockHours,
+          projectHours,
+          totalHours: row.clockHours + projectHours,
+          projects,
+          months,
+        };
+      })
+      .filter((row) => row.totalHours > 0)
+      .sort((a, b) => b.totalHours - a.totalHours);
   }
 
   private async assertCanDeleteDayLog(log: TimeLog): Promise<void> {

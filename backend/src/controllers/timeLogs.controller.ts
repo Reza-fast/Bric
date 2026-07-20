@@ -74,6 +74,36 @@ export class TimeLogsController {
     res.json({ logs: logs.map((l) => serializeTimeLog(l)) });
   };
 
+  /** HR-only: aggregated hours per person (project + month breakdown). */
+  personnelAnalysis = async (req: Request, res: Response): Promise<void> => {
+    if (!req.authUser?.id) {
+      res.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    const parsed = listQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: "VALIDATION_ERROR", details: parsed.error.flatten() });
+      return;
+    }
+    const q = parsed.data;
+    const to = q.to ?? new Date();
+    const from = q.from ?? new Date(to.getTime() - 180 * MS_PER_DAY);
+    if (!(from < to)) {
+      res.status(400).json({ error: "INVALID_RANGE" });
+      return;
+    }
+    if (to.getTime() - from.getTime() > MAX_RANGE_DAYS * MS_PER_DAY) {
+      res.status(400).json({ error: "RANGE_TOO_LARGE", maxDays: MAX_RANGE_DAYS });
+      return;
+    }
+    const people = await this.timeLogs.personnelAnalysis({ from, to });
+    res.json({
+      from: from.toISOString(),
+      to: to.toISOString(),
+      people,
+    });
+  };
+
   delete = async (req: Request, res: Response): Promise<void> => {
     const userId = req.authUser?.id;
     const role = req.authUser?.role;
