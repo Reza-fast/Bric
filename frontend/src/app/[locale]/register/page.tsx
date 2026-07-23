@@ -6,6 +6,7 @@ import { BricLogo } from "@/components/brand/BricLogo";
 import { Link, useRouter } from "@/i18n/navigation";
 import { registerRequest } from "@/lib/api/auth";
 import type { UserRole } from "@/lib/api/roles";
+import { isStrongPassword } from "@/lib/password";
 
 const roleValues: UserRole[] = ["architect", "contractor", "subcontractor", "client"];
 
@@ -24,13 +25,22 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!isStrongPassword(password)) {
+      setError(t("weakPassword"));
+      return;
+    }
     setLoading(true);
     try {
       await registerRequest({ email, password, displayName, role });
       router.replace("/dashboard");
       router.refresh();
-    } catch {
-      setError(t("registerFailed"));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "WEAK_PASSWORD") {
+        setError(t("weakPassword"));
+      } else {
+        setError(t("registerFailed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -119,13 +129,13 @@ export default function RegisterPage() {
               minLength={10}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="app-input"
               style={{
-                padding: "0.55rem 0.65rem",
                 borderRadius: 8,
-                border: "1px solid var(--border)",
                 fontSize: "1rem",
               }}
             />
+            <span style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{t("passwordHint")}</span>
           </label>
           {error ? (
             <p style={{ margin: 0, color: "#b91c1c", fontSize: "0.85rem" }} role="alert">

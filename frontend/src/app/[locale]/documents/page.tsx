@@ -137,7 +137,7 @@ function DocumentsPageContent() {
                   fontSize: "0.9rem",
                   fontWeight: 600,
                   color: "var(--text)",
-                  background: "#fff",
+                  background: "var(--surface)",
                   width: "100%",
                 }}
               >

@@ -9,6 +9,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { AuthUser } from "@/lib/api/auth";
 import { logoutRequest } from "@/lib/api/auth";
 import { canAccessTeam } from "@/lib/api/roles";
+import { useAppTheme } from "@/lib/useAppTheme";
 import { useIsMobile } from "@/lib/useMediaQuery";
 
 const navAll = [
@@ -144,7 +145,7 @@ function ProfileAvatar({ user, size = 40 }: { user: AuthUser | null; size?: numb
         borderRadius: "50%",
         overflow: "hidden",
         background: "var(--text)",
-        color: "#fff",
+        color: "var(--bg)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -213,11 +214,16 @@ export function DashboardShell({
     router.refresh();
   }
 
+  const { preference: appTheme } = useAppTheme();
   const showSidebar = !isMobile || navOpen;
   const profileName = user?.displayName?.trim() || (user ? roleLabel(user.role) : "…");
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+    <div
+      className="app-root"
+      data-theme={appTheme}
+      style={{ display: "flex", minHeight: "100vh", position: "relative" }}
+    >
       {isMobile && navOpen ? (
         <button
           type="button"
@@ -228,7 +234,7 @@ export function DashboardShell({
             inset: 0,
             zIndex: 40,
             border: "none",
-            background: "rgba(15, 15, 15, 0.35)",
+            background: "var(--overlay)",
             cursor: "pointer",
             padding: 0,
           }}
@@ -434,7 +440,7 @@ export function DashboardShell({
           style={{
             minHeight: 64,
             borderBottom: "1px solid var(--border)",
-            background: "rgba(253, 253, 248, 0.92)",
+            background: "var(--header-bg)",
             backdropFilter: "blur(12px)",
             display: "flex",
             alignItems: "center",

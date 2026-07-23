@@ -299,7 +299,7 @@
   padding: 0.55rem 0.75rem;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--surface);
   font-size: 0.9rem;
   font-family: inherit;
   color: var(--text);

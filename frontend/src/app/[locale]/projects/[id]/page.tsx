@@ -111,7 +111,7 @@ function buildDocumentRows(projectId: string, reports: ProjectReport[]): DocRow[
 }
 
 const whiteCard: CSSProperties = {
-  background: "#fff",
+  background: "var(--surface)",
   border: "1px solid var(--border)",
   borderRadius: 14,
   padding: "1.25rem 1.35rem",
@@ -492,7 +492,7 @@ export default function ProjectDetailPage() {
                 fontWeight: 800,
                 letterSpacing: "0.08em",
                 color: NAVY,
-                background: "#fff",
+                background: "var(--surface)",
                 padding: "0.35rem 0.65rem",
                 borderRadius: 8,
                 border: "1px solid var(--border)",
@@ -505,7 +505,7 @@ export default function ProjectDetailPage() {
                 fontSize: "0.72rem",
                 fontWeight: 600,
                 color: "#475569",
-                background: "#fff",
+                background: "var(--surface)",
                 padding: "0.35rem 0.65rem",
                 borderRadius: 8,
                 border: "1px solid var(--border)",
@@ -736,7 +736,7 @@ export default function ProjectDetailPage() {
                     padding: "0.5rem 1rem",
                     borderRadius: 10,
                     border: "1px solid var(--border)",
-                    background: "#fff",
+                    background: "var(--surface)",
                     color: NAVY,
                     fontWeight: 700,
                     fontSize: "0.82rem",
@@ -805,7 +805,7 @@ export default function ProjectDetailPage() {
                   </Link>
                 </p>
               ) : (
-                <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden", background: "#fff" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden", background: "var(--surface)" }}>
                   <div style={{ width: "100%", overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
                       <thead>
@@ -956,7 +956,7 @@ export default function ProjectDetailPage() {
                     fontSize: "0.82rem",
                     color: NAVY,
                     textDecoration: "none",
-                    background: "#fff",
+                    background: "var(--surface)",
                   }}
                 >
                   {t("viewStakeholders")}

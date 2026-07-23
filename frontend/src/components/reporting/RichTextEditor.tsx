@@ -84,7 +84,7 @@ const toolbarBtn: CSSProperties = {
   padding: "0.35rem 0.55rem",
   borderRadius: 6,
   border: "1px solid #cbd5e1",
-  background: "#fff",
+  background: "var(--surface)",
   fontWeight: 700,
   fontSize: "0.82rem",
   color: "#0f172a",
@@ -194,7 +194,7 @@ export function RichTextEditor({ value, onChange, disabled, minHeight = 200, id,
           gap: "0.35rem",
           padding: "0.45rem 0.55rem",
           borderBottom: "1px solid #e2e8f0",
-          background: "#fff",
+          background: "var(--surface)",
         }}
       >
         <button
@@ -243,7 +243,7 @@ export function RichTextEditor({ value, onChange, disabled, minHeight = 200, id,
               borderRadius: 6,
               border: "1px solid #cbd5e1",
               fontSize: "0.82rem",
-              background: "#fff",
+              background: "var(--surface)",
               cursor: disabled ? "not-allowed" : "pointer",
             }}
             title="Apply to selected text, or set size for text you type next"

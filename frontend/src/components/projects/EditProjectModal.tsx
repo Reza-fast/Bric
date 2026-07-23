@@ -367,7 +367,7 @@ export function EditProjectModal({ open, projectId, project, onClose, onSaved }:
                     padding: "0.35rem 0.65rem",
                     borderRadius: 8,
                     border: "1px solid #fecaca",
-                    background: "#fff",
+                    background: "var(--surface)",
                     color: "#b91c1c",
                     fontWeight: 600,
                     fontSize: "0.78rem",

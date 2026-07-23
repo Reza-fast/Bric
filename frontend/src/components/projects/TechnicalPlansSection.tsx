@@ -138,7 +138,7 @@ export function TechnicalPlansSection({
     : {
         border: hideUpload ? "none" : "1px solid #e2e8f0",
         borderRadius: hideUpload ? 0 : 14,
-        background: hideUpload ? "transparent" : "#fff",
+        background: hideUpload ? "transparent" : "var(--surface)",
         padding: hideUpload ? 0 : "1.15rem 1.25rem",
         marginTop: hideUpload ? 0 : "0.75rem",
       };

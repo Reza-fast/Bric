@@ -459,7 +459,7 @@ function ReportingPageContent() {
                   fontSize: "0.88rem",
                   minWidth: isMobile ? 0 : 200,
                   width: isMobile ? "100%" : undefined,
-                  background: "#fff",
+                  background: "var(--surface)",
                   color: "var(--text)",
                 }}
               >
@@ -499,7 +499,7 @@ function ReportingPageContent() {
                 padding: "0.35rem 0.75rem",
                 borderRadius: 999,
                 border: "1px solid #cbd5e1",
-                background: "#fff",
+                background: "var(--surface)",
                 fontSize: "0.78rem",
                 fontWeight: 600,
                 color: "#475569",
@@ -593,7 +593,7 @@ function ReportingPageContent() {
             style={{
               borderRadius: 16,
               padding: "1.35rem 1.25rem",
-              background: "#fff",
+              background: "var(--surface)",
               border: "1px solid #e2e8f0",
               boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
               display: "flex",
@@ -658,7 +658,7 @@ function ReportingPageContent() {
                     border: "1px solid #e2e8f0",
                     borderRadius: 16,
                     padding: "1.35rem 1.25rem",
-                    background: "#fff",
+                    background: "var(--surface)",
                     boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
                   }}
                 >
@@ -762,7 +762,7 @@ function ReportingPageContent() {
                             padding: "0.45rem 0.9rem",
                             borderRadius: 10,
                             border: "1px solid #cbd5e1",
-                            background: "#fff",
+                            background: "var(--surface)",
                             fontWeight: 600,
                             fontSize: "0.85rem",
                             cursor: "pointer",
@@ -782,7 +782,7 @@ function ReportingPageContent() {
                             padding: "0.65rem 0.75rem",
                             borderRadius: 10,
                             border: "1px solid #e2e8f0",
-                            background: "#fff",
+                            background: "var(--surface)",
                           }}
                         >
                           <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--muted)" }}>
@@ -799,7 +799,7 @@ function ReportingPageContent() {
                                   padding: 6,
                                   borderRadius: 8,
                                   border: "1px solid #f1f5f9",
-                                  background: "#fafbfc",
+                                  background: "var(--soft)",
                                   maxWidth: "100%",
                                 }}
                               >
@@ -882,7 +882,7 @@ function ReportingPageContent() {
                             borderRadius: 10,
                             border: "1px solid #cbd5e1",
                             fontSize: "0.88rem",
-                            background: "#fff",
+                            background: "var(--surface)",
                           }}
                         >
                           <option value="in_review">{t("statusInReview")}</option>
@@ -901,7 +901,7 @@ function ReportingPageContent() {
                             borderRadius: 10,
                             border: "1px solid #cbd5e1",
                             fontSize: "0.88rem",
-                            background: "#fff",
+                            background: "var(--surface)",
                           }}
                         />
                       </label>
@@ -924,7 +924,7 @@ function ReportingPageContent() {
                           padding: "0.6rem 1.1rem",
                           borderRadius: 10,
                           border: "1px solid #cbd5e1",
-                          background: "#fff",
+                          background: "var(--surface)",
                           fontWeight: 600,
                           fontSize: "0.88rem",
                           cursor: "pointer",
@@ -962,7 +962,7 @@ function ReportingPageContent() {
                     border: "1px solid #e2e8f0",
                     borderRadius: 16,
                     padding: "1.35rem 1.25rem",
-                    background: "#fff",
+                    background: "var(--surface)",
                     boxShadow: "0 8px 28px rgba(15, 23, 42, 0.06)",
                     display: "flex",
                     flexDirection: "column",
@@ -1040,7 +1040,7 @@ function ReportingPageContent() {
                           padding: "0.45rem 1rem",
                           borderRadius: 10,
                           border: "1px solid #cbd5e1",
-                          background: "#fff",
+                          background: "var(--surface)",
                           fontWeight: 600,
                           fontSize: "0.85rem",
                           cursor: "pointer",
@@ -1058,7 +1058,7 @@ function ReportingPageContent() {
                         padding: "0.65rem 0.75rem",
                         borderRadius: 10,
                         border: "1px solid #e2e8f0",
-                        background: "#fff",
+                        background: "var(--surface)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
@@ -1100,7 +1100,7 @@ function ReportingPageContent() {
                       padding: "0.6rem 1rem",
                       borderRadius: 10,
                       border: "1px solid var(--text)",
-                      background: "#fff",
+                      background: "var(--surface)",
                       color: "var(--text)",
                       fontWeight: 700,
                       fontSize: "0.88rem",
@@ -1151,7 +1151,7 @@ function ReportingPageContent() {
                 style={{
                   borderRadius: 16,
                   border: "1px solid #e2e8f0",
-                  background: "#fff",
+                  background: "var(--surface)",
                   boxShadow: "0 8px 28px rgba(15, 23, 42, 0.05)",
                   overflow: "auto",
                 }}
@@ -1190,7 +1190,7 @@ function ReportingPageContent() {
                             key={r.id}
                             style={{
                               borderBottom: i < reports.length - 1 ? "1px solid #f1f5f9" : undefined,
-                              background: i % 2 === 0 ? "#fff" : "#fafbfc",
+                              background: i % 2 === 0 ? "var(--surface)" : "var(--soft)",
                             }}
                           >
                             <td style={{ padding: "0.75rem 1rem", fontFamily: "ui-monospace, monospace", color: "#475569", whiteSpace: "nowrap" }}>

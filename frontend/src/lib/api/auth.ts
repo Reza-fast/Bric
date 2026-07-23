@@ -44,6 +44,9 @@ export async function registerRequest(input: {
     if (body.error === "EMAIL_IN_USE") {
       throw new Error("That email is already registered.");
     }
+    if (body.error === "WEAK_PASSWORD") {
+      throw new Error("WEAK_PASSWORD");
+    }
     throw new Error(body.message ?? body.error ?? "REGISTER_FAILED");
   }
   return (await res.json()) as { user: AuthUser };

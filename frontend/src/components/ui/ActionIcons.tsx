@@ -83,7 +83,7 @@ export function actionIconStyle(variant: "default" | "danger" = "default", disab
   };
 
   if (variant === "danger") {
-    return { ...base, borderColor: "#fecaca", color: "#b91c1c", background: "#fff" };
+    return { ...base, borderColor: "#fecaca", color: "#b91c1c", background: "var(--surface)" };
   }
 
   return base;
