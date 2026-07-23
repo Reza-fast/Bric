@@ -1,5 +1,6 @@
 import { signAccessToken } from "../auth/jwt.js";
 import { hashPassword, verifyPassword } from "../auth/password.js";
+import { isStrongPassword, STRONG_PASSWORD_HINT } from "../auth/passwordPolicy.js";
 import { config } from "../config.js";
 import type { User } from "../domain/index.js";
 import { UserRole } from "../domain/index.js";
@@ -33,8 +34,8 @@ export class AuthService {
     displayName: string;
     role?: UserRole;
   }): Promise<AuthTokens> {
-    if (input.password.length < 10) {
-      throw new AuthError("Password must be at least 10 characters", "WEAK_PASSWORD");
+    if (!isStrongPassword(input.password)) {
+      throw new AuthError(STRONG_PASSWORD_HINT, "WEAK_PASSWORD");
     }
     const existing = await this.users.findByEmailWithHash(input.email);
     if (existing) {

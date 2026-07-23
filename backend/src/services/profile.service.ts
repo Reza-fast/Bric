@@ -1,4 +1,5 @@
 import { hashPassword, verifyPassword } from "../auth/password.js";
+import { isStrongPassword, STRONG_PASSWORD_HINT } from "../auth/passwordPolicy.js";
 import { config } from "../config.js";
 import type { User, UserUpdateInput } from "../domain/index.js";
 import { UsersRepository } from "../repositories/users.repository.js";
@@ -41,8 +42,8 @@ export class ProfileService {
           "CURRENT_PASSWORD_REQUIRED",
         );
       }
-      if (input.newPassword.length < 10) {
-        throw new ProfileError("Password must be at least 10 characters", "WEAK_PASSWORD");
+      if (!isStrongPassword(input.newPassword)) {
+        throw new ProfileError(STRONG_PASSWORD_HINT, "WEAK_PASSWORD");
       }
       const row = await this.users.findCredentialsById(userId);
       if (!row) {

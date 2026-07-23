@@ -2,15 +2,24 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import { ACCESS_TOKEN_MAX_AGE_MS, accessTokenCookieOptions } from "../auth/cookieOptions.js";
 import { signAccessToken } from "../auth/jwt.js";
+import { isStrongPassword } from "../auth/passwordPolicy.js";
 import { config } from "../config.js";
 import { UserRole } from "../domain/index.js";
 import { AuthError, type AuthService } from "../services/auth.service.js";
 import { ProfileError, type ProfileService } from "../services/profile.service.js";
 
+const strongPassword = z
+  .string()
+  .min(10)
+  .max(200)
+  .refine(isStrongPassword, {
+    message: "Password must include uppercase, number, and special character",
+  });
+
 const registerSchema = z
   .object({
     email: z.string().email().max(320),
-    password: z.string().min(10).max(200),
+    password: strongPassword,
     displayName: z.string().min(1).max(200),
     role: z.nativeEnum(UserRole).optional(),
   })
@@ -34,7 +43,7 @@ const patchMeSchema = z
     displayName: z.string().min(1).max(200).optional(),
     avatarUrl: avatarUrlSchema,
     currentPassword: z.string().min(1).max(200).optional(),
-    newPassword: z.string().min(10).max(200).optional(),
+    newPassword: strongPassword.optional(),
   })
   .strict();
 
